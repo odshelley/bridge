@@ -1,0 +1,41 @@
+# CIFAR-10 configuration for Bridge Diffusion
+
+experiment_name: bridge_diffusion_cifar10
+run_name: cifar10_baseline
+seed: 42
+
+model:
+  base_channels: 128
+  channel_multipliers: [1, 2, 2, 2]
+  num_res_blocks: 2
+  attention_resolutions: [16, 8]
+  num_heads: 4
+  dropout: 0.1
+
+training:
+  batch_size: 128
+  num_steps: 100000
+  learning_rate: 0.0002
+  weight_decay: 0.0001
+  grad_clip: 1.0
+  use_ema: true
+  ema_decay: 0.9999
+  log_interval: 100
+  save_interval: 10000
+
+bridge:
+  T: 0.1
+  eps: 0.0000001
+
+sampling:
+  num_steps: 100
+  batch_size: 64
+  show_progress: true
+  clip_samples: true
+
+data:
+  dataset_name: cifar10
+  data_dir: ./data
+  image_size: 32
+  num_workers: 4
+  pin_memory: true

@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bridge-diffusion"
+version = "0.1.0"
+description = "Implementation of Gaussian Random Bridge Diffusion Models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "Osian Shelley" }
+]
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "diffusers>=0.25.0",
+    "accelerate>=0.20.0",
+    "mlflow>=2.0.0",
+    "numpy>=1.24.0",
+    "pillow>=9.0.0",
+    "tqdm>=4.65.0",
+    "pyyaml>=6.0",
+    "scipy>=1.10.0",
+    "torch-fidelity>=0.3.0",
+    "torchmetrics[image]>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "black>=23.0.0",
+]
+
+[project.scripts]
+bridge-diffusion = "bridge_diffusion.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bridge_diffusion"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/configs",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"

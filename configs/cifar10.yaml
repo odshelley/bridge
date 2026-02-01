@@ -1,0 +1,51 @@
+# CIFAR-10 configuration for Bridge Diffusion (using diffusers UNet2DModel)
+# Architecture matches Ho et al. 2020 DDPM for fair comparison
+
+name: bridge_diffusion_cifar10
+output_dir: ./outputs/cifar10
+
+model:
+  in_channels: 3
+  out_channels: 3
+  sample_size: 32
+  block_out_channels: [128, 256, 256, 256]
+  layers_per_block: 2
+  down_block_types:
+    - DownBlock2D
+    - AttnDownBlock2D
+    - AttnDownBlock2D
+    - AttnDownBlock2D
+  up_block_types:
+    - AttnUpBlock2D
+    - AttnUpBlock2D
+    - AttnUpBlock2D
+    - UpBlock2D
+  attention_head_dim: 8
+  dropout: 0.1
+
+training:
+  batch_size: 128
+  num_steps: 800000  # Standard DDPM training length
+  learning_rate: 0.0002
+  weight_decay: 0.0
+  grad_clip_norm: 1.0
+  checkpoint_every: 50000
+  log_every: 100
+  seed: 42
+
+bridge:
+  T: 0.1
+  eps: 0.0000001
+
+sampling:
+  num_steps: 1000  # Match DDPM for fair comparison
+  num_samples: 64
+  show_progress: true
+  clip_samples: true
+
+data:
+  dataset: cifar10
+  data_dir: ./data
+  image_size: 32
+  num_workers: 4
+  pin_memory: true
