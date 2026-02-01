@@ -13,19 +13,19 @@ uv sync
 ### Training
 
 ```bash
-uv run bridge-train --config configs/mnist.yaml
+uv run bridge-diffusion train --config configs/mnist.yaml
 ```
 
 ### Sampling
 
 ```bash
-uv run bridge-sample --checkpoint path/to/model.pt --n-samples 1000 --steps 10
+uv run bridge-diffusion sample --checkpoint outputs/checkpoints/model.pt --n-samples 1000 --steps 10
 ```
 
 ### Evaluation
 
 ```bash
-uv run bridge-evaluate --samples-dir path/to/samples --dataset mnist
+uv run bridge-diffusion evaluate --samples-dir outputs/samples --dataset mnist
 ```
 
 ## Development
