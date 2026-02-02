@@ -139,17 +139,20 @@ class BridgeDiffusion(nn.Module):
         x: torch.Tensor,
         y: torch.Tensor,
     ) -> torch.Tensor:
-        """Compute the training loss following Algorithm 2.2.1.
+        """Compute the training loss following Corollary 2.7 from the paper.
+
+        The network learns to predict y (target/data) directly from xi_t.
+        This is the denoising score matching objective from the paper.
 
         Steps:
-        1. Sample t uniformly from [eps, T - eps]
+        1. Sample t uniformly from [0, T]
         2. Sample xi_t from the bridge distribution
-        3. Compute target drift b(xi_t, t)
-        4. Return MSE loss between network prediction and target
+        3. Network predicts y from xi_t
+        4. Return MSE loss between network prediction and true y
 
         Args:
             x: Data samples of shape (batch, channels, height, width).
-            y: Prior samples of shape (batch, channels, height, width).
+            y: Prior samples (noise) of shape (batch, channels, height, width).
 
         Returns:
             Scalar loss value.
@@ -157,13 +160,20 @@ class BridgeDiffusion(nn.Module):
         batch_size = x.shape[0]
         device = x.device
 
-        # Sample time uniformly in [eps, T - eps]
-        t = torch.rand(batch_size, device=device) * (self.T - 2 * self.eps) + self.eps
+        # Sample time uniformly in [0, T] (matching original paper exactly)
+        t = torch.rand(batch_size, device=device) * self.T
 
+        # Sample from bridge: xi_t ~ N(E_t, V_t)
+        # Note: In original paper, x is data and y is noise
+        # E_t = x + (y - x) * t / T  (interpolation from data to noise)
         xi_t = self.sample_bridge(x, y, t)
-        target = self.compute_training_target(x, y, xi_t, t)
+        
+        # Network predicts the DATA (x) from noisy xi_t
+        # This matches Corollary 2.7: predict y (target) directly
         prediction = self.network(xi_t, t)
-        loss = torch.mean((prediction - target) ** 2)
+        
+        # Loss: predict the clean data x
+        loss = torch.mean((prediction - x) ** 2)
 
         return loss
 
@@ -182,3 +192,54 @@ class BridgeDiffusion(nn.Module):
             Network output of shape (batch, channels, height, width).
         """
         return self.network(x, t)
+
+    @torch.no_grad()
+    def generate(
+        self,
+        y: torch.Tensor,
+        num_steps: int = 100,
+    ) -> torch.Tensor:
+        """Generate samples using Corollary 2.9 from the paper.
+
+        The network predicts the target y directly. The sampling follows:
+        xi_{t+dt} = xi_t + (1/(T-t)) * (f(xi_t, t) - xi_t) * dt + dW
+
+        where f(xi_t, t) is the network's prediction of the target.
+
+        Args:
+            y: Prior samples (noise) of shape (batch, channels, height, width).
+            num_steps: Number of Euler-Maruyama steps.
+
+        Returns:
+            Generated samples of shape (batch, channels, height, width).
+        """
+        device = y.device
+        batch_size = y.shape[0]
+
+        # Start from noise at t = 0
+        xi_t = y.clone()
+        
+        # Time step
+        delta = (self.T - self.eps) / num_steps
+        
+        # Forward Euler from t=0 to t=T (approaching the data)
+        for i in range(num_steps):
+            t = i * delta
+            t_tensor = torch.full((batch_size,), t, device=device)
+            
+            # Network predicts the target (clean data)
+            y_pred = self.network(xi_t, t_tensor)
+            
+            # Drift: (y_pred - xi_t) / (T - t)
+            inv_lambda = 1.0 / (self.T - t + self.eps)
+            drift = inv_lambda * (y_pred - xi_t)
+            
+            # Euler-Maruyama step
+            xi_t = xi_t + drift * delta
+            
+            # Add noise (except on last step)
+            if i < num_steps - 1:
+                noise = torch.randn_like(xi_t) * torch.sqrt(torch.tensor(delta, device=device))
+                xi_t = xi_t + noise
+
+        return xi_t

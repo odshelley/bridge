@@ -12,7 +12,6 @@ import mlflow
 import torch
 import torch.nn as nn
 from torch.optim import AdamW
-from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -55,11 +54,8 @@ class Trainer:
             weight_decay=config.training.weight_decay,
         )
 
-        self.scheduler = CosineAnnealingLR(
-            self.optimiser,
-            T_max=config.training.num_steps,
-            eta_min=config.training.learning_rate * 0.01,
-        )
+        # Use constant learning rate (matching paper's original implementation)
+        self.scheduler = None
 
         self.ema_model: Optional[nn.Module] = None
         if config.training.use_ema:
@@ -105,11 +101,8 @@ class Trainer:
                      self.config.model.sample_size, self.config.model.sample_size)
             y = torch.randn(shape, device=self.device)
             
-            # Sample using the model
-            if hasattr(model_to_sample, 'sample'):
-                samples = model_to_sample.sample(y, num_steps=100)
-            else:
-                samples = model_to_sample.sample_bridge(y, num_steps=100)
+            # Sample using the model's generate method (Euler-Maruyama simulation)
+            samples = model_to_sample.generate(y, num_steps=100)
             
             # Clamp to valid range
             samples = samples.clamp(-1, 1)
@@ -172,10 +165,17 @@ class Trainer:
                 })
 
             data_iter = iter(self.train_loader)
+            
+            # Calculate remaining steps if resuming
+            start_step = self.global_step
+            remaining_steps = self.config.training.num_steps - start_step
+            
             pbar = tqdm(
-                range(self.config.training.num_steps),
+                range(remaining_steps),
                 desc="Training",
                 unit="step",
+                initial=start_step,
+                total=self.config.training.num_steps,
             )
 
             running_loss = 0.0
@@ -202,7 +202,6 @@ class Trainer:
                     )
 
                 self.optimiser.step()
-                self.scheduler.step()
 
                 if self.ema_model is not None:
                     self._update_ema()
@@ -212,7 +211,7 @@ class Trainer:
 
                 if self.global_step % log_interval == 0:
                     avg_loss = running_loss / log_interval
-                    current_lr = self.scheduler.get_last_lr()[0]
+                    current_lr = self.config.training.learning_rate  # constant LR
 
                     mlflow.log_metrics(
                         {
@@ -246,7 +245,6 @@ class Trainer:
             "global_step": self.global_step,
             "model_state_dict": self.model.state_dict(),
             "optimiser_state_dict": self.optimiser.state_dict(),
-            "scheduler_state_dict": self.scheduler.state_dict(),
             "config": self.config,
         }
 
@@ -262,11 +260,10 @@ class Trainer:
         Args:
             checkpoint_path: Path to checkpoint file.
         """
-        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
 
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.optimiser.load_state_dict(checkpoint["optimiser_state_dict"])
-        self.scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
         self.global_step = checkpoint["global_step"]
 
         if self.ema_model is not None and "ema_model_state_dict" in checkpoint:
