@@ -87,8 +87,17 @@ def main():
         samples_ode_rk4 = sampler.sample_ode(10, shape, x0=x0.clone(), num_steps=num_steps, solver=ODESolver.RK4)
         save_grid(samples_ode_rk4, f"ode_rk4_{num_steps}steps")
 
+        # Generate with Hybrid ODE→SDE at different switch points
+        for switch_frac in [0.25, 0.5, 0.75]:
+            print(f"\n=== Generating with Hybrid ODE→SDE ({num_steps} steps, switch at {int(switch_frac*100)}%) ===")
+            samples_hybrid = sampler.sample_hybrid(
+                10, shape, x0=x0.clone(), num_steps=num_steps,
+                switch_fraction=switch_frac, ode_solver=ODESolver.HEUN
+            )
+            save_grid(samples_hybrid, f"hybrid_ode_sde_{num_steps}steps_switch{int(switch_frac*100)}")
+
     print(f"\nAll images saved to {output_dir}")
-    print("Compare the grids to see SDE vs ODE sampling quality at different step counts!")
+    print("Compare the grids to see SDE vs ODE vs PC sampling quality at different step counts!")
 
 
 if __name__ == "__main__":

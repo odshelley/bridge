@@ -81,9 +81,14 @@ def generate_samples(
     batch_size: int = 128,
     use_ode: bool = False,
     ode_solver: str = "heun",
+    use_pc: bool = False,
+    pc_corrector_steps: int = 1,
+    pc_snr: float = 0.1,
+    use_hybrid: bool = False,
+    hybrid_switch_fraction: float = 0.5,
 ) -> torch.Tensor:
     """Generate samples from the model.
-    
+
     Args:
         model: Trained model.
         config: Experiment configuration.
@@ -93,6 +98,11 @@ def generate_samples(
         batch_size: Batch size for generation.
         use_ode: If True, use probability flow ODE instead of SDE.
         ode_solver: ODE solver to use ('euler', 'heun', 'rk4').
+        use_pc: If True, use Predictor-Corrector sampling.
+        pc_corrector_steps: Number of Langevin corrector steps (for PC).
+        pc_snr: Signal-to-noise ratio for corrector step size (for PC).
+        use_hybrid: If True, use ODE→SDE hybrid sampling.
+        hybrid_switch_fraction: Fraction of steps for ODE before switching to SDE.
     """
     sampling_config = SamplingConfig(
         num_steps=num_steps,
@@ -100,17 +110,40 @@ def generate_samples(
         show_progress=True,
         clip_samples=True,
     )
-    
+
     sampler = Sampler(
         model=model,
         bridge_config=config.bridge,
         sampling_config=sampling_config,
         device=device,
     )
-    
+
     shape = (config.model.in_channels, config.model.sample_size, config.model.sample_size)
-    
-    if use_ode:
+
+    if use_hybrid:
+        # Hybrid ODE→SDE sampling
+        solver = ODESolver(ode_solver)
+        samples = sampler.sample_batch_hybrid(
+            total_samples=num_samples,
+            shape=shape,
+            batch_size=batch_size,
+            num_steps=num_steps,
+            switch_fraction=hybrid_switch_fraction,
+            ode_solver=solver,
+        )
+    elif use_pc:
+        # Predictor-Corrector sampling
+        solver = ODESolver(ode_solver)
+        samples = sampler.sample_batch_predictor_corrector(
+            total_samples=num_samples,
+            shape=shape,
+            batch_size=batch_size,
+            num_steps=num_steps,
+            predictor=solver,
+            corrector_steps=pc_corrector_steps,
+            corrector_snr=pc_snr,
+        )
+    elif use_ode:
         solver = ODESolver(ode_solver)
         samples = sampler.sample_batch_ode(
             total_samples=num_samples,
@@ -126,7 +159,7 @@ def generate_samples(
             batch_size=batch_size,
             num_steps=num_steps,
         )
-    
+
     return samples
 
 
@@ -230,6 +263,16 @@ def main():
     parser.add_argument("--ode-solver", type=str, default="heun",
                         choices=["euler", "heun", "rk4", "dopri5", "dopri8", "adaptive_heun"],
                         help="ODE solver to use (default: heun). dopri5/dopri8/adaptive_heun use torchdiffeq.")
+    parser.add_argument("--pc", action="store_true",
+                        help="Use Predictor-Corrector sampling (ODE predictor + Langevin corrector)")
+    parser.add_argument("--pc-corrector-steps", type=int, default=1,
+                        help="Number of Langevin corrector steps per predictor step (default: 1)")
+    parser.add_argument("--pc-snr", type=float, default=0.1,
+                        help="Signal-to-noise ratio for corrector step size (default: 0.1)")
+    parser.add_argument("--hybrid", action="store_true",
+                        help="Use hybrid ODE→SDE sampling (ODE first, then SDE)")
+    parser.add_argument("--hybrid-switch", type=float, default=0.5,
+                        help="Fraction of steps to use ODE before switching to SDE (default: 0.5)")
     parser.add_argument("--max-real-samples", type=int, default=50000,
                         help="Max real samples for FID computation (fewer = faster but noisier)")
     args = parser.parse_args()
@@ -268,20 +311,34 @@ def main():
             "eval_steps": str(args.steps),
             "use_ema": not args.no_ema,
             "use_ode": args.ode,
-            "ode_solver": args.ode_solver if args.ode else "n/a",
+            "use_pc": args.pc,
+            "use_hybrid": args.hybrid,
+            "ode_solver": args.ode_solver if (args.ode or args.pc or args.hybrid) else "n/a",
+            "pc_corrector_steps": args.pc_corrector_steps if args.pc else "n/a",
+            "pc_snr": args.pc_snr if args.pc else "n/a",
+            "hybrid_switch": args.hybrid_switch if args.hybrid else "n/a",
         })
-        
+
         for num_steps in args.steps:
             logger.info(f"\n{'='*60}")
-            sampler_type = f"ODE ({args.ode_solver})" if args.ode else "SDE (Euler-Maruyama)"
+            if args.hybrid:
+                sampler_type = f"Hybrid ODE→SDE ({args.ode_solver}, switch at {int(args.hybrid_switch*100)}%)"
+            elif args.pc:
+                sampler_type = f"PC ({args.ode_solver}+langevin, {args.pc_corrector_steps} corrector steps, snr={args.pc_snr})"
+            elif args.ode:
+                sampler_type = f"ODE ({args.ode_solver})"
+            else:
+                sampler_type = "SDE (Euler-Maruyama)"
             logger.info(f"Evaluating with {num_steps} sampling steps [{sampler_type}]")
             logger.info(f"{'='*60}")
-            
+
             # Generate samples
             logger.info(f"Generating {args.num_samples} samples...")
             samples = generate_samples(
                 model, config, args.num_samples, num_steps, device, args.batch_size,
-                use_ode=args.ode, ode_solver=args.ode_solver
+                use_ode=args.ode, ode_solver=args.ode_solver,
+                use_pc=args.pc, pc_corrector_steps=args.pc_corrector_steps, pc_snr=args.pc_snr,
+                use_hybrid=args.hybrid, hybrid_switch_fraction=args.hybrid_switch
             )
             
             # Optionally save samples
@@ -316,8 +373,12 @@ def main():
                 f.write(f"Num samples: {args.num_samples}\n")
                 f.write(f"Use EMA: {not args.no_ema}\n")
                 f.write(f"Use ODE: {args.ode}\n")
-                if args.ode:
+                f.write(f"Use PC: {args.pc}\n")
+                if args.ode or args.pc:
                     f.write(f"ODE Solver: {args.ode_solver}\n")
+                if args.pc:
+                    f.write(f"PC Corrector Steps: {args.pc_corrector_steps}\n")
+                    f.write(f"PC SNR: {args.pc_snr}\n")
                 f.write("\nSteps\tFID (train)\tFID (test)\n")
                 for s in sorted(results.keys()):
                     f.write(f"{s}\t{results[s]['train']:.2f}\t{results[s]['test']:.2f}\n")
