@@ -99,10 +99,11 @@ class Trainer:
             # Generate samples
             shape = (num_samples, self.config.model.in_channels, 
                      self.config.model.sample_size, self.config.model.sample_size)
-            y = torch.randn(shape, device=self.device)
+            # Paper notation: x = noise (prior)
+            x = torch.randn(shape, device=self.device)
             
             # Sample using the model's generate method (Euler-Maruyama simulation)
-            samples = model_to_sample.generate(y, num_steps=100)
+            samples = model_to_sample.generate(x, num_steps=100)
             
             # Clamp to valid range
             samples = samples.clamp(-1, 1)
@@ -188,8 +189,9 @@ class Trainer:
                     data_iter = iter(self.train_loader)
                     batch = next(data_iter)
 
-                x = batch[0].to(self.device)
-                y = torch.randn_like(x)
+                # Paper notation: x = noise (prior), y = data (target)
+                y = batch[0].to(self.device)
+                x = torch.randn_like(y)
 
                 self.optimiser.zero_grad()
                 loss = self.model.compute_training_loss(x, y)

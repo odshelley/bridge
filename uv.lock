@@ -142,6 +142,7 @@ dependencies = [
     { name = "scipy", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "torch" },
     { name = "torch-fidelity" },
+    { name = "torchdiffeq" },
     { name = "torchmetrics", extra = ["image"] },
     { name = "torchvision" },
     { name = "tqdm" },
@@ -170,6 +171,7 @@ requires-dist = [
     { name = "scipy", specifier = ">=1.10.0" },
     { name = "torch", specifier = ">=2.0.0" },
     { name = "torch-fidelity", specifier = ">=0.3.0" },
+    { name = "torchdiffeq", specifier = ">=0.2.3" },
     { name = "torchmetrics", extras = ["image"], specifier = ">=1.0.0" },
     { name = "torchvision", specifier = ">=0.15.0" },
     { name = "tqdm", specifier = ">=4.65.0" },
@@ -3383,6 +3385,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/dd/72/687a54bab9a11e351cff3859ece48fb58e13786a493eb13a5da32b42de32/torch_fidelity-0.3.0.tar.gz", hash = "sha256:3d3e33db98919759cc4f3f24cb27e1e74bdc7c905d90a780630e4e1c18492b66", size = 31797, upload-time = "2021-06-15T16:10:50.758Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9f/2c/e24c7e261eaa00fc911c39a5e30f77efbace480aae2548db9ceaef410945/torch_fidelity-0.3.0-py3-none-any.whl", hash = "sha256:d01284825595feb7dc3eae3dc9a0d8ced02be764813a3483f109bc142b52a1d3", size = 37012, upload-time = "2021-06-15T16:10:49.068Z" },
+]
+
+[[package]]
+name = "torchdiffeq"
+version = "0.2.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "scipy", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "torch" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/87/ec/a40aa124660f0ee65e6760cb53df6a82ad91a1a3ef1da5e747f1336644dd/torchdiffeq-0.2.5.tar.gz", hash = "sha256:b50d3760d13fd138dcceac651f4b80396f44fefcebd037a033fecfeaa9cc12e7", size = 31197, upload-time = "2024-11-21T20:20:11.552Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b9/35/537f64f2d0b3cfebaae0f903b4e3a3b239abcc99d0f73cb15b9cee9b8212/torchdiffeq-0.2.5-py3-none-any.whl", hash = "sha256:aa1db4bed13bd04952f28a53cdf4336d1ab60417c1d9698d7a239fec1cf2bcf8", size = 32902, upload-time = "2024-11-21T20:20:09.938Z" },
 ]
 
 [[package]]

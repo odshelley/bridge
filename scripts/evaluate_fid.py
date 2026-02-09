@@ -11,16 +11,18 @@ import argparse
 import logging
 from pathlib import Path
 
+import numpy as np
 import mlflow
 import torch
-from torchmetrics.image.fid import FrechetInceptionDistance
+from scipy import linalg
+from torchmetrics.image.fid import NoTrainInceptionV3
 from torchvision import transforms
 from tqdm import tqdm
 
 from bridge_diffusion.config import ExperimentConfig, SamplingConfig
 from bridge_diffusion.data import get_dataloader
 from bridge_diffusion.models import BridgeDiffusion, DDPMDiffusion, DiffusersUNetWrapper
-from bridge_diffusion.sampling import Sampler
+from bridge_diffusion.sampling import ODESolver, Sampler
 from bridge_diffusion.utils import get_device, set_seed
 
 logging.basicConfig(
@@ -52,7 +54,7 @@ def create_model(config: ExperimentConfig, network: DiffusersUNetWrapper):
 
 def load_model_from_checkpoint(checkpoint_path: Path, device: torch.device, use_ema: bool = True):
     """Load model from checkpoint."""
-    checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     config = checkpoint["config"]
     
     network = DiffusersUNetWrapper(config.model)
@@ -77,8 +79,21 @@ def generate_samples(
     num_steps: int,
     device: torch.device,
     batch_size: int = 128,
+    use_ode: bool = False,
+    ode_solver: str = "heun",
 ) -> torch.Tensor:
-    """Generate samples from the model."""
+    """Generate samples from the model.
+    
+    Args:
+        model: Trained model.
+        config: Experiment configuration.
+        num_samples: Number of samples to generate.
+        num_steps: Number of sampling steps.
+        device: Device for computation.
+        batch_size: Batch size for generation.
+        use_ode: If True, use probability flow ODE instead of SDE.
+        ode_solver: ODE solver to use ('euler', 'heun', 'rk4').
+    """
     sampling_config = SamplingConfig(
         num_steps=num_steps,
         num_samples=num_samples,
@@ -94,12 +109,23 @@ def generate_samples(
     )
     
     shape = (config.model.in_channels, config.model.sample_size, config.model.sample_size)
-    samples = sampler.sample_batch(
-        total_samples=num_samples,
-        shape=shape,
-        batch_size=batch_size,
-        num_steps=num_steps,
-    )
+    
+    if use_ode:
+        solver = ODESolver(ode_solver)
+        samples = sampler.sample_batch_ode(
+            total_samples=num_samples,
+            shape=shape,
+            batch_size=batch_size,
+            num_steps=num_steps,
+            solver=solver,
+        )
+    else:
+        samples = sampler.sample_batch(
+            total_samples=num_samples,
+            shape=shape,
+            batch_size=batch_size,
+            num_steps=num_steps,
+        )
     
     return samples
 
@@ -139,27 +165,55 @@ def compute_fid(
     device: torch.device,
     max_real_samples: int = 50000,
 ) -> float:
-    """Compute FID between real and generated samples."""
-    fid = FrechetInceptionDistance(feature=2048, normalize=False).to(device)
-    
-    # Add real images
+    """Compute FID between real and generated samples.
+
+    InceptionV3 feature extraction runs on the compute device (e.g. MPS) for speed.
+    FID statistics (mean, covariance, matrix sqrt) are computed on CPU with float64.
+    """
+    # Load InceptionV3 on compute device for fast feature extraction
+    inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=["2048"])
+    inception = inception.to(device)
+    inception.eval()
+
+    def extract_features(images_uint8: torch.Tensor) -> np.ndarray:
+        """Run InceptionV3 on device, return numpy features on CPU [batch, 2048]."""
+        with torch.no_grad():
+            feats = inception(images_uint8.to(device))
+        if isinstance(feats, (tuple, list)):
+            feats = torch.stack(feats)
+        return feats.cpu().numpy()
+
+    # Collect real features
+    real_feats = []
     num_real = 0
     for batch in tqdm(real_loader, desc="Processing real images"):
         images = batch[0]
         images = prepare_images_for_fid(images)
-        fid.update(images.to(device), real=True)
+        real_feats.append(extract_features(images))
         num_real += images.shape[0]
         if num_real >= max_real_samples:
             break
-    
-    # Add generated images in batches
+    real_feats = np.concatenate(real_feats, axis=0)[:max_real_samples]
+
+    # Collect generated features
+    fake_feats = []
     batch_size = 128
     for i in tqdm(range(0, len(generated_samples), batch_size), desc="Processing generated"):
         batch = generated_samples[i:i + batch_size]
         batch = prepare_images_for_fid(batch)
-        fid.update(batch.to(device), real=False)
-    
-    return fid.compute().item()
+        fake_feats.append(extract_features(batch))
+    fake_feats = np.concatenate(fake_feats, axis=0)
+
+    # Compute FID on CPU with float64
+    mu_real, sigma_real = real_feats.mean(axis=0), np.cov(real_feats, rowvar=False)
+    mu_fake, sigma_fake = fake_feats.mean(axis=0), np.cov(fake_feats, rowvar=False)
+
+    diff = mu_real - mu_fake
+    covmean, _ = linalg.sqrtm(sigma_real @ sigma_fake, disp=False)
+    if np.iscomplexobj(covmean):
+        covmean = covmean.real
+    fid = float(diff @ diff + np.trace(sigma_real + sigma_fake - 2 * covmean))
+    return fid
 
 
 def main():
@@ -172,6 +226,12 @@ def main():
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--no-ema", action="store_true", help="Don't use EMA weights")
     parser.add_argument("--save-samples", action="store_true", help="Save generated samples")
+    parser.add_argument("--ode", action="store_true", help="Use probability flow ODE instead of SDE")
+    parser.add_argument("--ode-solver", type=str, default="heun",
+                        choices=["euler", "heun", "rk4", "dopri5", "dopri8", "adaptive_heun"],
+                        help="ODE solver to use (default: heun). dopri5/dopri8/adaptive_heun use torchdiffeq.")
+    parser.add_argument("--max-real-samples", type=int, default=50000,
+                        help="Max real samples for FID computation (fewer = faster but noisier)")
     args = parser.parse_args()
     
     set_seed(args.seed)
@@ -207,17 +267,21 @@ def main():
             "num_samples": args.num_samples,
             "eval_steps": str(args.steps),
             "use_ema": not args.no_ema,
+            "use_ode": args.ode,
+            "ode_solver": args.ode_solver if args.ode else "n/a",
         })
         
         for num_steps in args.steps:
             logger.info(f"\n{'='*60}")
-            logger.info(f"Evaluating with {num_steps} sampling steps")
+            sampler_type = f"ODE ({args.ode_solver})" if args.ode else "SDE (Euler-Maruyama)"
+            logger.info(f"Evaluating with {num_steps} sampling steps [{sampler_type}]")
             logger.info(f"{'='*60}")
             
             # Generate samples
             logger.info(f"Generating {args.num_samples} samples...")
             samples = generate_samples(
-                model, config, args.num_samples, num_steps, device, args.batch_size
+                model, config, args.num_samples, num_steps, device, args.batch_size,
+                use_ode=args.ode, ode_solver=args.ode_solver
             )
             
             # Optionally save samples
@@ -228,12 +292,12 @@ def main():
             
             # Compute FID against train set
             logger.info("Computing FID against training set...")
-            fid_train = compute_fid(train_loader, samples, device)
+            fid_train = compute_fid(train_loader, samples, device, max_real_samples=args.max_real_samples)
             logger.info(f"FID (train): {fid_train:.2f}")
-            
+
             # Compute FID against test set
             logger.info("Computing FID against test set...")
-            fid_test = compute_fid(test_loader, samples, device)
+            fid_test = compute_fid(test_loader, samples, device, max_real_samples=args.max_real_samples)
             logger.info(f"FID (test): {fid_test:.2f}")
             
             results[num_steps] = {"train": fid_train, "test": fid_test}
@@ -243,6 +307,21 @@ def main():
                 f"fid_train_steps_{num_steps}": fid_train,
                 f"fid_test_steps_{num_steps}": fid_test,
             })
+            
+            # Save results incrementally after each step count
+            results_file = output_dir / f"fid_results_{config.method}.txt"
+            with open(results_file, "w") as f:
+                f.write(f"Model: {config.method}\n")
+                f.write(f"Checkpoint: {args.checkpoint}\n")
+                f.write(f"Num samples: {args.num_samples}\n")
+                f.write(f"Use EMA: {not args.no_ema}\n")
+                f.write(f"Use ODE: {args.ode}\n")
+                if args.ode:
+                    f.write(f"ODE Solver: {args.ode_solver}\n")
+                f.write("\nSteps\tFID (train)\tFID (test)\n")
+                for s in sorted(results.keys()):
+                    f.write(f"{s}\t{results[s]['train']:.2f}\t{results[s]['test']:.2f}\n")
+            logger.info(f"Saved intermediate results to {results_file}")
         
         # Print summary table (matching paper format)
         logger.info("\n" + "="*70)

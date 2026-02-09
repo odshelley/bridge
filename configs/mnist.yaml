@@ -32,6 +32,8 @@ training:
   checkpoint_every: 5000
   log_every: 100
   seed: 42
+  use_ema: true
+  ema_decay: 0.9999
 
 bridge:
   T: 0.1

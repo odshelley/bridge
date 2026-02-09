@@ -1,5 +1,5 @@
 """Sampling module for Bridge Diffusion."""
 
-from bridge_diffusion.sampling.sampler import Sampler
+from bridge_diffusion.sampling.sampler import ODESolver, Sampler
 
-__all__ = ["Sampler"]
+__all__ = ["ODESolver", "Sampler"]

@@ -1,19 +1,33 @@
 """Sampling module for Bridge Diffusion.
 
-Implements Algorithm 2.2.2 (Simulation) using Euler-Maruyama discretisation.
+Implements Algorithm 2.2.2 (Simulation) using Euler-Maruyama discretisation,
+and the probability flow ODE variant with higher-order solvers.
 """
 
 import logging
+from enum import Enum
 from pathlib import Path
 from typing import Optional
 
 import torch
 import torch.nn as nn
+from torchdiffeq import odeint
 from tqdm import tqdm
 
 from bridge_diffusion.config import BridgeConfig, SamplingConfig
 
 logger = logging.getLogger(__name__)
+
+
+class ODESolver(Enum):
+    """Available ODE solvers for probability flow sampling."""
+    EULER = "euler"
+    HEUN = "heun"  # 2nd order, a.k.a. improved Euler
+    RK4 = "rk4"    # 4th order Runge-Kutta
+    # torchdiffeq solvers
+    DOPRI5 = "dopri5"  # Adaptive Dormand-Prince (RK45)
+    DOPRI8 = "dopri8"  # Adaptive 8th order
+    ADAPTIVE_HEUN = "adaptive_heun"  # Adaptive Heun
 
 
 class Sampler:
@@ -50,24 +64,21 @@ class Sampler:
         self,
         num_samples: int,
         shape: tuple[int, ...],
-        y: Optional[torch.Tensor] = None,
+        x0: Optional[torch.Tensor] = None,
         num_steps: Optional[int] = None,
         return_trajectory: bool = False,
     ) -> torch.Tensor | tuple[torch.Tensor, list[torch.Tensor]]:
-        """Generate samples using Euler-Maruyama discretisation.
+        """Generate samples using Euler-Maruyama discretisation of the SDE.
 
         Algorithm 2.2.2 (Simulation):
-        1. Start with y ~ N(0, I) (prior)
-        2. Simulate reverse-time SDE: dX_t = b(X_t, T-t) dt
-        3. Use learned drift b_theta
+        xi_{t+dt} = xi_t + (E[Y|xi_t] - xi_t) / (T - t) * dt + dZ_t
 
-        For the bridge diffusion without noise in the reverse process:
-        X_{t+dt} = X_t + b_theta(X_t, T-t) * dt
+        where dZ_t ~ N(0, dt * I) is the Brownian increment.
 
         Args:
             num_samples: Number of samples to generate.
             shape: Shape of each sample (channels, height, width).
-            y: Optional prior samples. If None, sample from N(0, I).
+            x0: Optional prior samples. If None, sample from N(0, I).
             num_steps: Number of discretisation steps. If None, use config.
             return_trajectory: Whether to return full trajectory.
 
@@ -78,35 +89,306 @@ class Sampler:
         if num_steps is None:
             num_steps = self.sampling_config.num_steps
 
-        if y is None:
-            x = torch.randn(num_samples, *shape, device=self.device)
+        if x0 is None:
+            xi = torch.randn(num_samples, *shape, device=self.device)
         else:
-            x = y.to(self.device)
+            xi = x0.to(self.device)
 
         dt = self.T / num_steps
-        trajectory = [x.clone()] if return_trajectory else []
+        sqrt_dt = dt ** 0.5
+        trajectory = [xi.clone()] if return_trajectory else []
 
         # Euler-Maruyama: start at prior and evolve to data distribution
         for step in tqdm(
             range(num_steps),
-            desc="Sampling",
+            desc="Sampling (SDE)",
             disable=not self.sampling_config.show_progress,
         ):
             t = step * dt
             t_tensor = torch.full((num_samples,), t, device=self.device)
 
-            drift = self.model(x, t_tensor)
-            x = x + drift * dt
+            # Network predicts E[Y | xi_t]
+            y_pred = self.model(xi, t_tensor)
+
+            # Drift: (E[Y|xi_t] - xi_t) / (T - t)
+            denom = max(self.T - t, 1e-6)
+            drift = (y_pred - xi) / denom
+
+            # Euler-Maruyama step with Brownian increment
+            xi = xi + drift * dt
+            if step < num_steps - 1:
+                xi = xi + sqrt_dt * torch.randn_like(xi)
 
             if return_trajectory:
-                trajectory.append(x.clone())
+                trajectory.append(xi.clone())
 
         if self.sampling_config.clip_samples:
-            x = torch.clamp(x, -1.0, 1.0)
+            xi = torch.clamp(xi, -1.0, 1.0)
 
         if return_trajectory:
-            return x, trajectory
-        return x
+            return xi, trajectory
+        return xi
+
+    def _ode_drift(
+        self,
+        xi: torch.Tensor,
+        x0: torch.Tensor,
+        t: float,
+        t_tensor: torch.Tensor,
+    ) -> torch.Tensor:
+        """Compute the probability flow ODE drift.
+
+        From the paper, the ODE is:
+        d xi_t = [1/2 * (xi_t - x)/t + 1/2 * (E[Y|xi_t] - xi_t)/(T-t)] dt
+
+        Where the network predicts E[Y|xi_t] (the expected data given xi_t).
+
+        Args:
+            xi: Current state of shape (batch, ...).
+            x0: Initial noise of shape (batch, ...).
+            t: Current time (scalar).
+            t_tensor: Time as tensor of shape (batch,).
+
+        Returns:
+            Drift of shape (batch, ...).
+        """
+        # Network predicts E[Y | xi_t]
+        y_pred = self.model(xi, t_tensor)
+
+        # First term: (xi - x0) / t  (drift from initial noise)
+        # Avoid division by zero at t=0
+        t_safe = max(t, 1e-6)
+        term1 = (xi - x0) / t_safe
+
+        # Second term: (E[Y|xi] - xi) / (T - t)  (drift towards data)
+        denom = max(self.T - t, 1e-6)
+        term2 = (y_pred - xi) / denom
+
+        # Combined ODE drift (factor of 1/2 on each term)
+        return 0.5 * term1 + 0.5 * term2
+
+    @torch.no_grad()
+    def sample_ode(
+        self,
+        num_samples: int,
+        shape: tuple[int, ...],
+        x0: Optional[torch.Tensor] = None,
+        num_steps: Optional[int] = None,
+        solver: ODESolver = ODESolver.HEUN,
+        return_trajectory: bool = False,
+    ) -> torch.Tensor | tuple[torch.Tensor, list[torch.Tensor]]:
+        """Generate samples using the probability flow ODE.
+
+        This uses the deterministic ODE formulation:
+        d xi_t = [1/2 * (xi_t - x)/t + 1/2 * (E[Y|xi_t] - xi_t)/(T-t)] dt
+
+        Being deterministic, this allows higher-order ODE solvers for
+        better accuracy with fewer steps.
+
+        Args:
+            num_samples: Number of samples to generate.
+            shape: Shape of each sample (channels, height, width).
+            x0: Optional initial noise. If None, sample from N(0, I).
+            num_steps: Number of discretisation steps. If None, use config.
+            solver: ODE solver to use (euler, heun, rk4).
+            return_trajectory: Whether to return full trajectory.
+
+        Returns:
+            Generated samples of shape (num_samples, *shape).
+            If return_trajectory, also returns list of intermediate samples.
+        """
+        if num_steps is None:
+            num_steps = self.sampling_config.num_steps
+
+        # Initial noise x0 ~ N(0, I)
+        if x0 is None:
+            x0 = torch.randn(num_samples, *shape, device=self.device)
+        else:
+            x0 = x0.to(self.device)
+
+        # Start at t=eps (avoid singularity at t=0)
+        eps = 1e-4
+        dt = (self.T - eps) / num_steps
+        xi = x0.clone()
+
+        trajectory = [xi.clone()] if return_trajectory else []
+
+        for step in tqdm(
+            range(num_steps),
+            desc=f"Sampling (ODE {solver.value})",
+            disable=not self.sampling_config.show_progress,
+        ):
+            t = eps + step * dt
+            t_tensor = torch.full((num_samples,), t, device=self.device)
+
+            if solver == ODESolver.EULER:
+                # Simple Euler: xi_{n+1} = xi_n + f(xi_n, t_n) * dt
+                drift = self._ode_drift(xi, x0, t, t_tensor)
+                xi = xi + drift * dt
+
+            elif solver == ODESolver.HEUN:
+                # Heun's method (improved Euler / RK2):
+                # k1 = f(xi_n, t_n)
+                # k2 = f(xi_n + k1*dt, t_{n+1})
+                # xi_{n+1} = xi_n + 0.5*(k1 + k2)*dt
+                k1 = self._ode_drift(xi, x0, t, t_tensor)
+
+                t_next = t + dt
+                t_next_tensor = torch.full((num_samples,), t_next, device=self.device)
+                xi_euler = xi + k1 * dt
+                k2 = self._ode_drift(xi_euler, x0, t_next, t_next_tensor)
+
+                xi = xi + 0.5 * (k1 + k2) * dt
+
+            elif solver == ODESolver.RK4:
+                # Classic 4th-order Runge-Kutta
+                # k1 = f(xi_n, t_n)
+                # k2 = f(xi_n + k1*dt/2, t_n + dt/2)
+                # k3 = f(xi_n + k2*dt/2, t_n + dt/2)
+                # k4 = f(xi_n + k3*dt, t_n + dt)
+                # xi_{n+1} = xi_n + (k1 + 2*k2 + 2*k3 + k4)*dt/6
+                k1 = self._ode_drift(xi, x0, t, t_tensor)
+
+                t_mid = t + 0.5 * dt
+                t_mid_tensor = torch.full((num_samples,), t_mid, device=self.device)
+                k2 = self._ode_drift(xi + 0.5 * k1 * dt, x0, t_mid, t_mid_tensor)
+                k3 = self._ode_drift(xi + 0.5 * k2 * dt, x0, t_mid, t_mid_tensor)
+
+                t_next = t + dt
+                t_next_tensor = torch.full((num_samples,), t_next, device=self.device)
+                k4 = self._ode_drift(xi + k3 * dt, x0, t_next, t_next_tensor)
+
+                xi = xi + (k1 + 2 * k2 + 2 * k3 + k4) * dt / 6
+
+            if return_trajectory:
+                trajectory.append(xi.clone())
+
+        if self.sampling_config.clip_samples:
+            xi = torch.clamp(xi, -1.0, 1.0)
+
+        if return_trajectory:
+            return xi, trajectory
+        return xi
+
+    @torch.no_grad()
+    def sample_ode_torchdiffeq(
+        self,
+        num_samples: int,
+        shape: tuple[int, ...],
+        x0: Optional[torch.Tensor] = None,
+        num_steps: Optional[int] = None,
+        solver: str = "dopri5",
+        rtol: float = 1e-5,
+        atol: float = 1e-5,
+    ) -> torch.Tensor:
+        """Generate samples using torchdiffeq ODE solvers.
+
+        Uses the well-tested torchdiffeq library for ODE integration.
+        Supports adaptive solvers like dopri5 (Dormand-Prince RK45).
+
+        Args:
+            num_samples: Number of samples to generate.
+            shape: Shape of each sample (channels, height, width).
+            x0: Optional initial noise. If None, sample from N(0, I).
+            num_steps: Number of evaluation points (for fixed-step solvers).
+            solver: Solver name ('euler', 'heun', 'rk4', 'dopri5', 'dopri8', 'adaptive_heun').
+            rtol: Relative tolerance for adaptive solvers.
+            atol: Absolute tolerance for adaptive solvers.
+
+        Returns:
+            Generated samples of shape (num_samples, *shape).
+        """
+        if num_steps is None:
+            num_steps = self.sampling_config.num_steps
+
+        # Initial noise x0 ~ N(0, I)
+        if x0 is None:
+            x0 = torch.randn(num_samples, *shape, device=self.device)
+        else:
+            x0 = x0.to(self.device)
+
+        # Time points: from eps to T
+        eps = 1e-4
+        t_span = torch.linspace(eps, self.T, num_steps + 1, device=self.device)
+
+        # Store x0 for the drift function (needs to be accessible in closure)
+        x0_stored = x0.clone()
+
+        # Define the ODE function for torchdiffeq
+        def ode_func(t: torch.Tensor, xi: torch.Tensor) -> torch.Tensor:
+            """ODE drift function: d xi/dt = f(xi, t)."""
+            t_scalar = t.item()
+            batch_size = xi.shape[0]
+            t_tensor = torch.full((batch_size,), t_scalar, device=self.device)
+            return self._ode_drift(xi, x0_stored, t_scalar, t_tensor)
+
+        # Integrate the ODE
+        logger.info(f"Using torchdiffeq solver: {solver}")
+        solution = odeint(
+            ode_func,
+            x0,
+            t_span,
+            method=solver,
+            rtol=rtol,
+            atol=atol,
+        )
+
+        # solution shape: (num_steps+1, num_samples, *shape)
+        # Take the final state
+        xi = solution[-1]
+
+        if self.sampling_config.clip_samples:
+            xi = torch.clamp(xi, -1.0, 1.0)
+
+        return xi
+
+    @torch.no_grad()
+    def sample_batch_ode(
+        self,
+        total_samples: int,
+        shape: tuple[int, ...],
+        batch_size: int = 64,
+        num_steps: Optional[int] = None,
+        solver: ODESolver = ODESolver.HEUN,
+        rtol: float = 1e-5,
+        atol: float = 1e-5,
+    ) -> torch.Tensor:
+        """Generate samples in batches using the probability flow ODE.
+
+        Args:
+            total_samples: Total number of samples to generate.
+            shape: Shape of each sample.
+            batch_size: Batch size for generation.
+            num_steps: Number of discretisation steps.
+            solver: ODE solver to use.
+            rtol: Relative tolerance (for torchdiffeq adaptive solvers).
+            atol: Absolute tolerance (for torchdiffeq adaptive solvers).
+
+        Returns:
+            Generated samples of shape (total_samples, *shape).
+        """
+        # Check if using torchdiffeq solver
+        torchdiffeq_solvers = {ODESolver.DOPRI5, ODESolver.DOPRI8, ODESolver.ADAPTIVE_HEUN}
+        use_torchdiffeq = solver in torchdiffeq_solvers
+
+        all_samples = []
+        remaining = total_samples
+
+        while remaining > 0:
+            current_batch = min(batch_size, remaining)
+            if use_torchdiffeq:
+                samples = self.sample_ode_torchdiffeq(
+                    current_batch, shape, num_steps=num_steps, 
+                    solver=solver.value, rtol=rtol, atol=atol
+                )
+            else:
+                samples = self.sample_ode(
+                    current_batch, shape, num_steps=num_steps, solver=solver
+                )
+            all_samples.append(samples.cpu())
+            remaining -= current_batch
+
+        return torch.cat(all_samples, dim=0)
 
     @torch.no_grad()
     def sample_with_guidance(
@@ -130,7 +412,7 @@ class Sampler:
             Generated samples.
         """
         # Placeholder for classifier-free guidance extension
-        return self.sample(num_samples, shape, y, num_steps)
+        return self.sample(num_samples, shape, x0=y, num_steps=num_steps)
 
     @torch.no_grad()
     def sample_batch(
