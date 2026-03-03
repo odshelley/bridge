@@ -6,6 +6,7 @@ from .config import (
     DDPMConfig,
     ExperimentConfig,
     ModelConfig,
+    PoissonBridgeConfig,
     SamplingConfig,
     TrainingConfig,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "DDPMConfig",
     "ExperimentConfig",
     "ModelConfig",
+    "PoissonBridgeConfig",
     "SamplingConfig",
     "TrainingConfig",
 ]

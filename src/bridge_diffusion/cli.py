@@ -8,7 +8,7 @@ import torch
 
 from bridge_diffusion.config import BridgeConfig, ExperimentConfig, SamplingConfig
 from bridge_diffusion.data import get_data_info, get_dataloader
-from bridge_diffusion.models import BridgeDiffusion, DDPMDiffusion, DiffusersUNetWrapper
+from bridge_diffusion.models import BridgeDiffusion, DDPMDiffusion, DiffusersUNetWrapper, PoissonBridgeDiffusion
 from bridge_diffusion.sampling import Sampler
 from bridge_diffusion.training import Trainer
 from bridge_diffusion.utils import get_device, set_seed
@@ -24,6 +24,8 @@ def create_model(config: ExperimentConfig, network: DiffusersUNetWrapper):
     """Create the appropriate model based on config.method."""
     if config.method == "bridge":
         return BridgeDiffusion(network, config.bridge)
+    elif config.method == "poisson_bridge":
+        return PoissonBridgeDiffusion(network, config.poisson_bridge)
     elif config.method == "ddpm":
         return DDPMDiffusion(
             network,
@@ -85,7 +87,7 @@ def train_main(args: argparse.Namespace) -> None:
 
 def sample_main(args: argparse.Namespace) -> None:
     """Main sampling function."""
-    checkpoint = torch.load(args.checkpoint, map_location="cpu")
+    checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
     config = checkpoint.get("config")
 
     if config is None:
@@ -133,18 +135,42 @@ def sample_main(args: argparse.Namespace) -> None:
     shape = (data_info["num_channels"], data_info["image_size"], data_info["image_size"])
     logger.info(f"Generating {args.num_samples} samples with {args.num_steps} steps...")
 
-    samples = sampler.sample_batch(
-        total_samples=args.num_samples,
-        shape=shape,
-        batch_size=args.batch_size,
-        num_steps=args.num_steps,
-    )
+    if config.method == "poisson_bridge":
+        # Poisson bridge uses the model's own generate() (Poisson jump simulation)
+        from torchvision.utils import make_grid, save_image
 
-    output_dir = Path(args.output_dir)
-    sampler.save_samples(samples, output_dir)
+        all_samples = []
+        model = model.to(device)
+        model.eval()
+        for start in range(0, args.num_samples, args.batch_size):
+            n = min(args.batch_size, args.num_samples - start)
+            x = model.sample_prior(
+                (n, *shape),
+                device=device,
+            )
+            all_samples.append(model.generate(x, num_steps=args.num_steps))
+        samples = torch.cat(all_samples, dim=0)
+        # Normalise from [0, num_levels-1] to [0, 1] for saving
+        samples = (samples / (model.num_levels - 1)).clamp(0, 1)
 
-    grid_path = output_dir / "grid.png"
-    sampler.save_grid(samples[:64], grid_path)
+        output_dir = Path(args.output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        for i, sample in enumerate(samples):
+            save_image(sample, output_dir / f"sample_{i:04d}.png")
+
+        grid = make_grid(samples[:64], nrow=8, padding=2, normalize=False)
+        save_image(grid, output_dir / "grid.png")
+    else:
+        samples = sampler.sample_batch(
+            total_samples=args.num_samples,
+            shape=shape,
+            batch_size=args.batch_size,
+            num_steps=args.num_steps,
+        )
+
+        output_dir = Path(args.output_dir)
+        sampler.save_samples(samples, output_dir)
+        sampler.save_grid(samples[:64], output_dir / "grid.png")
 
     logger.info(f"Saved samples to {output_dir}")
 

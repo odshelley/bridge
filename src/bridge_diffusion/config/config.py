@@ -70,6 +70,22 @@ class BridgeConfig:
 
 
 @dataclass
+class PoissonBridgeConfig:
+    """Configuration for the Poisson Bridge diffusion process.
+
+    The Poisson bridge operates on non-negative integer data (e.g. raw pixel
+    counts) and uses Binomial interpolation for training and Poisson jumps
+    for simulation.
+    """
+
+    T: float = 1.0  # Terminal time
+    eps: float = 1e-7  # Small epsilon to avoid division by zero
+    num_levels: int = 256  # Number of discrete levels (e.g. 256 for 0-255 pixels)
+    prior: Literal["zeros", "poisson"] = "zeros"  # Prior distribution type
+    prior_lambda: float = 1.0  # Rate parameter when prior="poisson"
+
+
+@dataclass
 class DDPMConfig:
     """Configuration for DDPM baseline."""
 
@@ -98,6 +114,7 @@ class DataConfig:
     image_size: int = 32  # Resize images to this size
     num_workers: int = 4
     pin_memory: bool = True
+    raw_pixels: bool = False  # If True, return integer pixel values [0, 255] (for Poisson bridge)
 
 
 @dataclass
@@ -106,12 +123,13 @@ class ExperimentConfig:
 
     name: str = "bridge_experiment"
     output_dir: Path = field(default_factory=lambda: Path("./outputs"))
-    method: Literal["bridge", "ddpm"] = "bridge"
+    method: Literal["bridge", "ddpm", "poisson_bridge"] = "bridge"
     mlflow_tracking_uri: str | None = None  # e.g., "sqlite:///mlflow.db" or None for default
 
     model: ModelConfig = field(default_factory=ModelConfig)
     training: TrainingConfig = field(default_factory=TrainingConfig)
     bridge: BridgeConfig = field(default_factory=BridgeConfig)
+    poisson_bridge: PoissonBridgeConfig = field(default_factory=PoissonBridgeConfig)
     ddpm: DDPMConfig = field(default_factory=DDPMConfig)
     sampling: SamplingConfig = field(default_factory=SamplingConfig)
     data: DataConfig = field(default_factory=DataConfig)
@@ -141,6 +159,7 @@ class ExperimentConfig:
         model_cfg = ModelConfig(**model_data)
         training_cfg = TrainingConfig(**data.get("training", {}))
         bridge_cfg = BridgeConfig(**data.get("bridge", {}))
+        poisson_bridge_cfg = PoissonBridgeConfig(**data.get("poisson_bridge", {}))
         ddpm_cfg = DDPMConfig(**data.get("ddpm", {}))
         sampling_cfg = SamplingConfig(**data.get("sampling", {}))
         data_cfg = DataConfig(**data.get("data", {}))
@@ -153,6 +172,7 @@ class ExperimentConfig:
             model=model_cfg,
             training=training_cfg,
             bridge=bridge_cfg,
+            poisson_bridge=poisson_bridge_cfg,
             ddpm=ddpm_cfg,
             sampling=sampling_cfg,
             data=data_cfg,
@@ -179,6 +199,7 @@ class ExperimentConfig:
             "model": serialise(asdict(self.model)),
             "training": serialise(asdict(self.training)),
             "bridge": serialise(asdict(self.bridge)),
+            "poisson_bridge": serialise(asdict(self.poisson_bridge)),
             "ddpm": serialise(asdict(self.ddpm)),
             "sampling": serialise(asdict(self.sampling)),
             "data": serialise(asdict(self.data)),

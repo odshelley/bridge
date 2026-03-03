@@ -21,6 +21,24 @@ from bridge_diffusion.models import BridgeDiffusion
 logger = logging.getLogger(__name__)
 
 
+def _sample_prior(model: nn.Module, y: torch.Tensor) -> torch.Tensor:
+    """Sample prior x for the training step.
+
+    For PoissonBridgeDiffusion, calls model.sample_prior() to get integer-valued
+    prior samples. For all other models, falls back to standard Gaussian noise.
+
+    Args:
+        model: The diffusion model.
+        y: Data batch (used for shape and device).
+
+    Returns:
+        Prior samples with same shape as y.
+    """
+    if hasattr(model, "sample_prior"):
+        return model.sample_prior(y.shape, device=y.device)
+    return torch.randn_like(y)
+
+
 class Trainer:
     """Trainer for Bridge Diffusion models."""
 
@@ -97,10 +115,9 @@ class Trainer:
         
         with torch.no_grad():
             # Generate samples
-            shape = (num_samples, self.config.model.in_channels, 
+            shape = (num_samples, self.config.model.in_channels,
                      self.config.model.sample_size, self.config.model.sample_size)
-            # Paper notation: x = noise (prior)
-            x = torch.randn(shape, device=self.device)
+            x = _sample_prior(model_to_sample, torch.zeros(shape, device=self.device))
             
             # Sample using the model's generate method (Euler-Maruyama simulation)
             samples = model_to_sample.generate(x, num_steps=100)
@@ -191,7 +208,7 @@ class Trainer:
 
                 # Paper notation: x = noise (prior), y = data (target)
                 y = batch[0].to(self.device)
-                x = torch.randn_like(y)
+                x = _sample_prior(self.model, y)
 
                 self.optimiser.zero_grad()
                 loss = self.model.compute_training_loss(x, y)

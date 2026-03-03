@@ -7,6 +7,7 @@ from bridge_diffusion.models.diffusers_unet import (
     MNIST_CONFIG,
     DiffusersUNetWrapper,
 )
+from bridge_diffusion.models.poisson_bridge import PoissonBridgeDiffusion
 
 __all__ = [
     "BridgeDiffusion",
@@ -14,4 +15,5 @@ __all__ = [
     "DiffusersUNetWrapper",
     "MNIST_CONFIG",
     "CIFAR10_CONFIG",
+    "PoissonBridgeDiffusion",
 ]

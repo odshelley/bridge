@@ -52,7 +52,7 @@ class TestSampler:
         shape = (1, 16, 16)
         y = torch.randn(num_samples, *shape)
 
-        samples = sampler.sample(num_samples, shape, y=y)
+        samples = sampler.sample(num_samples, shape, x0=y)
 
         assert samples.shape == (num_samples, *shape)
 

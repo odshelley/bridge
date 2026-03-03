@@ -22,6 +22,7 @@ from tqdm import tqdm
 from bridge_diffusion.config import ExperimentConfig, SamplingConfig
 from bridge_diffusion.data import get_dataloader
 from bridge_diffusion.models import BridgeDiffusion, DDPMDiffusion, DiffusersUNetWrapper
+from bridge_diffusion.models.poisson_bridge import PoissonBridgeDiffusion
 from bridge_diffusion.sampling import ODESolver, Sampler
 from bridge_diffusion.utils import get_device, set_seed
 
@@ -48,6 +49,8 @@ def create_model(config: ExperimentConfig, network: DiffusersUNetWrapper):
             num_train_timesteps=config.ddpm.num_train_timesteps,
             beta_schedule=config.ddpm.beta_schedule,
         )
+    elif config.method == "poisson_bridge":
+        return PoissonBridgeDiffusion(network, config.poisson_bridge)
     else:
         raise ValueError(f"Unknown method: {config.method}")
 
@@ -109,7 +112,19 @@ def generate_samples(
     )
     
     shape = (config.model.in_channels, config.model.sample_size, config.model.sample_size)
-    
+
+    if config.method == "poisson_bridge":
+        # Poisson bridge uses its own generate() with Poisson jump simulation
+        all_samples = []
+        for start in range(0, num_samples, batch_size):
+            n = min(batch_size, num_samples - start)
+            x = model.sample_prior((n, *shape), device=device)
+            batch = model.generate(x, num_steps=num_steps)
+            # Normalise from [0, num_levels-1] to [0, 1]
+            batch = (batch / (model.num_levels - 1)).clamp(0, 1)
+            all_samples.append(batch)
+        return torch.cat(all_samples, dim=0)
+
     if use_ode:
         solver = ODESolver(ode_solver)
         samples = sampler.sample_batch_ode(

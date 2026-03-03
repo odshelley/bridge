@@ -1,0 +1,60 @@
+name: mnist_poisson_bridge
+output_dir: ./outputs/mnist_poisson
+method: poisson_bridge
+mlflow_tracking_uri: sqlite:///outputs/mlflow.db
+
+model:
+  in_channels: 1
+  out_channels: 1
+  sample_size: 32
+  block_out_channels: [64, 128, 256, 256]
+  layers_per_block: 2
+  down_block_types:
+    - DownBlock2D
+    - AttnDownBlock2D
+    - AttnDownBlock2D
+    - AttnDownBlock2D
+  up_block_types:
+    - AttnUpBlock2D
+    - AttnUpBlock2D
+    - AttnUpBlock2D
+    - UpBlock2D
+  attention_head_dim: 8
+  dropout: 0.0
+
+training:
+  batch_size: 64
+  num_steps: 40000
+  learning_rate: 0.0001
+  weight_decay: 0.0
+  grad_clip_norm: 1.0
+  checkpoint_every: 5000
+  log_every: 50
+  seed: 42
+  use_ema: true
+  ema_decay: 0.9999
+
+poisson_bridge:
+  T: 1.0
+  eps: 1.0e-7
+  num_levels: 256        # raw 8-bit pixel values [0, 255]
+  prior: zeros           # prior is a blank image (all zeros)
+  prior_lambda: 1.0
+
+bridge:
+  T: 0.1
+  eps: 1.0e-7
+
+sampling:
+  num_steps: 100
+  num_samples: 64
+  show_progress: true
+  clip_samples: false    # Poisson output does not need clipping
+
+data:
+  dataset: mnist
+  data_dir: ./data
+  image_size: 32
+  num_workers: 0         # 0 = main process only (avoids pickle issues on macOS MPS)
+  pin_memory: false      # pin_memory not supported on MPS
+  raw_pixels: true       # keep pixel values as integers in [0, 255]
