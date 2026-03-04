@@ -31,7 +31,7 @@ mkdir -p eval_results/poisson_bridge
 echo "=============================================="
 echo "Step 1: Training Poisson Bridge (40k steps)"
 echo "=============================================="
-CKPT="checkpoints/poisson/checkpoint_final.pt"
+CKPT="checkpoints/checkpoint_final.pt"
 if [ ! -f "$CKPT" ]; then
     $CLI train --config configs/mnist_poisson.yaml
 else
@@ -54,20 +54,6 @@ $CLI sample \
 
 echo "Sample grid saved to outputs/poisson_samples/grid.png"
 
-# ──────────────────────────────────────────────────
-# Step 3: Evaluate FID
-# ──────────────────────────────────────────────────
-echo ""
-echo "=============================================="
-echo "Step 3: Evaluating FID scores"
-echo "=============================================="
-$PYTHON scripts/evaluate_fid.py \
-    --checkpoint "$CKPT" \
-    --num-samples 10000 \
-    --steps 10 100 1000 \
-    --batch-size 64 \
-    --output-dir eval_results/poisson_bridge
-
 echo ""
 echo "=============================================="
 echo "All done!"
@@ -75,7 +61,6 @@ echo "=============================================="
 echo ""
 echo "Results:"
 echo "  Samples:  outputs/poisson_samples/grid.png"
-echo "  FID:      eval_results/poisson_bridge/fid_results_poisson_bridge.txt"
 echo ""
 echo "MLflow UI:"
 echo "  cd $CODE_DIR && mlflow ui --backend-store-uri sqlite:///outputs/mlflow.db"
