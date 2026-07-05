@@ -107,7 +107,7 @@ class Trainer:
         indices = torch.linspace(0, len(val_dataset) - 1, steps=count).long().tolist()
         return torch.stack([val_dataset[i][0] for i in indices])
 
-    def _prepare_batch(self, batch) -> tuple[torch.Tensor, torch.Tensor]:
+    def _prepare_batch(self, batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
         """Extract (x, y) for the bridge loss from a dataloader batch.
 
         Transport mode: x is the source image from the paired batch.
