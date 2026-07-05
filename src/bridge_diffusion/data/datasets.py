@@ -3,7 +3,7 @@
 from typing import Optional
 
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset, Subset
 from torchvision import datasets, transforms
 
 from bridge_diffusion.config import DataConfig
@@ -190,3 +190,32 @@ def get_data_info(config: DataConfig) -> dict:
         }
     else:
         raise ValueError(f"Unknown dataset: {config.dataset}")
+
+
+def filter_classes(
+    dataset: Dataset,
+    class_names: list[str],
+) -> Subset:
+    """Restrict a dataset to the given class names.
+
+    Works with any torchvision dataset exposing ``class_to_idx`` and
+    ``targets`` (CIFAR10 and ImageFolder both do).
+
+    Args:
+        dataset: Dataset to filter.
+        class_names: Class names to keep (e.g. ["cat", "dog"]).
+
+    Returns:
+        Subset containing only items of the requested classes.
+
+    Raises:
+        ValueError: If any name is not a class of the dataset.
+    """
+    valid = list(dataset.class_to_idx)
+    unknown = [name for name in class_names if name not in valid]
+    if unknown:
+        raise ValueError(f"Unknown class(es) {unknown}; valid classes: {valid}")
+
+    keep = {dataset.class_to_idx[name] for name in class_names}
+    indices = [i for i, target in enumerate(dataset.targets) if int(target) in keep]
+    return Subset(dataset, indices)
