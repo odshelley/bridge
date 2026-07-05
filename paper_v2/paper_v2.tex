@@ -594,19 +594,18 @@ Then the function $h_{tT}$ defined in~\eqref{eq:h-app} is space-time harmonic wi
 \end{equation}
 \end{prop}
 
-\begin{proof}[Proof]
-\begin{itemize}
-  \item For fixed $w$, the transition density $f_{T-t}(w - z)$ satisfies the backward Kolmogorov equation
-    \begin{equation*}
-      (\partial_t + \mathcal{A}_z)\,f_{T-t}(w - z) = 0, \qquad t < T.
-    \end{equation*}
-  \item Since $f_T(w - x)$ and $\Psi(\d w)$ are independent of $(t, z)$, the operator passes through the integral defining $h_{tT}$, by differentiation under the integral sign for the local part and Fubini's theorem for the jump part, both justified by the envelope~\eqref{eq:harmonic-envelope}:
-    \begin{equation*}
-      (\partial_t + \mathcal{A}_z)\,h_{tT}(z)
-      = \int_{\R} \frac{(\partial_t + \mathcal{A}_z)\,f_{T-t}(w - z)}{f_T(w - x)}\,\Psi(\d w)
-      = 0.
-    \end{equation*}
-\end{itemize}
+\begin{proof}
+For fixed $w \in \R$, the transition density satisfies the backward Kolmogorov equation
+\begin{equation*}
+  (\partial_t + \mathcal{A}_z)\,f_{T-t}(w - z) = 0, \qquad t < T.
+\end{equation*}
+Since $f_T(w - x)$ and $\Psi(\d w)$ do not depend on $(t, z)$, the operator passes through the integral defining $h_{tT}$: differentiation under the integral sign handles the local part and Fubini's theorem the jump part, both licensed by the envelope~\eqref{eq:harmonic-envelope}. Therefore
+\begin{equation*}
+  (\partial_t + \mathcal{A}_z)\,h_{tT}(z)
+  = \int_{\R} \frac{(\partial_t + \mathcal{A}_z)\,f_{T-t}(w - z)}{f_T(w - x)}\,\Psi(\d w)
+  = 0,
+\end{equation*}
+which is~\eqref{eq:harmonic-app}.
 \end{proof}
 
 \begin{thm}
@@ -640,9 +639,8 @@ and modified drift
 \end{thm}
 
 
-\begin{proof}[Proof]
-\begin{itemize}
-  \item The harmonic function $h_{tT}$ is time-dependent, so the $h$-transform must be taken for the space-time process $(t, Z_t)$, whose generator is $\partial_t + \mathcal{A}$ and for which $h$ is harmonic by Proposition~\ref{prop:harmonic-app}; the positivity and martingale hypotheses of \cite[Theorem~4.2]{PalmowskiRolski2002} hold by Proposition~\ref{prop:lrb-change-of-measure}, and the construction of bridges as space-time Doob $h$-transforms is classical \cite{FitzsimmonsPitmanYor1993}. For a time-independent test function $f$, the space-time transform gives
+\begin{proof}
+The harmonic function $h_{tT}$ is time-dependent, so the $h$-transform must be taken for the space-time process $(t, Z_t)$, whose generator is $\partial_t + \mathcal{A}$ and for which $h$ is harmonic by Proposition~\ref{prop:harmonic-app}; the positivity and martingale hypotheses of \cite[Theorem~4.2]{PalmowskiRolski2002} hold by Proposition~\ref{prop:lrb-change-of-measure}, and the construction of bridges as space-time Doob $h$-transforms is classical \cite{FitzsimmonsPitmanYor1993}. For a time-independent test function $f$, the space-time transform gives
     \begin{equation}\label{eq:doob-h-formula}
       \widetilde{\mathcal{A}}f
       = \frac{(\partial_t + \mathcal{A})(f h_{tT})}{h_{tT}}
@@ -650,14 +648,15 @@ and modified drift
       = \frac{\mathcal{A}(f h_{tT})}{h_{tT}} - f\,\frac{\mathcal{A} h_{tT}}{h_{tT}},
     \end{equation}
     where the first equality holds because the subtracted term $f\,h_{tT}^{-1}(\partial_t + \mathcal{A})h_{tT}$ vanishes by space-time harmonicity~\eqref{eq:harmonic-app}, and the last equality substitutes $\partial_t h_{tT} = -\mathcal{A}h_{tT}$, again by~\eqref{eq:harmonic-app}. The subtraction of $f\,h_{tT}^{-1}\mathcal{A}h_{tT}$ below is therefore the space-time harmonicity acting, not an assumption that $\mathcal{A}h_{tT} = 0$.
-  \item Apply~\eqref{eq:generator} to $g = fh_{tT}$. The jump contribution to $\mathcal{A}(fh_{tT})$ is
+
+We now apply~\eqref{eq:generator} to $g = fh_{tT}$. The jump contribution to $\mathcal{A}(fh_{tT})$ is
     \begin{equation*}
       J = \int_{\R\setminus\{0\}}\bigl[f(x{+}y)\,h_{tT}(x{+}y)
         - f(x)\,h_{tT}(x)
         - y\bigl(f'(x)\,h_{tT}(x) + f(x)\,h_{tT}'(x)\bigr)
         \1_{|y|<1}\bigr]\,\eta(\d y).
     \end{equation*}
-  \item Dividing by $h_{tT}(x)$ and using the identity
+Dividing by $h_{tT}(x)$ and using the identity
     \begin{equation*}
       \frac{f(x+y)\,h_{tT}(x+y)}{h_{tT}(x)} - f(x)
       = [f(x+y) - f(x)]\,\frac{h_{tT}(x+y)}{h_{tT}(x)}
@@ -676,15 +675,13 @@ and modified drift
          - yh_{tT}'(x)\1_{|y|<1}\Bigr]\,\eta(\d y).
          \label{eq:zero-coefficient}
     \end{align}
-  \item Equation~\eqref{eq:jump-mod} is the jump integral with modified \levy measure $\frac{h_{tT}(x+y)}{h_{tT}(x)}\eta(\d y)$, giving~\eqref{eq:modified-levy-measure-app}.
-  \item By Leibniz, $(fh_{tT})' = f'h_{tT} + fh_{tT}'$ and $(fh_{tT})'' = f''h_{tT} + 2f'h_{tT}' + fh_{tT}''$. Substitute into $\mathcal{A}(fh_{tT})/h_{tT}$, then collect coefficients of $f^{(k)}(x)$ across the drift, diffusion, and jump expansions (the last contributed by~\eqref{eq:jump-mod},~\eqref{eq:drift-correction},~\eqref{eq:zero-coefficient}).
-  \item \emph{Coefficient of $f''(x)$:} only the diffusion expansion contributes, giving $\half\beta^2$. The diffusion coefficient is unchanged.
-  \item \emph{Coefficient of $f'(x)$:} combine $\alpha$ from the drift expansion, the cross-term $\beta^2\,h_{tT}'(x)/h_{tT}(x)$ from the diffusion expansion, and~\eqref{eq:drift-correction}:
+Equation~\eqref{eq:jump-mod} is the jump integral with modified \levy measure $\frac{h_{tT}(x+y)}{h_{tT}(x)}\eta(\d y)$, giving~\eqref{eq:modified-levy-measure-app}. For the local terms, the Leibniz rule gives $(fh_{tT})' = f'h_{tT} + fh_{tT}'$ and $(fh_{tT})'' = f''h_{tT} + 2f'h_{tT}' + fh_{tT}''$. We substitute these into $\mathcal{A}(fh_{tT})/h_{tT}$ and collect the coefficients of $f^{(k)}(x)$ across the drift, diffusion, and jump expansions, the last contributed by~\eqref{eq:jump-mod},~\eqref{eq:drift-correction} and~\eqref{eq:zero-coefficient}.
+
+Only the diffusion expansion contributes to the coefficient of $f''(x)$, giving $\half\beta^2$; the diffusion coefficient is unchanged. For the coefficient of $f'(x)$, we combine $\alpha$ from the drift expansion, the cross-term $\beta^2\,h_{tT}'(x)/h_{tT}(x)$ from the diffusion expansion, and~\eqref{eq:drift-correction}:
     \begin{equation*}
       \alpha + \beta^2\,\frac{h_{tT}'(x)}{h_{tT}(x)} + \int_{|y|<1} y\,\Bigl[\frac{h_{tT}(x+y)}{h_{tT}(x)} - 1\Bigr]\,\eta(\d y) \;=\; \widetilde{\alpha}(t,x),
     \end{equation*}
-    matching~\eqref{eq:modified-drift-app}.
-  \item \emph{Coefficient of $f(x)$ in $h_{tT}^{-1}\mathcal{A}(f h_{tT})$:} combine $\alpha\,h_{tT}'(x)/h_{tT}(x)$ from the drift expansion, $\half\beta^2\,h_{tT}''(x)/h_{tT}(x)$ from the diffusion expansion, and~\eqref{eq:zero-coefficient}:
+    matching~\eqref{eq:modified-drift-app}. For the coefficient of $f(x)$ in $h_{tT}^{-1}\mathcal{A}(f h_{tT})$, we combine $\alpha\,h_{tT}'(x)/h_{tT}(x)$ from the drift expansion, $\half\beta^2\,h_{tT}''(x)/h_{tT}(x)$ from the diffusion expansion, and~\eqref{eq:zero-coefficient}:
     \begin{equation*}
       \alpha\,\frac{h_{tT}'(x)}{h_{tT}(x)}
       + \half\beta^2\,\frac{h_{tT}''(x)}{h_{tT}(x)}
@@ -695,8 +692,7 @@ and modified drift
     \begin{equation*}
       \frac{\mathcal{A}h_{tT}(x)}{h_{tT}(x)} \;-\; \frac{\mathcal{A}h_{tT}(x)}{h_{tT}(x)} \;=\; 0.
     \end{equation*}
-  \item The remaining jump integral $\int [f(x+y) - f(x) - yf'(x)\1_{|y|<1}]\,\frac{h_{tT}(x+y)}{h_{tT}(x)}\,\eta(\d y)$ from~\eqref{eq:jump-mod} is the bridge-modified jump term, completing~\eqref{eq:modified-generator-app}.
-\end{itemize}
+The remaining jump integral $\int [f(x+y) - f(x) - yf'(x)\1_{|y|<1}]\,\frac{h_{tT}(x+y)}{h_{tT}(x)}\,\eta(\d y)$ from~\eqref{eq:jump-mod} is the bridge-modified jump term, completing~\eqref{eq:modified-generator-app}.
 \end{proof}
 
 \begin{rem}
@@ -739,15 +735,16 @@ where $\{W_t\}$ is a standard Brownian motion, $N(\d s, \d y)$ is the jump measu
 is the compensated jump measure associated to the bridge dynamics, with bridge-modified compensator $\widetilde{\eta}$ given by Theorem~\ref{thm:modified-levy-app}. We emphasise that after the state-dependent tilt, $N$ is an integer-valued random measure with predictable compensator; it is no longer a Poisson random measure, its increments not being independent.
 \end{thm}
 
-\begin{proof}[Proof]
-\begin{itemize}
-  \item The \levy driver admits the decomposition~\eqref{eq:levy-ito-short}; under the bridge dynamics (the Doob $h$-transform with harmonic function $h_{tT}$), the coordinate process becomes $\{\xi^{x}_t\}$, and the generator transforms to $\widetilde{\mathcal{A}}$ as in~\eqref{eq:modified-generator-app}.
-  \item \emph{Continuous part.} The bridge law solves the martingale problem for $\widetilde{\mathcal{A}}$ on $C^2$ test functions of compact support, by construction of the Doob $h$-transform (Proposition~\ref{prop:lrb-change-of-measure} and Theorem~\ref{thm:modified-levy-app}). By the equivalence between martingale problems and semimartingale characteristics \cite[Theorem~II.2.42]{JacodShiryaev2003}, the second characteristic of $\{\xi^{x}_t\}$ is read off the coefficient of $\half f''$ in~\eqref{eq:modified-generator-app}, which equals $\beta^2$, unchanged from the driver; hence the continuous martingale part of $\xi^{x}_t$ has predictable quadratic variation $\langle M^c \rangle_t = \beta^2 t$, which is deterministic. By the \levy characterisation of Brownian motion \cite[Theorem~3.3.16]{KaratzasShreve1998}, there exists a standard Brownian motion $W_t$ with $M_t^c = \beta\,W_t$.
-  \item \emph{Jump part.} By the same characteristics correspondence \cite[Theorem~II.2.42]{JacodShiryaev2003}, the third characteristic of $\{\xi^{x}_t\}$ is the jump kernel of~\eqref{eq:modified-generator-app}: the predictable compensator of $N$ under the bridge law is $\frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\eta(\d y)\,\d s$. Equivalently, this is the multiplicative tilt of the driver's compensator under the change of measure $h_{tT}(Z_t)$, by Girsanov's theorem for random measures \cite[Theorem~III.3.24]{JacodShiryaev2003}. The compensated jump integral $\int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$, with $\widetilde{N}^{\xi}$ as in~\eqref{eq:bridge-compensator-app}, is then a local martingale.
-  \item \emph{True martingale property.} The compensated jump integral is a priori only a local martingale. However, $\{M_t\}$ is a true martingale by Proposition~\ref{stochfiltlevyrandom}, and $\{\beta W_t\}$ is a true martingale; hence the purely discontinuous part $M_t - x - \beta W_t = \int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$ is a difference of true martingales, and is therefore itself a true martingale.
-  \item Adding the initial value $x$ and summing the continuous and jump martingale parts gives~\eqref{eq:explicit-M}.
-\end{itemize}
-Uniqueness of the canonical decomposition of a semimartingale \cite[Chapter~II, Theorem 2.4.2]{JacodShiryaev2003} identifies $M_t$ uniquely.
+\begin{proof}
+The \levy driver admits the decomposition~\eqref{eq:levy-ito-short}; under the bridge dynamics, that is, the Doob $h$-transform with harmonic function $h_{tT}$, the coordinate process becomes $\{\xi^{x}_t\}$ and the generator transforms to $\widetilde{\mathcal{A}}$ as in~\eqref{eq:modified-generator-app}.
+
+For the continuous part, the bridge law solves the martingale problem for $\widetilde{\mathcal{A}}$ on $C^2$ test functions of compact support, by construction of the Doob $h$-transform (Proposition~\ref{prop:lrb-change-of-measure} and Theorem~\ref{thm:modified-levy-app}). By the equivalence between martingale problems and semimartingale characteristics \cite[Theorem~II.2.42]{JacodShiryaev2003}, the second characteristic of $\{\xi^{x}_t\}$ is read off the coefficient of $\half f''$ in~\eqref{eq:modified-generator-app}, which equals $\beta^2$, unchanged from the driver; hence the continuous martingale part of $\xi^{x}_t$ has predictable quadratic variation $\langle M^c \rangle_t = \beta^2 t$, which is deterministic. By the \levy characterisation of Brownian motion \cite[Theorem~3.3.16]{KaratzasShreve1998}, there exists a standard Brownian motion $W_t$ with $M_t^c = \beta\,W_t$.
+
+For the jump part, by the same characteristics correspondence \cite[Theorem~II.2.42]{JacodShiryaev2003}, the third characteristic of $\{\xi^{x}_t\}$ is the jump kernel of~\eqref{eq:modified-generator-app}: the predictable compensator of $N$ under the bridge law is $\frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\eta(\d y)\,\d s$. Equivalently, this is the multiplicative tilt of the driver's compensator under the change of measure $h_{tT}(Z_t)$, by Girsanov's theorem for random measures \cite[Theorem~III.3.24]{JacodShiryaev2003}. The compensated jump integral $\int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$, with $\widetilde{N}^{\xi}$ as in~\eqref{eq:bridge-compensator-app}, is then a local martingale.
+
+It remains to upgrade the local martingale to a true martingale. The compensated jump integral is a priori only a local martingale; however, $\{M_t\}$ is a true martingale by Proposition~\ref{stochfiltlevyrandom}, and $\{\beta W_t\}$ is a true martingale; hence the purely discontinuous part $M_t - x - \beta W_t = \int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$ is a difference of true martingales, and is therefore itself a true martingale.
+
+Adding the initial value $x$ and summing the continuous and jump martingale parts gives~\eqref{eq:explicit-M}, and uniqueness of the canonical decomposition of a semimartingale \cite[Chapter~II, Theorem 2.4.2]{JacodShiryaev2003} identifies $M_t$ uniquely.
 \end{proof}
 
 \begin{proof}[Proof of Theorem~\ref{thm:main-rep}]
