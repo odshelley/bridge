@@ -173,7 +173,6 @@ def sample_main(args: argparse.Namespace) -> None:
     )
 
     shape = (data_info["num_channels"], data_info["image_size"], data_info["image_size"])
-    logger.info(f"Generating {args.num_samples} samples with {args.num_steps} steps...")
 
     # Transport mode: start the bridge from source images instead of noise
     x0 = None
@@ -212,6 +211,12 @@ def sample_main(args: argparse.Namespace) -> None:
     num_to_sample = x0.shape[0] if x0 is not None else args.num_samples
 
     if config.method == "poisson_bridge":
+        if x0 is not None:
+            logger.warning(
+                "poisson_bridge does not support source images; ignoring "
+                "--source-dir / source priors."
+            )
+        logger.info(f"Generating {args.num_samples} samples with {args.num_steps} steps...")
         # Poisson bridge uses the model's own generate() (Poisson jump simulation)
         from torchvision.utils import make_grid, save_image
 
@@ -237,6 +242,7 @@ def sample_main(args: argparse.Namespace) -> None:
         grid = make_grid(samples[:64], nrow=8, padding=2, normalize=False)
         save_image(grid, output_dir / "grid.png")
     else:
+        logger.info(f"Generating {num_to_sample} samples with {args.num_steps} steps...")
         samples = sampler.sample_batch(
             total_samples=num_to_sample,
             shape=shape,
