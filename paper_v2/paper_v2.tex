@@ -434,12 +434,13 @@ The bridge construction distinguishes no privileged initial time. The following 
 
 \begin{proposition}[Temporal transport consistency]
 \label{prop:temporal-consistency}
-Let $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ be a $\boldsymbol{\Phi}$-initialised random bridge to
-$\boldsymbol{\Psi}$ under a \levy driver. For every $0\le r<t<u\le T$, the restriction
-$\{\xib^{\boldsymbol{x}}_t\}_{t\in[r,u]}$ is itself a $\boldsymbol{\Phi}_r$-initialised random bridge to
-$\boldsymbol{\Psi}_u$, where $\boldsymbol{\Phi}_r\xrightarrow{d}\boldsymbol{\Phi}$ as $r\to0$ and
-$\boldsymbol{\Psi}_u\xrightarrow{d}\boldsymbol{\Psi}$ as $u\to T$. Equivalently, the drift re-anchors to
-any intermediate horizon,
+Let $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ be a c\`adl\`ag $\boldsymbol{\Phi}$-initialised random bridge to $\boldsymbol{\Psi}$ under a \levy driver $\{\boldsymbol{Z}_t\}_{t\in\T}$, with endpoint coupling absolutely continuous with respect to the law of $(\boldsymbol{Z}_0, \boldsymbol{Z}_T)$. For $0\le r<u\le T$, let $\boldsymbol{\Phi}_r$ and $\boldsymbol{\Psi}_u$ denote the laws of $\xib^{\boldsymbol{x}}_r$ and $\xib^{\boldsymbol{x}}_u$ respectively. Then $\{\xib^{\boldsymbol{x}}_t\}_{t\in[r,u]}$ is a $\boldsymbol{\Phi}_r$-initialised random bridge to $\boldsymbol{\Psi}_u$ under the restricted driver $\{\boldsymbol{Z}_t\}_{t\in[r,u]}$, and
+\begin{align}
+\boldsymbol{\Phi}_r\xrightarrow{d}\boldsymbol{\Phi} \,\,\, \text{as} \,\,\, r \downarrow 0
+\qquad \text{and} \qquad
+\boldsymbol{\Psi}_u\xrightarrow{d}\boldsymbol{\Psi} \,\,\, \text{as} \,\,\, u \uparrow T. \notag
+\end{align}
+As a consequence, the drift re-anchors to any intermediate horizon,
 \begin{align}
 \frac{\E[\boldsymbol{Y}\mid\xib^{\boldsymbol{x}}_t]-\xib^{\boldsymbol{x}}_t}{T-t}
  = \frac{\E[\xib^{\boldsymbol{x}}_u\mid\xib^{\boldsymbol{x}}_t]-\xib^{\boldsymbol{x}}_t}{u-t}, \notag
@@ -447,15 +448,79 @@ any intermediate horizon,
 for all $u\in(t,T]$.
 \end{proposition}
 
-The re-anchoring rests only on the linear interpolation of conditional expectations of a \levy random bridge,
+The proof rests on a screening property of Markov processes: conditionally on the states at two times, the path between them is independent of the path outside them.
+
+\begin{lem}[Screening by intermediate endpoints]
+\label{lem:screening}
+Let $\{\boldsymbol{Z}_t\}_{t\in\T}$ be an $\R^n$-valued Markov process with regular transition kernels. Fix $0\le r<t_1<\cdots<t_m<u\le T$. Then, for every bounded Borel function $F$,
 \begin{align}
-\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_u \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] = \frac{u-t}{T-t}\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_T \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] + \frac{T-u}{T-t} \boldsymbol{\xi}^{\boldsymbol{x}}_t, \notag
+\E\!\left[
+F(\boldsymbol{Z}_{t_1},\ldots,\boldsymbol{Z}_{t_m})
+\mid
+\boldsymbol{Z}_0,\boldsymbol{Z}_r,\boldsymbol{Z}_u,\boldsymbol{Z}_T
+\right]
+=
+\E\!\left[
+F(\boldsymbol{Z}_{t_1},\ldots,\boldsymbol{Z}_{t_m})
+\mid
+\boldsymbol{Z}_r,\boldsymbol{Z}_u
+\right]. \notag
 \end{align}
-which holds for any \levy random bridge \cite[Corollary~2.10]{hoylehughstonmacrina_2011}. Combined with Lemma~\ref{refconditional}, it yields
+\end{lem}
+
+\begin{proof}
+Let $P_{s,t}$ denote the transition kernel of $\{\boldsymbol{Z}_t\}_{t\in\T}$ and let $K^{\boldsymbol{t}}_{r,u}((\boldsymbol{a},\boldsymbol{b}),\cdot)$ be a regular conditional law of $(\boldsymbol{Z}_{t_1},\ldots,\boldsymbol{Z}_{t_m})$ given $(\boldsymbol{Z}_r,\boldsymbol{Z}_u)=(\boldsymbol{a},\boldsymbol{b})$, obtained by disintegrating the product
+$P_{r,t_1}(\boldsymbol{a},\dd \boldsymbol{z}_1) P_{t_1,t_2}(\boldsymbol{z}_1,\dd \boldsymbol{z}_2)\cdots P_{t_m,u}(\boldsymbol{z}_m,\dd \boldsymbol{b})$
+with respect to $P_{r,u}(\boldsymbol{a},\dd \boldsymbol{b})$. For bounded Borel functions $G_0,G_r,G_u,G_T$, writing the joint law of $(\boldsymbol{Z}_0, \boldsymbol{Z}_r, \boldsymbol{Z}_{t_1}, \ldots, \boldsymbol{Z}_{t_m}, \boldsymbol{Z}_u, \boldsymbol{Z}_T)$ as the product of transition kernels and integrating out the interior variables gives
 \begin{align}
-\frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} = \frac{\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_u \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{u-t} \,\,\,\, \Rightarrow \,\,\,\, \E\left[\dd \xib^{\boldsymbol{x}}_{t} \,|\, \xib^{\boldsymbol{x}}_{t} \right] = \frac{  \E\left[ \xib^{\boldsymbol{x}}_{u} \, | \, \xib^{\boldsymbol{x}}_t \right]  - \xib^{\boldsymbol{x}}_t }{u-t}\dd t, \label{temporalconsistencyrelation}
+\E\!\left[
+G_0(\boldsymbol{Z}_0)G_r(\boldsymbol{Z}_r)
+F(\boldsymbol{Z}_{t_1},\ldots,\boldsymbol{Z}_{t_m})
+G_u(\boldsymbol{Z}_u)G_T(\boldsymbol{Z}_T)
+\right]
+=
+\E\!\left[
+G_0(\boldsymbol{Z}_0)G_r(\boldsymbol{Z}_r)
+G_u(\boldsymbol{Z}_u)G_T(\boldsymbol{Z}_T)\,
+(K^{\boldsymbol{t}}_{r,u}F)(\boldsymbol{Z}_r,\boldsymbol{Z}_u)
+\right], \notag
 \end{align}
-for any $u\in(t,T]$. Hence, the conditional target velocity can be understood as an appropriately time-adjusted mean-reversion on the $\mathcal{L}^2$-best-estimate of \emph{any} future state of the random bridge $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$. Hence, from (\ref{nonanticipativereplevyrandombridge}) and (\ref{temporalconsistencyrelation}), we have
+where $(K^{\boldsymbol{t}}_{r,u}F)(\boldsymbol{a},\boldsymbol{b}) = \int F\,\dd K^{\boldsymbol{t}}_{r,u}((\boldsymbol{a},\boldsymbol{b}),\cdot)$. This identifies both conditional expectations in the statement with $(K^{\boldsymbol{t}}_{r,u}F)(\boldsymbol{Z}_r,\boldsymbol{Z}_u)$. The boundary cases $r=0$ and $u=T$ follow by omitting the corresponding exterior variable.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:temporal-consistency}]
+Let $\boldsymbol{\Gamma}_{r,u}$ denote the joint law of $(\xib^{\boldsymbol{x}}_r,\xib^{\boldsymbol{x}}_u)$; its marginals are $\boldsymbol{\Phi}_r$ and $\boldsymbol{\Psi}_u$. Fix $r<t_1<\cdots<t_m<u$ and a bounded Borel function $F$. By Definition~\ref{definitionRandomBridge}, applied to the finite set of times $\{r,t_1,\ldots,t_m,u\}$, the conditional finite-dimensional law of the bridge given $(\xib^{\boldsymbol{x}}_0,\xib^{\boldsymbol{x}}_T)$ agrees with that of the driver given $(\boldsymbol{Z}_0,\boldsymbol{Z}_T)$. Lemma~\ref{lem:screening} therefore yields
+\begin{align}
+\E\!\left[
+F(\xib^{\boldsymbol{x}}_{t_1},\ldots,\xib^{\boldsymbol{x}}_{t_m})
+\mid
+\xib^{\boldsymbol{x}}_r,\xib^{\boldsymbol{x}}_u
+\right]
+=
+\E\!\left[
+F(\boldsymbol{Z}_{t_1},\ldots,\boldsymbol{Z}_{t_m})
+\mid
+\boldsymbol{Z}_r,\boldsymbol{Z}_u
+\right] \notag
+\end{align}
+for $\boldsymbol{\Gamma}_{r,u}$-almost every endpoint pair. Taking $F$ to be indicators of lower orthants gives precisely condition (2) of Definition~\ref{definitionRandomBridge} on the interval $[r,u]$, while condition (1) holds by construction of $\boldsymbol{\Gamma}_{r,u}$. Hence the restriction is a $\boldsymbol{\Phi}_r$-initialised random bridge to $\boldsymbol{\Psi}_u$.
+
+For the endpoint limits, right-continuity of the c\`adl\`ag paths at zero gives $\xib^{\boldsymbol{x}}_r\to\xib^{\boldsymbol{x}}_0$ $\P$-almost surely as $r\downarrow0$, hence $\boldsymbol{\Phi}_r\xrightarrow{d}\boldsymbol{\Phi}$. For the terminal endpoint, a \levy process has no fixed times of discontinuity, so $\P(\Delta\boldsymbol{Z}_T\ne0)=0$, and therefore $q(\boldsymbol{a},\boldsymbol{b}) = \P(\Delta\boldsymbol{Z}_T\ne0\mid \boldsymbol{Z}_0=\boldsymbol{a},\boldsymbol{Z}_T=\boldsymbol{b}) = 0$ for almost every endpoint pair under the law of $(\boldsymbol{Z}_0, \boldsymbol{Z}_T)$. Since the endpoint coupling $\boldsymbol{\Gamma}$ is absolutely continuous with respect to that law,
+\begin{align}
+\P(\Delta\xib^{\boldsymbol{x}}_T\ne0)
+=
+\int q(\boldsymbol{a},\boldsymbol{b})\,
+\boldsymbol{\Gamma}(\dd\boldsymbol{a},\dd\boldsymbol{b})
+=0. \notag
+\end{align}
+Thus $\xib^{\boldsymbol{x}}_{T-}=\xib^{\boldsymbol{x}}_T$ $\P$-almost surely, so $\xib^{\boldsymbol{x}}_u\to\xib^{\boldsymbol{x}}_T$ almost surely as $u\uparrow T$, and $\boldsymbol{\Psi}_u\xrightarrow{d}\boldsymbol{\Psi}$. Finally, the linear interpolation identity $\E[\xib^{\boldsymbol{x}}_u\mid\xib^{\boldsymbol{x}}_t] = \frac{u-t}{T-t}\E[\xib^{\boldsymbol{x}}_T\mid\xib^{\boldsymbol{x}}_t] + \frac{T-u}{T-t}\xib^{\boldsymbol{x}}_t$ of \cite[Corollary~2.10]{hoylehughstonmacrina_2011}, together with $\boldsymbol{Y}=\xib^{\boldsymbol{x}}_T$ $\P$-almost surely, rearranges to the drift re-anchoring identity.
+\end{proof}
+
+\begin{remark}
+The absolute-continuity hypothesis on the endpoint coupling is automatic within the framework of this paper: the Doob $h$-transform construction of Section~\ref{sec:modified-levy} already requires $\boldsymbol{\Psi}$ to be absolutely continuous with respect to the terminal law of the driver, and the initial value is a point of the driver's support. The lemma uses only the Markov property of the driver; independence and stationarity of increments play no role in the restriction step.
+\end{remark}
+
+The drift re-anchoring admits a dynamical reading: the conditional target velocity can be understood as an appropriately time-adjusted mean-reversion on the $\mathcal{L}^2$-best-estimate of \emph{any} future state of the random bridge $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$. Combining (\ref{nonanticipativereplevyrandombridge}) with the re-anchoring identity of Proposition~\ref{prop:temporal-consistency}, we have
 \begin{align}
 \label{nonanticipativerewritten}
 \xib^{\boldsymbol{x}}_t \overset{d}{=} \int_0^t \frac{  \E\left[ \boldsymbol{\xi}^{\boldsymbol{x}}_u \, | \, \xib^{\boldsymbol{x}}_s \right]  - \xib^{\boldsymbol{x}}_s }{u-s}\dd s + \mathbf{M}_t,
