@@ -240,7 +240,7 @@ def sample_main(args: argparse.Namespace) -> None:
             save_image(sample, output_dir / f"sample_{i:04d}.png")
 
         grid = make_grid(samples[:64], nrow=8, padding=2, normalize=False)
-        save_image(grid, output_dir / "grid.png")
+        save_image(grid, output_dir.parent / f"{output_dir.name}_grid.png")
     else:
         logger.info(f"Generating {num_to_sample} samples with {args.num_steps} steps...")
         samples = sampler.sample_batch(
@@ -258,10 +258,9 @@ def sample_main(args: argparse.Namespace) -> None:
             output_dir.mkdir(parents=True, exist_ok=True)
             for stem, sample in zip(source_stems, samples):
                 save_image((sample.clamp(-1, 1) + 1) / 2, output_dir / f"{stem}_translated.png")
-            sampler.save_grid(samples[:64], output_dir / "grid.png")
         else:
             sampler.save_samples(samples, output_dir)
-            sampler.save_grid(samples[:64], output_dir / "grid.png")
+        sampler.save_grid(samples[:64], output_dir.parent / f"{output_dir.name}_grid.png")
 
     logger.info(f"Saved samples to {output_dir}")
 
