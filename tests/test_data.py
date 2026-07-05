@@ -201,3 +201,26 @@ class TestPairedDataset:
         batch = next(iter(loader))
         assert batch[0].shape == (2, 3, 16, 16)  # x_source
         assert batch[1].shape == (2, 3, 16, 16)  # y_target
+
+
+class TestExportValImages:
+    def test_exports_pngs(self, afhq_dir, tmp_path) -> None:
+        import importlib.util
+        from pathlib import Path as _Path
+
+        script = _Path(__file__).parent.parent / "scripts" / "export_val_images.py"
+        spec = importlib.util.spec_from_file_location("export_val_images", script)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        out = tmp_path / "fid_ref"
+        count = module.export_val_images(
+            dataset="afhq",
+            classes=["dog"],
+            out=out,
+            image_size=16,
+            data_dir=afhq_dir,
+        )
+        assert count == 4
+        pngs = sorted(out.glob("*.png"))
+        assert len(pngs) == 4
