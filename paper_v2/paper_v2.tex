@@ -163,7 +163,7 @@ This change of vantage point raises the question of what optimal transport machi
 
 We work in a more general setup, focusing on an analytically rich class of random bridges that we refer to as \emph{generalised \levy random bridges}. They extend the \levy random bridges of \cite{hoylehughstonmacrina_2011} through couplings between initial and terminal laws, allowing the driver to be any \levy process of integrable first moment. We do not set out to compete with the generative models used in practice, but to give a rigorous mathematical account of the single construction that underlies them. 
 
-Our main contributions are as follows. First, we connect these processes to Rectified Flows, demonstrating that the conditional drift of such a bridge has the same functional form as the velocity field of rectified flow, and that this identity holds for every admissible driver (Section~\ref{sec:rf-connection}). We prove that generalised Brownian random bridges can be explicitly represented as the sum of Rectified Flows plus standard Brownian bridges (Section~\ref{sec:brownian}). This link places Rectified flow, random bridges, and \Schrodinger bridges on a common footing, a unifying perspective hitherto unavailable (Section~\ref{sec:schrodinger}). In addition, we provide a non-anticipative semimartingale representation for the generalised \levy random bridge, carrying an explicit martingale component (Sections~\ref{sec:semimartingale}--\ref{sec:explicit-decomp}). This result is what makes non-Gaussian and jump drivers usable as transports rather than merely definable, taking a significant step forward towards implementing them for practical use cases. For a detailed account, we treat the Brownian and Poisson bridges as canonical continuous and discontinuous cases, and combine them in a jump-diffusion bridge. Through this journey, we verify explicit connections to Rectified Flows, generalise Tweedie's formula (Section~\ref{sec:tweedie}), and establish a temporal transport consistency (Section~\ref{sec:temporal-consistency}) under which every sub-bridge is again a transport between intermediate laws. Finally, we provide training and simulation algorithms (Section~\ref{sec:numerics}), leaving the natural extension to discrete and mixed data to future work.
+Our main contributions are as follows. First, we connect these processes to Rectified Flows, demonstrating that the conditional drift of such a bridge has the same functional form as the velocity field of rectified flow, and that this identity holds for every admissible driver (Section~\ref{sec:rf-connection}). We prove that generalised Brownian random bridges can be explicitly represented as the sum of Rectified Flows plus standard Brownian bridges (Section~\ref{sec:brownian}). This link places Rectified flow, random bridges, and \Schrodinger bridges on a common footing, a unifying perspective hitherto unavailable (Section~\ref{sec:schrodinger}). In addition, we provide a non-anticipative semimartingale representation for the generalised \levy random bridge, carrying an explicit martingale component (Theorem~\ref{thm:main-rep}). This result is what makes non-Gaussian and jump drivers usable as transports rather than merely definable, taking a significant step forward towards implementing them for practical use cases. For a detailed account, we treat the Brownian and Poisson bridges as canonical continuous and discontinuous cases, and combine them in a jump-diffusion bridge. Through this journey, we verify explicit connections to Rectified Flows, generalise Tweedie's formula (Section~\ref{sec:tweedie}), and establish a temporal transport consistency (Section~\ref{sec:temporal-consistency}) under which every sub-bridge is again a transport between intermediate laws. Finally, we provide training and simulation algorithms (Section~\ref{sec:numerics}), leaving the natural extension to discrete and mixed data to future work.
 
 \section{Mathematical Framework}\label{sec:framework}
 We bring forward the mathematical setup from \cite{goria_random-bridges_2025}, while keeping notations the same. Set a finite time horizon $\T = [0,T]$ for some $T <\infty$, and let $(\Omega,\F,\P)$ a probability space equipped with a right-continuous and complete filtration $\{\F_{t}\}_{t \in \T}$. We use $\mathcal{B}(\cdot)$ for the Borel $\sigma$-field. Let $\boldsymbol{\Phi}$ and $\boldsymbol{\Psi}$ be measures on $(\Omega,\F)$ such that
@@ -263,11 +263,32 @@ Let each coordinate of $\{\mathbf{Z}_t\}_{t\in\T}$ be a mutually independent \le
 \end{align}
 for every $t\in[0,T)$, where $\{\mathbf{M}_t\}_{t\in\T}$ is a $(\P,\{\F_{t}^{\xib^{\boldsymbol{x}}}\}_{t\in\T})$-martingale with $\mathbf{M}_{0} = \boldsymbol{x}$.
 \end{proposition}
-We prove and provide an explicit representation of the $(\P,\{\F_{t}^{\xib^{\boldsymbol{x}}}\}_{t\in\T})$-martingale $\{\mathbf{M}_t\}_{t\in\T}$ later in this section (Theorem~\ref{thm:explicit-decomp}). For now, denoting  $\langle \boldsymbol{M}_t^c \rangle$ as the continuous part and $\Delta \boldsymbol{M}_t = \boldsymbol{M}_t - \boldsymbol{M}_{t-}$ for all $t\in[0,T)$, the quadratic variation process of $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$, written as $\{\langle\xib^{\boldsymbol{x}}_t\rangle\}_{t\in\T}$, is given by the following decomposition:
+We prove and provide an explicit representation of the $(\P,\{\F_{t}^{\xib^{\boldsymbol{x}}}\}_{t\in\T})$-martingale $\{\mathbf{M}_t\}_{t\in\T}$ in Theorem~\ref{thm:main-rep} below, the first main result of this paper. For now, denoting  $\langle \boldsymbol{M}_t^c \rangle$ as the continuous part and $\Delta \boldsymbol{M}_t = \boldsymbol{M}_t - \boldsymbol{M}_{t-}$ for all $t\in[0,T)$, the quadratic variation process of $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$, written as $\{\langle\xib^{\boldsymbol{x}}_t\rangle\}_{t\in\T}$, is given by the following decomposition:
 \begin{align}
 \langle \xib^{\boldsymbol{x}}_t\rangle = \langle \boldsymbol{M}_t^c \rangle + \sum_{0 < s \leq t} (\Delta\boldsymbol{M}_s)^2. \notag
 \end{align}
-This continuous and jump split of the quadratic variation is made explicit by the decomposition of $\{\mathbf{M}_t\}_{t\in\T}$ in Theorem~\ref{thm:explicit-decomp} below, where $\langle \boldsymbol{M}^c\rangle$ is the Brownian contribution and $\sum(\Delta\boldsymbol{M})^2$ the Poisson and jump contribution.
+This continuous and jump split of the quadratic variation is made explicit by Theorem~\ref{thm:main-rep} below, where $\langle \boldsymbol{M}^c\rangle$ is the Brownian contribution and $\sum(\Delta\boldsymbol{M})^2$ the Poisson and jump contribution.
+
+\begin{thm}[Explicit representation of the generalised \levy random bridge]
+\label{thm:main-rep}
+Work in one dimension, the multivariate case following coordinatewise. Let $\{\xi^{x}_t\}_{t \in \T}$ be a $\delta_x$-initialised random bridge to $\Psi$ under a \levy driver $\{Z_t\}_{t\in\T}$ with triplet $(\widetilde{\alpha}, \beta^2, \eta)$ and transition densities $\{f_t\}$, where $\E[|\xi^{x}_t|] < \infty$. Define the space-time harmonic function
+\begin{equation}\label{eq:main-harmonic}
+  h_{tT}(z) = \int_{\R} \frac{f_{T-t}(w - z)}{f_T(w - x)}\,\Psi(\d w), \qquad 0 \leq t < T.
+\end{equation}
+Then there exist a standard Brownian motion $\{W_t\}_{t\in\T}$ and an integer-valued random measure $N(\d s, \d y)$ counting the jumps of $\{\xi^{x}_t\}_{t\in\T}$, with predictable compensator
+\begin{equation}\label{eq:main-compensator}
+  \nu^{\xi}(\d s, \d y) = \frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\,\eta(\d y)\,\d s,
+\end{equation}
+such that, for every $t \in [0,T)$,
+\begin{equation}\label{eq:main-rep}
+  \xi^{x}_t = x + \int_0^t \frac{\E[Y \mid \xi^{x}_s] - \xi^{x}_s}{T-s}\,\d s
+    + \beta\,W_t
+    + \int_0^t\!\int_{\R \setminus \{0\}} y \left[N(\d s, \d y) - \nu^{\xi}(\d s, \d y)\right].
+\end{equation}
+In particular, the martingale of Proposition~\ref{stochfiltlevyrandom} is $M_t = x + \beta W_t + \int_0^t\!\int_{\R\setminus\{0\}} y\,[N(\d s,\d y) - \nu^{\xi}(\d s,\d y)]$.
+\end{thm}
+The drift pulls the bridge towards the conditional mean of the terminal value, the Brownian term carries the diffusive part of the driver unchanged, and the conditioning acts entirely through the jump compensator~\eqref{eq:main-compensator}, which tilts the \levy measure by the ratio of harmonic functions. The proof occupies Sections~\ref{sec:modified-levy} and~\ref{sec:explicit-decomp}: the harmonic function~\eqref{eq:main-harmonic} implements the bridge conditioning as a Doob $h$-transform of the driver's generator, and the decomposition is then read off the transformed generator.
+
 Using (\ref{nonanticipativereplevyrandombridge}), we can take the conditional expectation of the differential form to receive the following:
 \begin{align}
 \E\left[\dd \xib^{\boldsymbol{x}}_{t} \,|\, \xib^{\boldsymbol{x}}_{t} \right] = \frac{  \E\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_t \right]  - \xib^{\boldsymbol{x}}_t }{T-t}\dd t, \label{criticalconnection}
@@ -472,7 +493,7 @@ extension of Section~\ref{sec:conclusion}.
 \subsection{Bridge-Modified \levy Measure}\label{sec:modified-levy}
 \label{sec:explicit_M}
 
-The representation of Proposition~\ref{stochfiltlevyrandom} leaves the martingale $\{\mathbf{M}_t\}_{t\in\T}$ abstract. This subsection and the next make it explicit, by computing the bridge-modified generator induced by the Doob $h$-transform and then reading off the decomposition of $\mathbf{M}_t$. We work in one dimension, the multivariate case following coordinatewise. Let $\{\xi^{x}_t\}_{t \in \T}$ be a $\delta_x$-initialised random bridge to $\Psi$ under action of the \levy driver $\{Z_t\}$ with $Z_0 = x$ (Definition~\ref{definitionRandomBridge}). This conditioning is implemented by a Doob $h$-transform of the driver's generator $\mathcal{A}$, with harmonic function
+This subsection and the next are devoted to the proof of Theorem~\ref{thm:main-rep}: we compute the bridge-modified generator induced by the Doob $h$-transform, and then read off the decomposition of $\mathbf{M}_t$. We work in one dimension, the multivariate case following coordinatewise. Let $\{\xi^{x}_t\}_{t \in \T}$ be a $\delta_x$-initialised random bridge to $\Psi$ under action of the \levy driver $\{Z_t\}$ with $Z_0 = x$ (Definition~\ref{definitionRandomBridge}). This conditioning is implemented by a Doob $h$-transform of the driver's generator $\mathcal{A}$, with harmonic function
 \begin{equation}\label{eq:h-app}
   h_{tT}(z) = \int_{\R} \frac{f_{T-t}(w - z)}{f_T(w - x)}\,\Psi(\d w),
   \qquad 0 \leq t < T,\; z \in \R,
@@ -646,15 +667,16 @@ is the compensated Poisson random measure associated to the bridge dynamics, wit
 Uniqueness of the canonical decomposition of a semimartingale \cite[Chapter~II, Theorem 2.4.2]{JacodShiryaev2003} identifies $M_t$ uniquely.
 \end{proof}
 
-\begin{rem}
-\label{rem:full-decomp-app}
+\begin{proof}[Proof of Theorem~\ref{thm:main-rep}]
+\phantomsection\label{rem:full-decomp-app}
 Substituting~\eqref{eq:explicit-M} into~\eqref{eq:semimartingale-app} gives the full pathwise representation of the LRB:
 \begin{equation}\label{eq:full-decomp-app}
   \xi^{x}_t = x + \int_0^t \frac{\E[Y \mid \xi^{x}_s] - \xi^{x}_s}{T-s}\,\d s
     + \beta\,W_t
     + \int_0^t\!\int_{\R \setminus \{0\}} y \left[N(\d s, \d y) - \frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\,\eta(\d y)\,\d s\right].
 \end{equation}
-\end{rem}
+This is precisely~\eqref{eq:main-rep}, with the compensator~\eqref{eq:main-compensator}.
+\end{proof}
 
 \section{The Bridge Drift as a Generalised Tweedie Estimator}\label{sec:tweedie}
 
@@ -1409,7 +1431,7 @@ the regression anchor removing the trivial solution $h\equiv\text{const}$, for w
 \end{itemize}
 
 \section{Conclusion}\label{sec:conclusion}
-In this paper, we connect the generalised \levy random bridges built from \cite{goria_random-bridges_2025} with Rectified Flows. Formulating stochastic transports as noisy information processes in the spirit of \cite{BrodyHughstonMacrina_2008, BrodyHughston_2005, hoylehmacrinamenguturk_2020, Menguturk_2016}, we show that the conditional drift of a generalised \levy random bridge has the same functional form as the Rectified Flow velocity field for every admissible driver, so that these bridges are stochastic extensions of Rectified Flows. Our central technical device is a non-anticipative semimartingale representation with an explicit martingale component, obtained through the bridge-modified \levy measure of the Doob $h$-transform. Along the way, we generalise Tweedie's formula to a class of exponential families, interpret the bridge drift as a generalised Tweedie estimator, and establish a temporal transport consistency property under which every sub-bridge is again a transport between the induced intermediate laws. We treat the Brownian and Poisson bridges as canonical continuous and discontinuous cases, and combine them in a jump-diffusion bridge. In the Brownian case, the bridge decomposes as a Rectified Flow plus an independent Brownian bridge, its probability flow ODE averages a source-push and a target-pull velocity, and one pass of random bridge training coincides with a single Iterative Markovian Fitting step, placing the construction alongside \Schrodinger bridge methods. We conclude with training and simulation algorithms for the Brownian, Poisson and jump-diffusion bridges.
+In this paper, we connect the generalised \levy random bridges built from \cite{goria_random-bridges_2025} with Rectified Flows. Formulating stochastic transports as noisy information processes in the spirit of \cite{BrodyHughstonMacrina_2008, BrodyHughston_2005, hoylehmacrinamenguturk_2020, Menguturk_2016}, we show that the conditional drift of a generalised \levy random bridge has the same functional form as the Rectified Flow velocity field for every admissible driver, so that these bridges are stochastic extensions of Rectified Flows. Our central technical device is a non-anticipative semimartingale representation with an explicit martingale component (Theorem~\ref{thm:main-rep}), obtained through the bridge-modified \levy measure of the Doob $h$-transform. Along the way, we generalise Tweedie's formula to a class of exponential families, interpret the bridge drift as a generalised Tweedie estimator, and establish a temporal transport consistency property under which every sub-bridge is again a transport between the induced intermediate laws. We treat the Brownian and Poisson bridges as canonical continuous and discontinuous cases, and combine them in a jump-diffusion bridge. In the Brownian case, the bridge decomposes as a Rectified Flow plus an independent Brownian bridge, its probability flow ODE averages a source-push and a target-pull velocity, and one pass of random bridge training coincides with a single Iterative Markovian Fitting step, placing the construction alongside \Schrodinger bridge methods. We conclude with training and simulation algorithms for the Brownian, Poisson and jump-diffusion bridges.
 
 As future research, we are interested in whether Rectified Flows themselves satisfy the temporal transport consistency property that generalised \levy random bridges host, which we leave as a conjecture. Building on \cite{menguturkmenguturk_2020}, we aim to construct stochastic transports over multiple time segments, producing transport paths over a sequence of target distributions, and in turn multi-segment Rectified Flows. We are also intrigued to augment the state space of our framework from Euclidean spaces to Riemannian manifolds in order to apply random bridges to geometric data. A further direction is a general continuous-time Markov chain or \levy-on-graph bridge, which would lift the birth-only Poisson construct to arbitrary discrete state spaces and open discrete-diffusion and mixed continuous-discrete generation, together with a convergence theory for the \levy-\Schrodinger problem of Section~\ref{sec:schrodinger}. Finally, we are keen to pursue numerical studies on complex applications that harness generalised \levy random bridges beyond the algorithms presented here.
 
