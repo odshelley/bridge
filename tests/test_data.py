@@ -11,6 +11,7 @@ from bridge_diffusion.data import (
     get_data_info,
     get_dataloader,
     get_dataset,
+    load_source_val_images,
 )
 
 
@@ -201,6 +202,41 @@ class TestPairedDataset:
         batch = next(iter(loader))
         assert batch[0].shape == (2, 3, 16, 16)  # x_source
         assert batch[1].shape == (2, 3, 16, 16)  # y_target
+
+
+class TestLoadSourceValImages:
+    """Tests for the shared source-val-image loading helper."""
+
+    def _transport_config(self, afhq_dir) -> DataConfig:
+        return DataConfig(
+            dataset="afhq",
+            data_dir=afhq_dir,
+            image_size=16,
+            classes=["dog"],
+            source_dataset="afhq",
+            source_classes=["cat"],
+        )
+
+    def test_returns_correct_shape_and_count(self, afhq_dir) -> None:
+        config = self._transport_config(afhq_dir)
+        images = load_source_val_images(config, n=3, spread=False)
+        assert images.shape == (3, 3, 16, 16)
+
+    def test_caps_count_at_split_size(self, afhq_dir) -> None:
+        config = self._transport_config(afhq_dir)
+        images = load_source_val_images(config, n=1000, spread=False)
+        assert images.shape[0] == 4  # only 4 cat images in the fake val split
+
+    def test_spread_is_deterministic(self, afhq_dir) -> None:
+        config = self._transport_config(afhq_dir)
+        first = load_source_val_images(config, n=3, spread=True)
+        second = load_source_val_images(config, n=3, spread=True)
+        assert torch.equal(first, second)
+
+    def test_raises_when_source_dataset_is_none(self) -> None:
+        config = DataConfig(dataset="afhq")
+        with pytest.raises(ValueError, match="source_dataset"):
+            load_source_val_images(config, n=3)
 
 
 class TestExportValImages:

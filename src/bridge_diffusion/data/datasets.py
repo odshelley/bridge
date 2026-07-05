@@ -1,5 +1,6 @@
 """Data loading utilities for Bridge Diffusion."""
 
+import dataclasses
 from pathlib import Path
 from typing import Optional
 
@@ -210,6 +211,46 @@ def get_dataset(
         dataset = PairedDataset(source, dataset)
 
     return dataset
+
+
+def load_source_val_images(config: DataConfig, n: int, spread: bool = False) -> torch.Tensor:
+    """Load up to n images from the val split of a config's source dataset.
+
+    Builds a plain (non-transport) view of the source side via dataclasses.replace,
+    so the returned dataset yields (image, label) items.
+
+    Args:
+        config: A transport-mode data config (source_dataset must be set).
+        n: Maximum number of images to load.
+        spread: If True, take evenly spaced indices across the split
+            (deterministic sample grid); otherwise take the first n.
+
+    Returns:
+        Tensor of shape (min(n, len(val)), C, H, W).
+
+    Raises:
+        ValueError: If config.source_dataset is None or the val split is empty.
+    """
+    if config.source_dataset is None:
+        raise ValueError("load_source_val_images requires config.source_dataset to be set")
+
+    source_config = dataclasses.replace(
+        config,
+        dataset=config.source_dataset,
+        classes=config.source_classes,
+        source_dataset=None,
+        source_classes=None,
+    )
+    val = get_dataset(source_config, train=False)
+    if len(val) == 0:
+        raise ValueError("Source val split is empty")
+
+    count = min(n, len(val))
+    if spread:
+        indices = torch.linspace(0, len(val) - 1, steps=count).long().tolist()
+    else:
+        indices = range(count)
+    return torch.stack([val[i][0] for i in indices])
 
 
 def get_dataloader(

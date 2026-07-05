@@ -91,21 +91,9 @@ class Trainer:
 
     def _load_sample_sources(self, num_samples: int = 16) -> torch.Tensor:
         """Load a fixed batch of held-out source (val) images for sample logging."""
-        import dataclasses
+        from bridge_diffusion.data import load_source_val_images
 
-        from bridge_diffusion.data import get_dataset
-
-        source_config = dataclasses.replace(
-            self.config.data,
-            dataset=self.config.data.source_dataset,
-            classes=self.config.data.source_classes,
-            source_dataset=None,
-            source_classes=None,
-        )
-        val_dataset = get_dataset(source_config, train=False)
-        count = min(num_samples, len(val_dataset))
-        indices = torch.linspace(0, len(val_dataset) - 1, steps=count).long().tolist()
-        return torch.stack([val_dataset[i][0] for i in indices])
+        return load_source_val_images(self.config.data, num_samples, spread=True)
 
     def _prepare_batch(self, batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
         """Extract (x, y) for the bridge loss from a dataloader batch.
