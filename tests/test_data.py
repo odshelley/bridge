@@ -126,3 +126,38 @@ class TestFilterClasses:
         ds = tv_datasets.ImageFolder(root=str(afhq_dir / "afhq" / "train"))
         with pytest.raises(ValueError, match="wolf"):
             filter_classes(ds, ["wolf"])
+
+
+class TestAFHQ:
+    """Tests for the AFHQ dataset entry."""
+
+    def test_loads_train_split(self, afhq_dir) -> None:
+        config = DataConfig(dataset="afhq", data_dir=afhq_dir, image_size=16)
+        ds = get_dataset(config, train=True)
+        assert len(ds) == 12  # 3 classes x 4 images
+        img, label = ds[0]
+        assert img.shape == (3, 16, 16)
+        assert img.min() >= -1.0 and img.max() <= 1.0
+
+    def test_classes_filter_applied(self, afhq_dir) -> None:
+        config = DataConfig(dataset="afhq", data_dir=afhq_dir, image_size=16, classes=["dog"])
+        ds = get_dataset(config, train=True)
+        assert len(ds) == 4
+
+    def test_missing_dir_raises_actionable_error(self, tmp_path) -> None:
+        config = DataConfig(dataset="afhq", data_dir=tmp_path / "nowhere")
+        with pytest.raises(FileNotFoundError, match="download_afhq"):
+            get_dataset(config, train=True)
+
+    def test_data_info(self) -> None:
+        config = DataConfig(dataset="afhq", image_size=64)
+        info = get_data_info(config)
+        assert info["num_channels"] == 3
+        assert info["num_classes"] == 3
+        assert info["train_size"] == 5153 + 4739 + 4738
+
+    def test_data_info_with_classes(self) -> None:
+        config = DataConfig(dataset="afhq", image_size=64, classes=["cat", "dog"])
+        info = get_data_info(config)
+        assert info["num_classes"] == 2
+        assert info["train_size"] == 5153 + 4739
