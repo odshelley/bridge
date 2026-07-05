@@ -163,6 +163,29 @@ def _make_base_dataset(name: str, config: DataConfig, train: bool) -> torch.util
         raise ValueError(f"Unknown dataset: {name}")
 
 
+class PairedDataset(Dataset):
+    """Independent coupling of a source and a target dataset.
+
+    __getitem__(i) returns (x_source, y_target) where y_target is target item i
+    and x_source is drawn uniformly at random from the source dataset
+    (torch.randint, so per-worker seeding behaves under num_workers > 0).
+    Labels from both datasets are dropped.
+    """
+
+    def __init__(self, source: Dataset, target: Dataset):
+        self.source = source
+        self.target = target
+
+    def __len__(self) -> int:
+        return len(self.target)
+
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
+        y = self.target[index][0]
+        source_index = int(torch.randint(len(self.source), (1,)).item())
+        x = self.source[source_index][0]
+        return x, y
+
+
 def get_dataset(
     config: DataConfig,
     train: bool = True,
@@ -179,6 +202,13 @@ def get_dataset(
     dataset = _make_base_dataset(config.dataset, config, train)
     if config.classes:
         dataset = filter_classes(dataset, config.classes)
+
+    if config.source_dataset is not None:
+        source = _make_base_dataset(config.source_dataset, config, train)
+        if config.source_classes:
+            source = filter_classes(source, config.source_classes)
+        dataset = PairedDataset(source, dataset)
+
     return dataset
 
 
