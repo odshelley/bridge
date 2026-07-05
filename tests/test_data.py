@@ -2,9 +2,10 @@
 
 import pytest
 import torch
+from torchvision import datasets as tv_datasets
 
 from bridge_diffusion.config import DataConfig
-from bridge_diffusion.data import get_data_info, get_dataloader, get_dataset
+from bridge_diffusion.data import filter_classes, get_data_info, get_dataloader, get_dataset
 
 
 class TestDataInfo:
@@ -104,3 +105,24 @@ class TestDataLoading:
         images, labels = batch
         assert images.shape == (4, 3, 32, 32)
         assert labels.shape == (4,)
+
+
+class TestFilterClasses:
+    """Tests for class filtering."""
+
+    def test_filters_imagefolder_to_named_classes(self, afhq_dir) -> None:
+        ds = tv_datasets.ImageFolder(root=str(afhq_dir / "afhq" / "train"))
+        subset = filter_classes(ds, ["cat"])
+        assert len(subset) == 4
+        cat_idx = ds.class_to_idx["cat"]
+        assert all(ds.targets[i] == cat_idx for i in subset.indices)
+
+    def test_filters_multiple_classes(self, afhq_dir) -> None:
+        ds = tv_datasets.ImageFolder(root=str(afhq_dir / "afhq" / "train"))
+        subset = filter_classes(ds, ["cat", "dog"])
+        assert len(subset) == 8
+
+    def test_unknown_class_raises_with_valid_names(self, afhq_dir) -> None:
+        ds = tv_datasets.ImageFolder(root=str(afhq_dir / "afhq" / "train"))
+        with pytest.raises(ValueError, match="wolf"):
+            filter_classes(ds, ["wolf"])

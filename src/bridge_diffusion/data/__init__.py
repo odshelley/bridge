@@ -1,6 +1,7 @@
 """Data module for Bridge Diffusion."""
 
 from bridge_diffusion.data.datasets import (
+    filter_classes,
     get_cifar10_eval_transforms,
     get_cifar10_transforms,
     get_data_info,
@@ -11,6 +12,7 @@ from bridge_diffusion.data.datasets import (
 )
 
 __all__ = [
+    "filter_classes",
     "get_mnist_transforms",
     "get_mnist_int_transforms",
     "get_cifar10_transforms",
