@@ -46,3 +46,16 @@ Gate: NOT MET.
 
 ## Round-3 fixes applied (commit pending verification)
 #1/#11 pathwise uses routed through thm:main-rep on canonical space; #5 eq:harmonic-fubini double-integral bound; #6 good-function domain hypotheses; R2-1 remark rescoped (pinned bridges verified directly); #18 GE lattice support + 1^T products.
+
+## Round 3 — same reviewer session, 2026-07-05
+Raw: ~/.claude/jobs/1cfda0ac/tmp/codex_review_round3.md
+All six open items RESOLVED (#1 #5 #6 #11 #18, R2-1). No new issues.
+ACCEPTANCE GATE: **ACCEPTED — all FATAL/CRITICAL issues closed.**
+
+## Final tally
+24 distinct issues raised across 3 rounds (18 round-1 + 1 round-2 + 5 partials re-graded).
+2 FATAL fixed, all CRITICAL/MAJOR/MINOR closed. New results added during the cycle:
+Discrete Tweedie formula (prop:tweedie_discrete), Poisson ratio-drift corollary
+(poissondiscretetweedie), screening lemma (lem:screening), full temporal-consistency
+proof, headline Theorem thm:main-rep. Reviewer: GPT-5.5 xhigh via Codex CLI
+(session 019f33c2-3bbb-7471-b441-881ba1eba55d), 3 threaded rounds.
