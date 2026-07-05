@@ -1,5 +1,6 @@
 """Data loading utilities for Bridge Diffusion."""
 
+from pathlib import Path
 from typing import Optional
 
 import torch
@@ -8,6 +9,8 @@ from torchvision import datasets, transforms
 
 from bridge_diffusion.config import DataConfig
 
+AFHQ_TRAIN_COUNTS = {"cat": 5153, "dog": 4739, "wild": 4738}
+AFHQ_VAL_COUNTS = {"cat": 500, "dog": 500, "wild": 500}
 
 
 def get_mnist_transforms(image_size: int = 32) -> transforms.Compose:
@@ -87,6 +90,79 @@ def get_cifar10_eval_transforms(image_size: int = 32) -> transforms.Compose:
     ])
 
 
+def get_afhq_transforms(image_size: int = 64, train: bool = True) -> transforms.Compose:
+    """Get transforms for AFHQ (512x512 source images).
+
+    Args:
+        image_size: Target image size.
+        train: Whether to include training augmentation (horizontal flip).
+
+    Returns:
+        Composed transforms producing tensors in [-1, 1].
+    """
+    ops: list = [transforms.Resize(image_size), transforms.CenterCrop(image_size)]
+    if train:
+        ops.append(transforms.RandomHorizontalFlip())
+    ops += [
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),  # Scale to [-1, 1]
+    ]
+    return transforms.Compose(ops)
+
+
+def _make_base_dataset(name: str, config: DataConfig, train: bool) -> torch.utils.data.Dataset:
+    """Construct an unfiltered dataset by name.
+
+    Args:
+        name: Dataset name (case-insensitive): "mnist", "cifar10", or "afhq".
+        config: Data configuration.
+        train: Whether to load training or test/val set.
+
+    Returns:
+        PyTorch dataset.
+
+    Raises:
+        FileNotFoundError: If AFHQ data is not present at the expected path.
+        ValueError: If `name` is not a recognised dataset.
+    """
+    if name.lower() == "mnist":
+        transform = (
+            get_mnist_int_transforms(config.image_size)
+            if config.raw_pixels
+            else get_mnist_transforms(config.image_size)
+        )
+        return datasets.MNIST(
+            root=config.data_dir,
+            train=train,
+            download=True,
+            transform=transform,
+        )
+    elif name.lower() == "cifar10":
+        if train:
+            transform = get_cifar10_transforms(config.image_size)
+        else:
+            transform = get_cifar10_eval_transforms(config.image_size)
+        return datasets.CIFAR10(
+            root=config.data_dir,
+            train=train,
+            download=True,
+            transform=transform,
+        )
+    elif name.lower() == "afhq":
+        split = "train" if train else "val"
+        root = Path(config.data_dir) / "afhq" / split
+        if not root.is_dir():
+            raise FileNotFoundError(
+                f"AFHQ not found at {root}. Download it first: bash scripts/download_afhq.sh"
+            )
+        return datasets.ImageFolder(
+            root=str(root),
+            transform=get_afhq_transforms(config.image_size, train=train),
+        )
+    else:
+        raise ValueError(f"Unknown dataset: {name}")
+
+
 def get_dataset(
     config: DataConfig,
     train: bool = True,
@@ -98,34 +174,11 @@ def get_dataset(
         train: Whether to load training or test set.
 
     Returns:
-        PyTorch dataset.
+        PyTorch dataset (a PairedDataset in transport mode).
     """
-    if config.dataset.lower() == "mnist":
-        transform = (
-            get_mnist_int_transforms(config.image_size)
-            if config.raw_pixels
-            else get_mnist_transforms(config.image_size)
-        )
-        dataset = datasets.MNIST(
-            root=config.data_dir,
-            train=train,
-            download=True,
-            transform=transform,
-        )
-    elif config.dataset.lower() == "cifar10":
-        if train:
-            transform = get_cifar10_transforms(config.image_size)
-        else:
-            transform = get_cifar10_eval_transforms(config.image_size)
-        dataset = datasets.CIFAR10(
-            root=config.data_dir,
-            train=train,
-            download=True,
-            transform=transform,
-        )
-    else:
-        raise ValueError(f"Unknown dataset: {config.dataset}")
-
+    dataset = _make_base_dataset(config.dataset, config, train)
+    if config.classes:
+        dataset = filter_classes(dataset, config.classes)
     return dataset
 
 
@@ -181,12 +234,27 @@ def get_data_info(config: DataConfig) -> dict:
             "test_size": 10000,
         }
     elif config.dataset.lower() == "cifar10":
+        num_classes = len(config.classes) if config.classes else 10
         return {
             "num_channels": 3,
             "image_size": config.image_size,
-            "num_classes": 10,
-            "train_size": 50000,
-            "test_size": 10000,
+            "num_classes": num_classes,
+            "train_size": 5000 * num_classes,
+            "test_size": 1000 * num_classes,
+        }
+    elif config.dataset.lower() == "afhq":
+        class_names = config.classes or list(AFHQ_TRAIN_COUNTS)
+        unknown = [c for c in class_names if c not in AFHQ_TRAIN_COUNTS]
+        if unknown:
+            raise ValueError(
+                f"Unknown class(es) {unknown}; valid classes: {list(AFHQ_TRAIN_COUNTS)}"
+            )
+        return {
+            "num_channels": 3,
+            "image_size": config.image_size,
+            "num_classes": len(class_names),
+            "train_size": sum(AFHQ_TRAIN_COUNTS[c] for c in class_names),
+            "test_size": sum(AFHQ_VAL_COUNTS[c] for c in class_names),
         }
     else:
         raise ValueError(f"Unknown dataset: {config.dataset}")
