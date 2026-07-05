@@ -726,14 +726,14 @@ If $\textbf{GE}$ is the space of all distributions that belong to the generalise
 If $\textbf{Exp} \subset \textbf{GE}$ is the space of all distributions that belong to the exponential family, then $\mathcal{N} \in \textbf{Exp}$, and hence, $\mathcal{N} \in \textbf{GE}$. We now provide a generalised Tweedie's formula below.
 
 \begin{proposition}\label{prop:tweedie_gen}
-    Let $\bfeta \sim g$ and $\boldsymbol{Z} \mid \bfeta \sim \text{GE}(h, \phi, F, \psi ; \bfeta)$, where $\nabla_{\bfz}F(\bfz) = \boldsymbol{1}c$ for some constant $c\neq 0$. Let $f$ be the marginal density of $\boldsymbol{Z}$. Then
+    Let $\bfeta$ admit the density $g$ with respect to a $\sigma$-finite measure on the parameter space, against which all $\bfeta$-integrals below are taken, and let $\boldsymbol{Z} \mid \bfeta \sim \text{GE}(h, \phi, F, \psi ; \bfeta)$, where the conditional densities share a common support not depending on $\bfeta$. Suppose that $F$ is differentiable with constant invertible Jacobian $J_F \in \R^{n \times n}$, that $\bfz \mapsto h(\bfz, \bfeta)$ is differentiable, and that $\nabla_{\bfz}\, g(\bfeta \mid \bfz)$ admits an integrable envelope in a neighbourhood of each point of the support. Let $f$ be the marginal density of $\boldsymbol{Z}$, and let $\bfz$ satisfy $f(\bfz) > 0$. Then
     \begin{equation*}
-        \mathbb{E}[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z}] = \left(\nabla_{\bfz} \log f(\bfz) - \E[\nabla_{\bfz} \log h(\bfz,\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ]\right)c^{-1}.
+        \mathbb{E}[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z}] = (J_F^{\tp})^{-1}\left(\nabla_{\bfz} \log f(\bfz) - \E[\nabla_{\bfz} \log h(\bfz,\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ]\right).
     \end{equation*}
 \end{proposition}
 
 \begin{corollary}\label{prop:tweedie_gen_coro}
-    Let $\bfeta \sim g$ and $\boldsymbol{Z} \mid \bfeta \sim \text{Exp}(h, \phi, F, \psi ; \bfeta)$, where $\nabla_{\bfz}F(\bfz) = \boldsymbol{1}$. Let $f$ be the marginal density of $\boldsymbol{Z}$. Then
+    Under the hypotheses of Proposition~\ref{prop:tweedie_gen}, let $\boldsymbol{Z} \mid \bfeta \sim \text{Exp}(h, \phi, F, \psi ; \bfeta)$ with $F(\bfz) = \bfz$, and suppose additionally that $f$ and $h$ are twice differentiable with a corresponding integrable envelope for the second derivatives. Then
     \begin{equation*}
         \mathbb{E}[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z}] = \nabla_{\bfz} \log f(\bfz) - \nabla_{\bfz} \log h(\bfz) \quad \text{and} \quad
        \mathbb{V}[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z}] = \nabla_{\bfz}^2 \log f(\bfz) - \nabla_{\bfz}^2 \log h(\bfz).
@@ -747,7 +747,28 @@ If $\textbf{Exp} \subset \textbf{GE}$ is the space of all distributions that bel
     \end{equation*}
 \end{remark}
 
-Proofs are given in Appendix~\ref{app:tweedie-proofs}. We now apply these estimators: Section~\ref{sec:brownian} identifies the Brownian bridge drift through the Gaussian form of Tweedie's formula, and Section~\ref{sec:poisson} its Poisson counterpart.
+The identities above are differential and presuppose a continuous ambient space. Their lattice counterpart replaces the score by a one-step likelihood ratio, and requires no differentiability or domination hypotheses at all.
+
+\begin{proposition}[Discrete Tweedie formula]\label{prop:tweedie_discrete}
+    Let $\bfeta$ admit the density $g$ with respect to a $\sigma$-finite measure $\varrho$ on the parameter space, and let $\boldsymbol{Z} \mid \bfeta$ take values in a lattice $\mathcal{S} \subseteq \boldsymbol{x} + \mathbb{N}_0^n$ with probability mass function $p(\bfz \mid \bfeta)$. Let $f(\bfz) = \int p(\bfz \mid \bfeta)\, g(\bfeta)\, \varrho(\dd \bfeta)$ be the marginal mass function. Then, for every $\bfz$ with $f(\bfz) > 0$ and every coordinate direction $\boldsymbol{e}_i$,
+    \begin{equation}\label{eq:tweedie-discrete}
+        \frac{f(\bfz + \boldsymbol{e}_i)}{f(\bfz)} = \E\left[\frac{p(\bfz + \boldsymbol{e}_i \mid \bfeta)}{p(\bfz \mid \bfeta)} \,\middle|\, \boldsymbol{Z} = \bfz\right].
+    \end{equation}
+\end{proposition}
+\begin{proof}
+    The posterior density of $\bfeta$ given $\boldsymbol{Z} = \bfz$ is $g(\bfeta \mid \bfz) = p(\bfz \mid \bfeta)\, g(\bfeta) / f(\bfz)$, supported on $\{p(\bfz \mid \bfeta) > 0\}$, so the ratio inside the expectation is well defined posterior-almost surely. Hence
+    \begin{equation*}
+        \E\left[\frac{p(\bfz + \boldsymbol{e}_i \mid \bfeta)}{p(\bfz \mid \bfeta)} \,\middle|\, \boldsymbol{Z} = \bfz\right]
+        = \int \frac{p(\bfz + \boldsymbol{e}_i \mid \bfeta)}{p(\bfz \mid \bfeta)}\, \frac{p(\bfz \mid \bfeta)\, g(\bfeta)}{f(\bfz)}\, \varrho(\dd \bfeta)
+        = \frac{f(\bfz + \boldsymbol{e}_i)}{f(\bfz)},
+    \end{equation*}
+    where the integrand is non-negative and the identity is Tonelli's theorem.
+\end{proof}
+\begin{remark}
+    For a Poisson likelihood $p(z \mid \lambda) = e^{-\lambda}\lambda^{z}/z!$, the likelihood ratio equals $\lambda/(z+1)$ and \eqref{eq:tweedie-discrete} becomes Robbins' empirical-Bayes formula $\E[\lambda \mid z] = (z+1)\, f(z+1)/f(z)$ \cite{robbins1956}. The marginal ratio on the left-hand side is the lattice analogue of the score $\nabla \log f$: it is estimable from samples of $\boldsymbol{Z}$ alone, without knowledge of the prior.
+\end{remark}
+
+Proofs of Proposition~\ref{prop:tweedie_gen} and Corollary~\ref{prop:tweedie_gen_coro} are given in Appendix~\ref{app:tweedie-proofs}. We now apply these estimators: Section~\ref{sec:brownian} identifies the Brownian bridge drift through the Gaussian form of Tweedie's formula, and Section~\ref{sec:poisson} identifies the Poisson bridge drift through the discrete formula of Proposition~\ref{prop:tweedie_discrete}.
 
 \section{Brownian Random Bridge as Rectified Flow}\label{sec:brownian}
 In this section, we detail the connection between Brownian random bridges and Rectified Flows. Herein, $\boldsymbol{\sigma} \in \mathbb{R}^{n \times n}$ is a diagonal-matrix with diagonals $\sigma^{(i)} > 0$ for $i=1, \dots, n$ and the driving process is given by
@@ -943,12 +964,12 @@ The probability flow ODE of Corollary~\ref{coro:prob_flow_ode} admits a geometri
 \section{Poisson Random Bridge as Rectified Flow}\label{sec:poisson}
 
 In this section, we shall detail the connection between Poisson random bridges and Rectified Flows. Herein, the driving process $\{\boldsymbol{Z}_t\}_{t\in\T}$ is a Poisson process with intensity $\boldsymbol{\lambda}$, having mutually-independent coordinates and $\boldsymbol{Z}_0 = \boldsymbol{x}$. First, we have the following lemma.
-\begin{lem}
+\begin{lem}\label{lem:poisson-product-binomial}
 Let $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ be a $\boldsymbol{\Phi}$-initialised Poisson random-bridge to $\boldsymbol{\Psi}$ as in \cite{goria_random-bridges_2025}. Then
 \begin{align}
 \mathbb{P}(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \boldsymbol{z}) = \prod_{i=1}^n {{y^{(i)} - x^{(i)}}\choose{z^{(i)} - x^{(i)}}}  \left(\frac{t}{T}\right)^{z^{(i)} - x^{(i)}}\left(\frac{T-t}{T}\right)^{y^{(i)} - z^{(i)}}, \label{poissonbridgedist}
 \end{align}
-for any $t\in(0,T)$, given that $\boldsymbol{x} \leq \boldsymbol{z}  \leq \boldsymbol{y} \in \R^n$.
+for any $t\in(0,T)$ and lattice points $\boldsymbol{z}, \boldsymbol{y} \in \boldsymbol{x} + \mathbb{N}_0^n$ with $\boldsymbol{z} \leq \boldsymbol{y}$ componentwise.
 \end{lem}
 \begin{proof}
 For what follows, the probability mass function of a Poisson process is $f_t$ for any $t\in\T$. Using Corollary 4.3 in \cite{goria_random-bridges_2025}, we have
@@ -1028,20 +1049,33 @@ v(\boldsymbol{z},\boldsymbol{y}) = \exp\left(\log\left(\frac{t}{T-t} \right) (\b
 and the statement follows from (\ref{eq:exp_family}).
 \end{proof}
 
-\begin{corollary}
-The dynamics of $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$ has drift given by
-    \begin{equation*}
-        \frac{\mathbb{E}[\boldsymbol{Y} \mid \xib^{\boldsymbol{x}}_t ] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} = \frac{\nabla_{\boldsymbol{\xi}} \log p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t) - \E[\nabla_{\boldsymbol{\xi}} \log h(\boldsymbol{\xi}^{\boldsymbol{x}}_t,\boldsymbol{Y}) \mid \xib^{\boldsymbol{x}}_t ] - (\log(t) - \log(T-t))\boldsymbol{\xi}^{\boldsymbol{x}}_t}{(T-t)(\log(t) - \log(T-t))},
-		\end{equation*}
-where $p_t$ denotes the marginal density of $\boldsymbol{\xi}^{\boldsymbol{x}}_t$ for every $t\in[0, T)$. Hence,
-		\begin{align}
-		\mathbb{E}\left[\dd \boldsymbol{\xi}^{\boldsymbol{x}}_t \,|\, \xib^{\boldsymbol{x}}_{t} \right] = \left(\frac{\nabla_{\boldsymbol{\xi}} \log p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t) - \E[\nabla_{\boldsymbol{\xi}} \log h(\boldsymbol{\xi}^{\boldsymbol{x}}_t,\boldsymbol{Y}) \mid \xib^{\boldsymbol{x}}_t ] - (\log(t) - \log(T-t))\boldsymbol{\xi}^{\boldsymbol{x}}_t}{(T-t)(\log(t) - \log(T-t))}\right) \dd t,	 \notag
-		\end{align}		
-		for every $t\in(0, T)$.		
+We note that at $t = T/2$ the natural parameter $\log(t/(T-t))$ in Proposition~\ref{poissonbridgegeneralisedexponential} vanishes and that parameterisation degenerates; the next result does not rely on it, proceeding through likelihood ratios instead.
+
+\begin{corollary}\label{poissondiscretetweedie}
+Write $p_t$ for the marginal mass function of $\boldsymbol{\xi}^{\boldsymbol{x}}_t$ on $\boldsymbol{x} + \mathbb{N}_0^n$. The drift of $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$ is determined by $p_t$ through the discrete Tweedie formula:
+    \begin{equation}\label{eq:poisson-discrete-drift}
+        \frac{\mathbb{E}[Y^{(i)} \mid \xib^{\boldsymbol{x}}_t ] - \xi^{\boldsymbol{x},(i)}_t}{T-t} = \frac{\xi^{\boldsymbol{x},(i)}_t - x^{(i)} + 1}{t} \cdot \frac{p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t + \boldsymbol{e}_i)}{p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t)},
+    \end{equation}
+    for every $t \in (0,T)$ and $i = 1, \dots, n$, where $\boldsymbol{e}_i$ is the $i$-th coordinate direction.
 \end{corollary}
 \begin{proof}
-The result follows from Proposition \ref{prop:tweedie_gen} and Proposition \ref{poissonbridgegeneralisedexponential}, since $\nabla_{\bfz}F(\bfz) = \boldsymbol{1}$. The second part follows from (\ref{criticalconnection}), since $\{\mathbf{M}_t\}_{t\in\T}$ is a $(\P,\{\mathcal{F}_{t}^{\xib}\}_{t\in\T})$-martingale.
+    Conditional on $\boldsymbol{Y} = \boldsymbol{y}$, Lemma~\ref{lem:poisson-product-binomial} gives the product-binomial mass function, whose one-step likelihood ratio in direction $\boldsymbol{e}_i$ is
+    \begin{equation*}
+        \frac{\P(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \bfz + \boldsymbol{e}_i)}{\P(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \bfz)}
+        = \frac{y^{(i)} - z^{(i)}}{z^{(i)} - x^{(i)} + 1} \cdot \frac{t}{T-t},
+    \end{equation*}
+    for lattice points with $\P(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \bfz) > 0$, the ratio vanishing when $z^{(i)} = y^{(i)}$. Proposition~\ref{prop:tweedie_discrete}, applied with $\bfeta = \boldsymbol{Y}$ and the counting reference measure, yields
+    \begin{equation*}
+        \frac{p_t(\bfz + \boldsymbol{e}_i)}{p_t(\bfz)}
+        = \frac{t}{(T-t)\left(z^{(i)} - x^{(i)} + 1\right)} \left(\E[Y^{(i)} \mid \xib^{\boldsymbol{x}}_t = \bfz] - z^{(i)}\right),
+    \end{equation*}
+    and rearranging gives \eqref{eq:poisson-discrete-drift}.
 \end{proof}
+\begin{remark}
+    Combined with Proposition~\ref{poissonrandombridgeintensity} below, \eqref{eq:poisson-discrete-drift} identifies the conditioned jump intensity as a Robbins-type ratio estimator of the marginal mass function,
+    $\lambda^{\boldsymbol{x},(i)}_{tT} = (\xi^{\boldsymbol{x},(i)}_t - x^{(i)} + 1)\, p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t + \boldsymbol{e}_i)\,/\,(t\, p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t))$.
+    The mass-function ratio is the lattice analogue of the score $\nabla \log p_t$ in the Brownian drift of Proposition~\ref{prop:bridge_drift}: the continuous score drives the diffusive part of the transport, the ratio drives the jump intensity.
+\end{remark}
 The next statement provides an important property for the drift component of $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$.
 \begin{proposition}
 \label{poissonrandombridgeintensity}
@@ -1678,20 +1712,20 @@ g(\bfeta \mid \bfz) = f(\bfz \mid \bfeta)g(\bfeta)f(\bfz)^{-1}. \notag
 		\begin{align}
 		u(\bfz) = \int g(\bfeta \mid \bfz) \dd \bfeta = 1 \,\,\, \Rightarrow \nabla_{\bfz}u(\bfz) = 0. \notag
 		\end{align}
-		Moving the differential-operator inside the integral and inserting (\ref{eq:new_exp_family}), we get
+		Moving the differential-operator inside the integral, which is justified by the Leibniz integral rule under the envelope hypothesis of the statement, and inserting (\ref{eq:new_exp_family}), we get
 	 \begin{align}
 		\int \nabla_{\bfz} g(\bfeta \mid \bfz) \dd \bfeta &= \int \nabla_{\bfz} \left[h^*(\bfeta)\exp\left( F(\bfz) \cdot \phi(\bfeta) - \lambda(\bfz, \bfeta)\right)\right] \dd \bfeta \notag \\
-		&= \int \left[\nabla_{\bfz}F(\bfz)\cdot\phi(\bfeta) - \nabla_{\bfz}\lambda(\bfz, \bfeta)\right] \left[h^*(\bfeta)\exp\left(F(\bfz)  \cdot \phi(\bfeta) - \lambda(\bfz, \bfeta)\right)\right] \dd \bfeta \notag \\
-		&=\E[\nabla_{\bfz}F(\bfz)\cdot\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] - \E[\nabla_{\bfz}\lambda(\bfz, \bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] \notag \\
+		&= \int \left[J_F^{\tp}\phi(\bfeta) - \nabla_{\bfz}\lambda(\bfz, \bfeta)\right] \left[h^*(\bfeta)\exp\left(F(\bfz)  \cdot \phi(\bfeta) - \lambda(\bfz, \bfeta)\right)\right] \dd \bfeta \notag \\
+		&=J_F^{\tp}\,\E[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] - \E[\nabla_{\bfz}\lambda(\bfz, \bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] \notag \\
 		&= 0. \label{integralnablaidentity}
 	\end{align}	
 Using (\ref{integralnablaidentity}), we have the following:
 \begin{align}
-E[\nabla_{\bfz}F(\bfz)\cdot\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] &=  \E[\nabla_{\bfz}\lambda(\bfz, \bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] \notag \\
+J_F^{\tp}\,\E[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] &=  \E[\nabla_{\bfz}\lambda(\bfz, \bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] \notag \\
 &= \E[\nabla_{\bfz}\log(f(\bfz)) \mid \boldsymbol{Z} = \boldsymbol{z} ] - \E[\nabla_{\bfz}\log(h(\bfz,\bfeta)) \mid \boldsymbol{Z} = \boldsymbol{z} ] \notag \\
 & = \nabla_{\bfz}\log(f(\bfz)) - \E[\nabla_{\bfz}\log(h(\bfz,\bfeta)) \mid \boldsymbol{Z} = \boldsymbol{z} ], \notag
 \end{align}
-and the statement follows since $\nabla_{\bfz}F(\bfz) = \boldsymbol{1}c$, which carries over to the right-hand side of the expression with $c\neq 0$.
+and the statement follows by multiplying through by $(J_F^{\tp})^{-1}$, which exists since $J_F$ is constant and invertible.
 \end{proof}
 
 \begin{proof}[Proof of Corollary~\ref{prop:tweedie_gen_coro}]
@@ -1711,7 +1745,7 @@ and the statement follows since $\nabla_{\bfz}F(\bfz) = \boldsymbol{1}c$, which 
     \begin{equation*}
         \mathbb{E}[\phi(\bfeta) \mid \bfz] = \nabla_{\bfz} l(\bfz) - \nabla_{\bfz} l_0(\bfz) \quad \text{and} \quad \mathbb{V}[\phi(\bfeta) \mid \bfz] = \nabla_{\bfz}^2 l(\bfz) - \nabla_{\bfz}^2 l_0(\bfz),
     \end{equation*}
-		which follows from the moment-generating function of $\phi(\bfeta)$, given that $\nabla_{\bfz}F(\bfz) = \boldsymbol{1}$.
+		which follows by differentiating the cumulant function $\lambda$ of the posterior family, given that $F(\bfz) = \bfz$ so that $J_F$ is the identity, the second differentiation being justified by the envelope hypothesis of Corollary~\ref{prop:tweedie_gen_coro}.
 \end{proof}
 
 \bibliographystyle{plain}
