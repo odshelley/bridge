@@ -5,7 +5,13 @@ import torch
 from torchvision import datasets as tv_datasets
 
 from bridge_diffusion.config import DataConfig
-from bridge_diffusion.data import filter_classes, get_data_info, get_dataloader, get_dataset
+from bridge_diffusion.data import (
+    PairedDataset,
+    filter_classes,
+    get_data_info,
+    get_dataloader,
+    get_dataset,
+)
 
 
 class TestDataInfo:
@@ -161,3 +167,37 @@ class TestAFHQ:
         info = get_data_info(config)
         assert info["num_classes"] == 2
         assert info["train_size"] == 5153 + 4739
+
+
+class TestPairedDataset:
+    """Tests for the transport-mode paired dataset."""
+
+    def _transport_config(self, afhq_dir) -> DataConfig:
+        return DataConfig(
+            dataset="afhq",
+            data_dir=afhq_dir,
+            image_size=16,
+            classes=["dog"],
+            source_dataset="afhq",
+            source_classes=["cat"],
+        )
+
+    def test_get_dataset_returns_paired_dataset(self, afhq_dir) -> None:
+        ds = get_dataset(self._transport_config(afhq_dir), train=True)
+        assert isinstance(ds, PairedDataset)
+        assert len(ds) == 4  # len(target dogs)
+
+    def test_items_are_image_pairs_without_labels(self, afhq_dir) -> None:
+        ds = get_dataset(self._transport_config(afhq_dir), train=True)
+        item = ds[0]
+        assert isinstance(item, tuple) and len(item) == 2
+        x, y = item
+        assert x.shape == (3, 16, 16)
+        assert y.shape == (3, 16, 16)
+
+    def test_dataloader_batches_pairs(self, afhq_dir) -> None:
+        config = self._transport_config(afhq_dir)
+        loader = get_dataloader(config, batch_size=2, train=True, num_workers=0)
+        batch = next(iter(loader))
+        assert batch[0].shape == (2, 3, 16, 16)  # x_source
+        assert batch[1].shape == (2, 3, 16, 16)  # y_target
