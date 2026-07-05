@@ -37,6 +37,46 @@ def create_model(config: ExperimentConfig, network: DiffusersUNetWrapper):
         raise ValueError(f"Unknown method: {config.method}")
 
 
+def _load_source_images(
+    source_dir: Path,
+    image_size: int,
+    num_channels: int,
+    num_samples: int,
+) -> tuple[torch.Tensor, list[str]]:
+    """Load up to num_samples images from a folder as prior samples x0.
+
+    Args:
+        source_dir: Folder containing source images.
+        image_size: Target image size (resize + center crop).
+        num_channels: Number of channels (3 for RGB, 1 for grayscale).
+        num_samples: Maximum number of images to load.
+
+    Returns:
+        (images, stems): tensor of shape (n, C, H, W) in [-1, 1], and the
+        source file stems for naming outputs.
+    """
+    from PIL import Image
+    from torchvision import transforms
+
+    extensions = {".png", ".jpg", ".jpeg"}
+    paths = sorted(
+        p for p in Path(source_dir).iterdir() if p.suffix.lower() in extensions
+    )[:num_samples]
+    if not paths:
+        raise ValueError(f"No images found in {source_dir}")
+
+    mode = "RGB" if num_channels == 3 else "L"
+    mean = (0.5,) * num_channels
+    transform = transforms.Compose([
+        transforms.Resize(image_size),
+        transforms.CenterCrop(image_size),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, mean),
+    ])
+    images = torch.stack([transform(Image.open(p).convert(mode)) for p in paths])
+    return images, [p.stem for p in paths]
+
+
 def train_main(args: argparse.Namespace) -> None:
     """Main training function."""
     config = ExperimentConfig.from_yaml(args.config)
@@ -135,6 +175,42 @@ def sample_main(args: argparse.Namespace) -> None:
     shape = (data_info["num_channels"], data_info["image_size"], data_info["image_size"])
     logger.info(f"Generating {args.num_samples} samples with {args.num_steps} steps...")
 
+    # Transport mode: start the bridge from source images instead of noise
+    x0 = None
+    source_stems: list[str] | None = None
+    if args.source_dir:
+        x0, source_stems = _load_source_images(
+            Path(args.source_dir),
+            image_size=data_info["image_size"],
+            num_channels=data_info["num_channels"],
+            num_samples=args.num_samples,
+        )
+        logger.info(f"Loaded {x0.shape[0]} source images from {args.source_dir}")
+    elif config.data.source_dataset is not None:
+        import dataclasses
+
+        from bridge_diffusion.data import get_dataset
+
+        source_config = dataclasses.replace(
+            config.data,
+            dataset=config.data.source_dataset,
+            classes=config.data.source_classes,
+            source_dataset=None,
+            source_classes=None,
+        )
+        val_dataset = get_dataset(source_config, train=False)
+        count = min(args.num_samples, len(val_dataset))
+        x0 = torch.stack([val_dataset[i][0] for i in range(count)])
+        source_stems = [f"{i:04d}" for i in range(count)]
+        logger.info(f"Using {count} val images from source dataset as priors")
+
+    if x0 is not None and config.data.source_dataset is None:
+        logger.warning(
+            "Checkpoint was not trained in transport mode; sampling from "
+            "--source-dir images anyway."
+        )
+    num_to_sample = x0.shape[0] if x0 is not None else args.num_samples
+
     if config.method == "poisson_bridge":
         # Poisson bridge uses the model's own generate() (Poisson jump simulation)
         from torchvision.utils import make_grid, save_image
@@ -162,15 +238,24 @@ def sample_main(args: argparse.Namespace) -> None:
         save_image(grid, output_dir / "grid.png")
     else:
         samples = sampler.sample_batch(
-            total_samples=args.num_samples,
+            total_samples=num_to_sample,
             shape=shape,
             batch_size=args.batch_size,
             num_steps=args.num_steps,
+            x0=x0,
         )
 
         output_dir = Path(args.output_dir)
-        sampler.save_samples(samples, output_dir)
-        sampler.save_grid(samples[:64], output_dir / "grid.png")
+        if source_stems is not None:
+            from torchvision.utils import save_image
+
+            output_dir.mkdir(parents=True, exist_ok=True)
+            for stem, sample in zip(source_stems, samples):
+                save_image((sample.clamp(-1, 1) + 1) / 2, output_dir / f"{stem}_translated.png")
+            sampler.save_grid(samples[:64], output_dir / "grid.png")
+        else:
+            sampler.save_samples(samples, output_dir)
+            sampler.save_grid(samples[:64], output_dir / "grid.png")
 
     logger.info(f"Saved samples to {output_dir}")
 
@@ -267,6 +352,12 @@ def main() -> None:
         type=int,
         default=None,
         help="Random seed for sampling",
+    )
+    sample_parser.add_argument(
+        "--source-dir",
+        type=str,
+        default=None,
+        help="Folder of images to use as bridge priors x0 (transport mode)",
     )
     sample_parser.set_defaults(func=sample_main)
 
