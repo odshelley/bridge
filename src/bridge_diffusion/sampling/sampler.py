@@ -437,9 +437,7 @@ class Sampler:
             Generated samples of shape (total_samples, *shape).
         """
         if x0 is not None and x0.shape[0] < total_samples:
-            raise ValueError(
-                f"x0 has {x0.shape[0]} samples but total_samples={total_samples}"
-            )
+            raise ValueError(f"x0 has {x0.shape[0]} samples but total_samples={total_samples}")
 
         all_samples = []
         start = 0
