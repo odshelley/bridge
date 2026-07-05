@@ -292,11 +292,11 @@ In particular, the martingale of Proposition~\ref{stochfiltlevyrandom} is $M_t =
 \end{thm}
 The drift pulls the bridge towards the conditional mean of the terminal value, the Brownian term carries the diffusive part of the driver unchanged, and the conditioning acts entirely through the jump compensator~\eqref{eq:main-compensator}, which tilts the \levy measure by the ratio of harmonic functions. The proof occupies Sections~\ref{sec:modified-levy} and~\ref{sec:explicit-decomp}: the harmonic function~\eqref{eq:main-harmonic} implements the bridge conditioning as a Doob $h$-transform of the driver's generator, and the decomposition is then read off the transformed generator. The regularity and integrability hypotheses under which the representation holds are collected there, in Proposition~\ref{prop:harmonic-app} and Theorem~\ref{thm:modified-levy-app}.
 
-Using (\ref{nonanticipativereplevyrandombridge}), we can take the conditional expectation of the differential form to receive the following:
+The representation of Theorem~\ref{thm:main-rep} holds $\P$-almost surely on the canonical bridge space, so its differential form may be manipulated pathwise. Taking the conditional expectation of that differential form yields the following:
 \begin{align}
 \E\left[\dd \xib^{\boldsymbol{x}}_{t} \,|\, \xib^{\boldsymbol{x}}_{t} \right] = \frac{  \E\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_t \right]  - \xib^{\boldsymbol{x}}_t }{T-t}\dd t, \label{criticalconnection}
 \end{align}
-since $\{\mathbf{M}_t\}_{t\in\T}$ is a $(\P,\{\F_{t}^{\xib^{\boldsymbol{x}}}\}_{t\in\T})$-martingale. The conditional expectation provided in (\ref{criticalconnection}) will have a crucial stance for the rest of this paper towards connecting Rectified Flows and \Schrodinger Bridges with \levy random bridges.
+since the martingale part of Theorem~\ref{thm:main-rep} has vanishing conditional increments. The conditional expectation provided in (\ref{criticalconnection}) will have a crucial stance for the rest of this paper towards connecting Rectified Flows and \Schrodinger Bridges with \levy random bridges.
 \begin{lem}
 \label{refconditional}
 Let $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ be a $\boldsymbol{\Phi}$-initialised random-bridge to $\boldsymbol{\Psi}$. Then $\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] = \mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_T \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t]$
@@ -517,7 +517,7 @@ Thus $\xib^{\boldsymbol{x}}_{T-}=\xib^{\boldsymbol{x}}_T$ $\P$-almost surely, so
 \end{proof}
 
 \begin{remark}
-The absolute-continuity hypothesis on the endpoint coupling is automatic within the framework of this paper: the Doob $h$-transform construction of Section~\ref{sec:modified-levy} already requires $\boldsymbol{\Psi}$ to be absolutely continuous with respect to the terminal law of the driver, and the initial value is a point of the driver's support. The lemma uses only the Markov property of the driver; independence and stationarity of increments play no role in the restriction step.
+The absolute-continuity hypothesis on the endpoint coupling holds throughout the $h$-transform framework of Section~\ref{sec:modified-levy}, where $\boldsymbol{\Psi}$ is absolutely continuous with respect to the terminal law of the driver and the coupling is built from the corresponding conditional kernels. It excludes pinned bridges with atomic terminal laws, such as the classical bridge to $\boldsymbol{\delta}_{\boldsymbol{y}}$, for which the terminal limit must be verified directly from the bridge kernel; for the Brownian and Poisson pinned bridges of Sections~\ref{sec:brownian} and~\ref{sec:poisson} this is immediate, by path continuity in the former case and by the non-atomicity of the conditional jump-time laws in the latter. The screening lemma itself uses only the Markov property of the driver; independence and stationarity of increments play no role in the restriction step.
 \end{remark}
 
 The drift re-anchoring admits a dynamical reading: the conditional target velocity can be understood as an appropriately time-adjusted mean-reversion on the $\mathcal{L}^2$-best-estimate of \emph{any} future state of the random bridge $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$. Combining (\ref{nonanticipativereplevyrandombridge}) with the re-anchoring identity of Proposition~\ref{prop:temporal-consistency}, we have
@@ -586,7 +586,11 @@ The Doob $h$-transform formula in the proof of Theorem~\ref{thm:modified-levy-ap
 \label{prop:harmonic-app}
 Assume the transition densities $f_t$ of the driver are of class $C^{1,2}$ on $(0,T] \times \R$ and satisfy the backward Kolmogorov equation, and that for each compact $K \subset [0,T) \times \R$,
 \begin{equation}\label{eq:harmonic-envelope}
-  \int_{\R} \sup_{(t,z) \in K} \frac{\bigl|\partial_t f_{T-t}(w - z)\bigr| + \bigl|\mathcal{A}_z f_{T-t}(w - z)\bigr|}{f_T(w - x)}\,\Psi(\d w) < \infty.
+  \int_{\R} \sup_{(t,z) \in K} \frac{\bigl|\partial_t f_{T-t}(w - z)\bigr| + \bigl|\mathcal{A}_z f_{T-t}(w - z)\bigr|}{f_T(w - x)}\,\Psi(\d w) < \infty,
+\end{equation}
+together with the absolute double-integral bound for the nonlocal part,
+\begin{equation}\label{eq:harmonic-fubini}
+  \int_{\R} \int_{\R\setminus\{0\}} \sup_{(t,z) \in K} \frac{\bigl|f_{T-t}(w - z - y) - f_{T-t}(w - z) - y\,\partial_z f_{T-t}(w - z)\,\1_{|y|<1}\bigr|}{f_T(w - x)}\,\eta(\d y)\,\Psi(\d w) < \infty.
 \end{equation}
 Then the function $h_{tT}$ defined in~\eqref{eq:h-app} is space-time harmonic with respect to the generator~\eqref{eq:generator}: for every $t < T$ and $z \in \R$,
 \begin{equation}\label{eq:harmonic-app}
@@ -599,7 +603,7 @@ For fixed $w \in \R$, the transition density satisfies the backward Kolmogorov e
 \begin{equation*}
   (\partial_t + \mathcal{A}_z)\,f_{T-t}(w - z) = 0, \qquad t < T.
 \end{equation*}
-Since $f_T(w - x)$ and $\Psi(\d w)$ do not depend on $(t, z)$, the operator passes through the integral defining $h_{tT}$: differentiation under the integral sign handles the local part and Fubini's theorem the jump part, both licensed by the envelope~\eqref{eq:harmonic-envelope}. Therefore
+Since $f_T(w - x)$ and $\Psi(\d w)$ do not depend on $(t, z)$, the operator passes through the integral defining $h_{tT}$: differentiation under the integral sign handles the local part, licensed by the envelope~\eqref{eq:harmonic-envelope}, and Fubini's theorem handles the jump part, licensed by the absolute bound~\eqref{eq:harmonic-fubini}. Therefore
 \begin{equation*}
   (\partial_t + \mathcal{A}_z)\,h_{tT}(z)
   = \int_{\R} \frac{(\partial_t + \mathcal{A}_z)\,f_{T-t}(w - z)}{f_T(w - x)}\,\Psi(\d w)
@@ -610,7 +614,7 @@ which is~\eqref{eq:harmonic-app}.
 
 \begin{thm}
 \label{thm:modified-levy-app}
-Assume that $h_{tT}$ is of class $C^{1,2}$ on $[0,T) \times \R$, strictly positive, and that for every $(t,x) \in [0,T) \times \R$,
+Assume that $h_{tT}$ is of class $C^{1,2}$ on $[0,T) \times \R$, strictly positive, a good function for the space-time generator $\partial_t + \mathcal{A}$ in the sense of \cite[Section~4]{PalmowskiRolski2002}, meaning that $h_{tT}$ and $1/h_{tT}$ preserve the domain, $\mathcal{D}((\partial_t + \mathcal{A})^{h}) = \mathcal{D}(\partial_t + \mathcal{A})$, and that for every $(t,x) \in [0,T) \times \R$,
 \begin{equation}\label{eq:levy-kernel-condition}
   \int_{\R\setminus\{0\}} (1 \wedge y^2)\,\frac{h_{tT}(x+y)}{h_{tT}(x)}\,\eta(\d y) < \infty
   \qquad \text{and} \qquad
@@ -742,7 +746,7 @@ For the continuous part, the bridge law solves the martingale problem for $\wide
 
 For the jump part, by the same characteristics correspondence \cite[Theorem~II.2.42]{JacodShiryaev2003}, the third characteristic of $\{\xi^{x}_t\}$ is the jump kernel of~\eqref{eq:modified-generator-app}: the predictable compensator of $N$ under the bridge law is $\frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\eta(\d y)\,\d s$. Equivalently, this is the multiplicative tilt of the driver's compensator under the change of measure $h_{tT}(Z_t)$, by Girsanov's theorem for random measures \cite[Theorem~III.3.24]{JacodShiryaev2003}. The compensated jump integral $\int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$, with $\widetilde{N}^{\xi}$ as in~\eqref{eq:bridge-compensator-app}, is then a local martingale.
 
-It remains to upgrade the local martingale to a true martingale. The compensated jump integral is a priori only a local martingale; however, $\{M_t\}$ is a true martingale by Proposition~\ref{stochfiltlevyrandom}, and $\{\beta W_t\}$ is a true martingale; hence the purely discontinuous part $M_t - x - \beta W_t = \int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$ is a difference of true martingales, and is therefore itself a true martingale.
+It remains to upgrade the local martingale to a true martingale. The compensated jump integral is a priori only a local martingale; however, on the canonical bridge space the drift-subtracted process $M_t = \xi^x_t - \int_0^t (\E[Y \mid \xi^x_s] - \xi^x_s)(T-s)^{-1} \d s$ is a true martingale, since the drift is the predictable finite-variation characteristic identified above and $\E[|\xi^x_t|] < \infty$ transfers the martingale property of Proposition~\ref{stochfiltlevyrandom} to this representative; $\{\beta W_t\}$ is a true martingale; hence the purely discontinuous part $M_t - x - \beta W_t = \int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$ is a difference of true martingales, and is therefore itself a true martingale.
 
 Adding the initial value $x$ and summing the continuous and jump martingale parts gives~\eqref{eq:explicit-M}, and uniqueness of the canonical decomposition of a semimartingale \cite[Chapter~II, Theorem 2.4.2]{JacodShiryaev2003} identifies $M_t$ uniquely.
 \end{proof}
@@ -1098,13 +1102,13 @@ If $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ is a $\boldsymbol{\Phi}$-initialised P
 \end{align}
 for any $t\in(0,T)$, where the terms are defined as
 \begin{align}
-h(\boldsymbol{z},\boldsymbol{y}) = \prod_{i=1}^n {{y^{(i)} - x^{(i)}}\choose{z^{(i)} - x^{(i)}}} \exp\left(\log\left(\frac{t}{T-t} \right) (\boldsymbol{z} - \boldsymbol{x}) - \log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) \right), \notag
+h(\boldsymbol{z},\boldsymbol{y}) = \prod_{i=1}^n {{y^{(i)} - x^{(i)}}\choose{z^{(i)} - x^{(i)}}} \exp\left(\log\left(\frac{t}{T-t} \right) \boldsymbol{1}^{\tp}(\boldsymbol{z} - \boldsymbol{x}) - \log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) \right), \notag
 \end{align}
 and
 \begin{align}
-\phi(\boldsymbol{y}) = \log\left(\frac{t}{T-t} \right)\boldsymbol{y}, \,\, F(\boldsymbol{z}) = \boldsymbol{z} - \boldsymbol{x}, \,\, \psi(\boldsymbol{y}) = -\log\left(\frac{T-t}{T}\right) (\boldsymbol{y} - \boldsymbol{x}) \notag
+\phi(\boldsymbol{y}) = \log\left(\frac{t}{T-t} \right)\boldsymbol{y}, \,\, F(\boldsymbol{z}) = \boldsymbol{z} - \boldsymbol{x}, \,\, \psi(\boldsymbol{y}) = -\log\left(\frac{T-t}{T}\right) \boldsymbol{1}^{\tp}(\boldsymbol{y} - \boldsymbol{x}) \notag
 \end{align}
-given that $\boldsymbol{x} \leq \boldsymbol{z}  \leq \boldsymbol{y} \in \R^n$.
+for lattice points $\boldsymbol{z}, \boldsymbol{y} \in \boldsymbol{x} + \mathbb{N}_0^n$ with $\boldsymbol{z} \leq \boldsymbol{y}$ componentwise.
 \end{proposition}
 
 \begin{proof}
@@ -1120,11 +1124,11 @@ Therefore, we have the following expression:
 &= g(\boldsymbol{z},\boldsymbol{y}) \exp\left(\log\left( \frac{t}{T-t} \right)\sum_{i=1}^n (z^{(i)} - x^{(i)}) + \sum_{i=1}^n(y^{(i)} - x^{(i)})\log\left(\frac{T-t}{T}\right) \right) \notag \\
 &= g(\boldsymbol{z},\boldsymbol{y}) \exp\left(\log\left(\frac{t}{T-t} \right)\mathbf{1} \cdot (\boldsymbol{z} - \boldsymbol{x}) + \log\left(\frac{T-t}{T}\right)\mathbf{1}\cdot (\boldsymbol{y} - \boldsymbol{x}) \right) \notag \\
 &= g(\boldsymbol{z},\boldsymbol{y})v(\boldsymbol{z},\boldsymbol{y}) \exp\left(\log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) + \log\left(\frac{T-t}{T}\right)\mathbf{1}\cdot (\boldsymbol{y} - \boldsymbol{x}) \right) \notag \\
-&= h(\boldsymbol{z},\boldsymbol{y}) \exp\left(\log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) + \log\left(\frac{T-t}{T}\right) (\boldsymbol{y} - \boldsymbol{x}) \right) \notag
+&= h(\boldsymbol{z},\boldsymbol{y}) \exp\left(\log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) + \log\left(\frac{T-t}{T}\right) \boldsymbol{1}^{\tp}(\boldsymbol{y} - \boldsymbol{x}) \right) \notag
 \end{align}
 where we defined the exponential form
 \begin{align}
-v(\boldsymbol{z},\boldsymbol{y}) = \exp\left(\log\left(\frac{t}{T-t} \right) (\boldsymbol{z} - \boldsymbol{x}) - \log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) \right), \notag
+v(\boldsymbol{z},\boldsymbol{y}) = \exp\left(\log\left(\frac{t}{T-t} \right) \boldsymbol{1}^{\tp}(\boldsymbol{z} - \boldsymbol{x}) - \log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) \right), \notag
 \end{align}
 and the statement follows from (\ref{eq:exp_family}).
 \end{proof}
