@@ -186,22 +186,11 @@ def sample_main(args: argparse.Namespace) -> None:
         )
         logger.info(f"Loaded {x0.shape[0]} source images from {args.source_dir}")
     elif config.data.source_dataset is not None:
-        import dataclasses
+        from bridge_diffusion.data import load_source_val_images
 
-        from bridge_diffusion.data import get_dataset
-
-        source_config = dataclasses.replace(
-            config.data,
-            dataset=config.data.source_dataset,
-            classes=config.data.source_classes,
-            source_dataset=None,
-            source_classes=None,
-        )
-        val_dataset = get_dataset(source_config, train=False)
-        count = min(args.num_samples, len(val_dataset))
-        x0 = torch.stack([val_dataset[i][0] for i in range(count)])
-        source_stems = [f"{i:04d}" for i in range(count)]
-        logger.info(f"Using {count} val images from source dataset as priors")
+        x0 = load_source_val_images(config.data, args.num_samples, spread=False)
+        source_stems = [f"{i:04d}" for i in range(x0.shape[0])]
+        logger.info(f"Using {x0.shape[0]} val images from source dataset as priors")
 
     if x0 is not None and config.data.source_dataset is None:
         logger.warning(
