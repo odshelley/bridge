@@ -287,7 +287,7 @@ such that, for every $t \in [0,T)$,
 \end{equation}
 In particular, the martingale of Proposition~\ref{stochfiltlevyrandom} is $M_t = x + \beta W_t + \int_0^t\!\int_{\R\setminus\{0\}} y\,[N(\d s,\d y) - \nu^{\xi}(\d s,\d y)]$.
 \end{thm}
-The drift pulls the bridge towards the conditional mean of the terminal value, the Brownian term carries the diffusive part of the driver unchanged, and the conditioning acts entirely through the jump compensator~\eqref{eq:main-compensator}, which tilts the \levy measure by the ratio of harmonic functions. The proof occupies Sections~\ref{sec:modified-levy} and~\ref{sec:explicit-decomp}: the harmonic function~\eqref{eq:main-harmonic} implements the bridge conditioning as a Doob $h$-transform of the driver's generator, and the decomposition is then read off the transformed generator.
+The drift pulls the bridge towards the conditional mean of the terminal value, the Brownian term carries the diffusive part of the driver unchanged, and the conditioning acts entirely through the jump compensator~\eqref{eq:main-compensator}, which tilts the \levy measure by the ratio of harmonic functions. The proof occupies Sections~\ref{sec:modified-levy} and~\ref{sec:explicit-decomp}: the harmonic function~\eqref{eq:main-harmonic} implements the bridge conditioning as a Doob $h$-transform of the driver's generator, and the decomposition is then read off the transformed generator. The regularity and integrability hypotheses under which the representation holds are collected there, in Proposition~\ref{prop:harmonic-app} and Theorem~\ref{thm:modified-levy-app}.
 
 Using (\ref{nonanticipativereplevyrandombridge}), we can take the conditional expectation of the differential form to receive the following:
 \begin{align}
@@ -498,7 +498,7 @@ This subsection and the next are devoted to the proof of Theorem~\ref{thm:main-r
   h_{tT}(z) = \int_{\R} \frac{f_{T-t}(w - z)}{f_T(w - x)}\,\Psi(\d w),
   \qquad 0 \leq t < T,\; z \in \R,
 \end{equation}
-where the $f_T(w - x)$ in the denominator reflects the initial condition $Z_0 = x$ (cf.\ Corollary~\ref{levycorodensity} for the fixed-endpoint case). This is the integrated form of the harmonic function $h_{tT}(z;y) = f_{T-t}(y - z)$ from Appendix~\ref{app:resultsongeneralisedlevy} (line below~\eqref{eq:ratio}), averaged against the terminal law $\Psi$.
+where the $f_T(w - x)$ in the denominator reflects the initial condition $Z_0 = x$ (cf.\ Corollary~\ref{levycorodensity} for the fixed-endpoint case). Throughout this subsection and the next we assume the driver admits transition densities with respect to Lebesgue measure that are strictly positive on the relevant support, with $0 < f_T(w - x) < \infty$ for $\Psi$-almost every $w$; drivers without a Lebesgue density, such as the Poisson driver, are treated directly on their lattice in Section~\ref{sec:poisson}, where the role of the ratio~\eqref{eq:h-app} is played by the mass-function quotient of Corollary~\ref{poissondiscretetweedie}. This is the integrated form of the harmonic function $h_{tT}(z;y) = f_{T-t}(y - z)$ from Appendix~\ref{app:resultsongeneralisedlevy} (line below~\eqref{eq:ratio}), averaged against the terminal law $\Psi$.
 
 The following result, due to \cite{hoylehughstonmacrina_2011}, makes precise the role of $h_{tT}$ as the Radon--Nikod\'ym density that converts the free \levy law into the LRB law on path space.
 
@@ -516,7 +516,11 @@ The Doob $h$-transform formula in the proof of Theorem~\ref{thm:modified-levy-ap
 
 \begin{prop}
 \label{prop:harmonic-app}
-The function $h_{tT}$ defined in~\eqref{eq:h-app} is space-time harmonic with respect to the generator~\eqref{eq:generator}: for every $t < T$ and $z \in \R$,
+Assume the transition densities $f_t$ of the driver are of class $C^{1,2}$ on $(0,T] \times \R$ and satisfy the backward Kolmogorov equation, and that for each compact $K \subset [0,T) \times \R$,
+\begin{equation}\label{eq:harmonic-envelope}
+  \int_{\R} \sup_{(t,z) \in K} \frac{\bigl|\partial_t f_{T-t}(w - z)\bigr| + \bigl|\mathcal{A}_z f_{T-t}(w - z)\bigr|}{f_T(w - x)}\,\Psi(\d w) < \infty.
+\end{equation}
+Then the function $h_{tT}$ defined in~\eqref{eq:h-app} is space-time harmonic with respect to the generator~\eqref{eq:generator}: for every $t < T$ and $z \in \R$,
 \begin{equation}\label{eq:harmonic-app}
   (\partial_t + \mathcal{A}_z)\,h_{tT}(z) = 0.
 \end{equation}
@@ -528,7 +532,7 @@ The function $h_{tT}$ defined in~\eqref{eq:h-app} is space-time harmonic with re
     \begin{equation*}
       (\partial_t + \mathcal{A}_z)\,f_{T-t}(w - z) = 0, \qquad t < T.
     \end{equation*}
-  \item Since $f_T(w - x)$ and $\Psi(\d w)$ are independent of $(t, z)$, the operator passes through the integral defining $h_{tT}$:
+  \item Since $f_T(w - x)$ and $\Psi(\d w)$ are independent of $(t, z)$, the operator passes through the integral defining $h_{tT}$, by differentiation under the integral sign for the local part and Fubini's theorem for the jump part, both justified by the envelope~\eqref{eq:harmonic-envelope}:
     \begin{equation*}
       (\partial_t + \mathcal{A}_z)\,h_{tT}(z)
       = \int_{\R} \frac{(\partial_t + \mathcal{A}_z)\,f_{T-t}(w - z)}{f_T(w - x)}\,\Psi(\d w)
@@ -539,7 +543,13 @@ The function $h_{tT}$ defined in~\eqref{eq:h-app} is space-time harmonic with re
 
 \begin{thm}
 \label{thm:modified-levy-app}
-The Doob $h$-transform of the \levy generator with harmonic function $h_{tT}$ is of the form
+Assume that $h_{tT}$ is of class $C^{1,2}$ on $[0,T) \times \R$, strictly positive, and that for every $(t,x) \in [0,T) \times \R$,
+\begin{equation}\label{eq:levy-kernel-condition}
+  \int_{\R\setminus\{0\}} (1 \wedge y^2)\,\frac{h_{tT}(x+y)}{h_{tT}(x)}\,\eta(\d y) < \infty
+  \qquad \text{and} \qquad
+  \int_{|y|<1} |y|\,\Bigl|\frac{h_{tT}(x+y)}{h_{tT}(x)} - 1\Bigr|\,\eta(\d y) < \infty.
+\end{equation}
+Then the Doob $h$-transform of the \levy generator with harmonic function $h_{tT}$ is of the form
 \begin{equation}\label{eq:modified-generator-app}
   \widetilde{\mathcal{A}}f(x)
   = \widetilde{\alpha}(t,x)\,f'(x)
@@ -564,10 +574,14 @@ and modified drift
 
 \begin{proof}[Proof]
 \begin{itemize}
-  \item The Doob $h$-transform formula for the bridge generator (\cite[Theorem~4.2, eq.~1.2]{PalmowskiRolski2002}) reads
+  \item The harmonic function $h_{tT}$ is time-dependent, so the $h$-transform must be taken for the space-time process $(t, Z_t)$, whose generator is $\partial_t + \mathcal{A}$ and for which $h$ is harmonic by Proposition~\ref{prop:harmonic-app}; the positivity and martingale hypotheses of \cite[Theorem~4.2]{PalmowskiRolski2002} hold by Proposition~\ref{prop:lrb-change-of-measure}. For a time-independent test function $f$, the space-time transform gives
     \begin{equation}\label{eq:doob-h-formula}
-      \widetilde{\mathcal{A}}f(x) \;=\; h_{tT}(x)^{-1}\,\mathcal{A}(f h_{tT})(x) \;-\; f(x)\,h_{tT}(x)^{-1}\,\mathcal{A}h_{tT}(x).
+      \widetilde{\mathcal{A}}f
+      = \frac{(\partial_t + \mathcal{A})(f h_{tT})}{h_{tT}}
+      = \frac{\mathcal{A}(f h_{tT})}{h_{tT}} + f\,\frac{\partial_t h_{tT}}{h_{tT}}
+      = \frac{\mathcal{A}(f h_{tT})}{h_{tT}} - f\,\frac{\mathcal{A} h_{tT}}{h_{tT}},
     \end{equation}
+    where the first equality holds because the subtracted term $f\,h_{tT}^{-1}(\partial_t + \mathcal{A})h_{tT}$ vanishes by space-time harmonicity~\eqref{eq:harmonic-app}, and the last equality substitutes $\partial_t h_{tT} = -\mathcal{A}h_{tT}$, again by~\eqref{eq:harmonic-app}. The subtraction of $f\,h_{tT}^{-1}\mathcal{A}h_{tT}$ below is therefore the space-time harmonicity acting, not an assumption that $\mathcal{A}h_{tT} = 0$.
   \item Apply~\eqref{eq:generator} to $g = fh_{tT}$. The jump contribution to $\mathcal{A}(fh_{tT})$ is
     \begin{equation*}
       J = \int_{\R\setminus\{0\}}\bigl[f(x{+}y)\,h_{tT}(x{+}y)
@@ -581,7 +595,7 @@ and modified drift
       = [f(x+y) - f(x)]\,\frac{h_{tT}(x+y)}{h_{tT}(x)}
         + f(x)\Bigl[\frac{h_{tT}(x+y)}{h_{tT}(x)} - 1\Bigr],
     \end{equation*}
-    the integrand splits into three groups:
+    the integrand splits into three groups, each absolutely convergent under~\eqref{eq:levy-kernel-condition} together with the $C^{2}$ regularity of $f$ and $h_{tT}$ (the first group by the first condition, the second by the second condition, and the third since $h_{tT}$ lies in the domain of $\mathcal{A}$):
     \begin{align}
       \frac{J}{h_{tT}(x)}
       &= \int_{\R\setminus\{0\}}\bigl[f(x{+}y) - f(x) - yf'(x)\1_{|y|<1}\bigr]\,
@@ -644,7 +658,7 @@ where the drift is the predictable finite-variation part and follows from the LR
 
 \begin{thm}[Explicit form of $M_t$]
 \label{thm:explicit-decomp}
-Under the assumptions above, the martingale $M_t$ in~\eqref{eq:semimartingale-app} admits the decomposition
+Under the assumptions of Proposition~\ref{prop:harmonic-app} and Theorem~\ref{thm:modified-levy-app}, the martingale $M_t$ in~\eqref{eq:semimartingale-app} admits the decomposition
 \begin{equation}\label{eq:explicit-M}
   M_t = x + \beta\,W_t
     + \int_0^t\!\int_{\R \setminus \{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y),
@@ -654,14 +668,15 @@ where $\{W_t\}$ is a standard Brownian motion, $N(\d s, \d y)$ is the jump measu
   \widetilde{N}^{\xi}(\d s, \d y)
   = N(\d s, \d y) - \frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\,\eta(\d y)\,\d s
 \end{equation}
-is the compensated Poisson random measure associated to the bridge dynamics, with bridge-modified compensator $\widetilde{\eta}$ given by Theorem~\ref{thm:modified-levy-app}.
+is the compensated jump measure associated to the bridge dynamics, with bridge-modified compensator $\widetilde{\eta}$ given by Theorem~\ref{thm:modified-levy-app}. We emphasise that after the state-dependent tilt, $N$ is an integer-valued random measure with predictable compensator; it is no longer a Poisson random measure, its increments not being independent.
 \end{thm}
 
 \begin{proof}[Proof]
 \begin{itemize}
   \item The \levy driver admits the decomposition~\eqref{eq:levy-ito-short}; under the bridge dynamics (the Doob $h$-transform with harmonic function $h_{tT}$), the coordinate process becomes $\{\xi^{x}_t\}$, and the generator transforms to $\widetilde{\mathcal{A}}$ as in~\eqref{eq:modified-generator-app}.
-  \item \emph{Continuous part.} The diffusion coefficient $\half\beta^2 f''(x)$ in~\eqref{eq:modified-generator-app} equals that of~\eqref{eq:generator}, so the continuous martingale part of $\xi^{x}_t$ has predictable quadratic variation $\langle M^c \rangle_t = \beta^2 t$, which is deterministic. By the \levy characterisation of Brownian motion \cite[Theorem~3.3.16]{KaratzasShreve1998}, there exists a standard Brownian motion $W_t$ with $M_t^c = \beta\,W_t$.
-  \item \emph{Jump part.} The jump integral in~\eqref{eq:modified-generator-app} reads off the bridge-dynamics compensator of $N$ as $\frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\eta(\d y)\,\d s$, so the compensated jump martingale is $\int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$ with $\widetilde{N}^{\xi}$ as in~\eqref{eq:bridge-compensator-app}.
+  \item \emph{Continuous part.} The bridge law solves the martingale problem for $\widetilde{\mathcal{A}}$ on $C^2$ test functions of compact support, by construction of the Doob $h$-transform (Proposition~\ref{prop:lrb-change-of-measure} and Theorem~\ref{thm:modified-levy-app}). By the equivalence between martingale problems and semimartingale characteristics \cite[Theorem~II.2.42]{JacodShiryaev2003}, the second characteristic of $\{\xi^{x}_t\}$ is read off the coefficient of $\half f''$ in~\eqref{eq:modified-generator-app}, which equals $\beta^2$, unchanged from the driver; hence the continuous martingale part of $\xi^{x}_t$ has predictable quadratic variation $\langle M^c \rangle_t = \beta^2 t$, which is deterministic. By the \levy characterisation of Brownian motion \cite[Theorem~3.3.16]{KaratzasShreve1998}, there exists a standard Brownian motion $W_t$ with $M_t^c = \beta\,W_t$.
+  \item \emph{Jump part.} By the same characteristics correspondence \cite[Theorem~II.2.42]{JacodShiryaev2003}, the third characteristic of $\{\xi^{x}_t\}$ is the jump kernel of~\eqref{eq:modified-generator-app}: the predictable compensator of $N$ under the bridge law is $\frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\eta(\d y)\,\d s$. Equivalently, this is the multiplicative tilt of the driver's compensator under the change of measure $h_{tT}(Z_t)$, by Girsanov's theorem for random measures \cite[Theorem~III.3.24]{JacodShiryaev2003}. The compensated jump integral $\int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$, with $\widetilde{N}^{\xi}$ as in~\eqref{eq:bridge-compensator-app}, is then a local martingale.
+  \item \emph{True martingale property.} The compensated jump integral is a priori only a local martingale. However, $\{M_t\}$ is a true martingale by Proposition~\ref{stochfiltlevyrandom}, and $\{\beta W_t\}$ is a true martingale; hence the purely discontinuous part $M_t - x - \beta W_t = \int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$ is a difference of true martingales, and is therefore itself a true martingale.
   \item Adding the initial value $x$ and summing the continuous and jump martingale parts gives~\eqref{eq:explicit-M}.
 \end{itemize}
 Uniqueness of the canonical decomposition of a semimartingale \cite[Chapter~II, Theorem 2.4.2]{JacodShiryaev2003} identifies $M_t$ uniquely.
