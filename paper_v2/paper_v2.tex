@@ -1190,57 +1190,57 @@ preserved.
 \label{sec:imf}
 \label{sec:connection-imf}
 
-We now place the Brownian random bridge training procedure within the framework of Iterative Markovian Fitting (IMF) introduced by \cite{shi2023diffusion}. IMF is an alternating projection scheme for computing \Schrodinger bridges. We begin by introducing the two constituent projections, following \cite{shi2023diffusion}.
+In the Introduction we argued that a random bridge coupling is already a valid transport, and that entropic optimality is an optional refinement, which we deferred to this section. We now close that loop. The \Schrodinger problem is defined relative to an arbitrary reference path measure, not only Wiener measure, and its solution is Markov whenever the reference is \cite{leonard2014survey}. Taking the reference to be the law of a \levy driver, the associated reciprocal class is built precisely from the \levy random bridges of Section~\ref{sec:framework}, and the relevant conditional drift is the harmonic-function score $\beta^2\partial_x \log h_{tT}$ of Section~\ref{sec:modified-levy}, the engine this paper supplies. This yields a bona-fide \levy-\Schrodinger problem, of which the Brownian reference is the special case that additionally connects to entropic optimal transport, the quadratic Benamou-Brenier reading being specific to the Wiener case. In this section we make the correspondence precise through the Iterative Markovian Fitting (IMF) framework of \cite{shi2023diffusion}. We show that one pass of random bridge training is exactly a single IMF iteration, so that further iterations would refine our transport towards the \Schrodinger bridge, and we treat the Brownian case in full, where every ingredient is explicit.
 
-Let $\mathcal{P}(\mathcal{C})$ denote the space of path measures on $\mathcal{C}([0,T], \R^n)$. We write $\mathcal{M} \subset \mathcal{P}(\mathcal{C})$ for the subset of Markov path measures associated with SDEs of the form $\dd\boldsymbol{X}_t = \{f(\boldsymbol{X}_t, t) + \boldsymbol{v}(\boldsymbol{X}_t, t)\}\dd t + \boldsymbol{\sigma}(\boldsymbol{X}_t, t)\dd\boldsymbol{B}_t$, where $\boldsymbol{v}, \boldsymbol{\sigma}$ are locally Lipschitz. For any $\mathbb{Q} \in \mathcal{M}$, we denote its diffusion bridge by $\mathbb{Q}_{|0,T}(\cdot \mid \boldsymbol{x}_0, \boldsymbol{x}_T)$, and for any joint distribution $\Pi_{0,T}$ over $\R^n \times \R^n$, we write $\Pi = \Pi_{0,T}\mathbb{Q}_{|0,T} \in \mathcal{P}(\mathcal{C})$ for the associated random bridge (\emph{mixture of bridges}) measure.
+The IMF literature speaks the language of path measures, so we first fix a dictionary between that language and the objects of this paper. Let $\mathcal{P}(\mathcal{C})$ denote the space of path measures on $\mathcal{C}([0,T], \R^n)$, with generic elements written $\Lambda$, and $\Lambda_{0,T}$, $\Lambda_t$ and $\Lambda_{T|t}$ denoting the joint endpoint law, the time-$t$ marginal and the conditional law of the terminal state given time $t$. The \emph{reference} $\mathbb{Q} \in \mathcal{P}(\mathcal{C})$ is for us the law of the driving process $\{\boldsymbol{Z}_t\}_{t\in\T}$. Its bridge $\mathbb{Q}_{|0,T}(\cdot \mid \boldsymbol{x}_0, \boldsymbol{x}_T)$ is the law of the classical bridge $\{\xib^{\boldsymbol{x},\boldsymbol{y}}_t\}_{t\in\T}$ of Section~\ref{sec:framework}, and for a coupling $\Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi})$ the \emph{mixture of bridges} measure $\Lambda = \Gamma\,\mathbb{Q}_{|0,T}$ is the law of the random bridge $\{\xib_t\}_{t\in\T}$ of Definition~\ref{definitionRandomBridge}. We write $\mathcal{M} \subset \mathcal{P}(\mathcal{C})$ for the subset of Markov path measures associated with SDEs of the form $\dd\boldsymbol{U}_t = \{f(\boldsymbol{U}_t, t) + \boldsymbol{v}(\boldsymbol{U}_t, t)\}\dd t + \boldsymbol{\sigma}(\boldsymbol{U}_t, t)\dd\boldsymbol{B}_t$, where $\boldsymbol{v}, \boldsymbol{\sigma}$ are locally Lipschitz. Throughout this section $\boldsymbol{U}_t$ denotes the state of a generic path measure, since $\boldsymbol{X}$ is reserved for the source variable of this paper.
 
 \begin{defn}[Reciprocal class and reciprocal projection {\cite[Definition~3]{shi2023diffusion}}]
 \label{def:reciprocal}
-A path measure $\Pi \in \mathcal{P}(\mathcal{C})$ is in the \emph{reciprocal class} $\mathcal{R}(\mathbb{Q})$ of $\mathbb{Q} \in \mathcal{M}$ if $\Pi = \Pi_{0,T}\,\mathbb{Q}_{|0,T}$. Given $\P \in \mathcal{P}(\mathcal{C})$, the \emph{reciprocal projection} is defined as
+A path measure $\Lambda \in \mathcal{P}(\mathcal{C})$ is in the \emph{reciprocal class} $\mathcal{R}(\mathbb{Q})$ of $\mathbb{Q} \in \mathcal{M}$ if $\Lambda = \Lambda_{0,T}\,\mathbb{Q}_{|0,T}$. Given $\Lambda \in \mathcal{P}(\mathcal{C})$, the \emph{reciprocal projection} is defined as
 \begin{equation*}
-    \mathrm{proj}_{\mathcal{R}(\mathbb{Q})}(\P) \;=\; \P_{0,T}\,\mathbb{Q}_{|0,T}, \label{eq:def_reciprocal_proj}
+    \mathrm{proj}_{\mathcal{R}(\mathbb{Q})}(\Lambda) \;=\; \Lambda_{0,T}\,\mathbb{Q}_{|0,T}, \label{eq:def_reciprocal_proj}
 \end{equation*}
-which retains the endpoint coupling of $\P$ but replaces the intermediate dynamics with the reference bridge $\mathbb{Q}_{|0,T}$.
+which retains the endpoint coupling of $\Lambda$ but replaces the intermediate dynamics with the reference bridge $\mathbb{Q}_{|0,T}$.
 \end{defn}
 
-The reciprocal projection minimises the KL divergence to $\P$ over $\mathcal{R}(\mathbb{Q})$: if $\Pi^* = \mathrm{proj}_{\mathcal{R}(\mathbb{Q})}(\P)$, then $\Pi^* = \argmin_{\Pi \in \mathcal{R}(\mathbb{Q})} \mathrm{KL}(\P \| \Pi)$ \cite[Proposition~4]{shi2023diffusion}.
+In our language, the reciprocal projection is exactly the construction of Definition~\ref{definitionRandomBridge}: it keeps a coupling and fills in the classical bridge of the driver, so every random bridge of this paper is an element of $\mathcal{R}(\mathbb{Q})$. The reciprocal projection minimises the KL divergence to $\Lambda$ over $\mathcal{R}(\mathbb{Q})$: if $\Lambda^* = \mathrm{proj}_{\mathcal{R}(\mathbb{Q})}(\Lambda)$, then $\Lambda^* = \argmin_{\Lambda' \in \mathcal{R}(\mathbb{Q})} \mathrm{KL}(\Lambda \| \Lambda')$ \cite[Proposition~4]{shi2023diffusion}.
 
 \begin{defn}[Markovian projection {\cite[Definition~1]{shi2023diffusion}}]
 \label{def:markovian}
 Assume that $\mathbb{Q} \in \mathcal{M}$ is associated with
 \begin{equation*}
-    \dd\boldsymbol{X}_t = f(\boldsymbol{X}_t, t)\dd t + \boldsymbol{\sigma}(\boldsymbol{X}_t, t)\dd\boldsymbol{B}_t,
+    \dd\boldsymbol{U}_t = f(\boldsymbol{U}_t, t)\dd t + \boldsymbol{\sigma}(\boldsymbol{U}_t, t)\dd\boldsymbol{B}_t,
 \end{equation*}
-and that for any $(\boldsymbol{x}_0, \boldsymbol{x}_T) \in \R^n$, the diffusion bridge $\mathbb{Q}_{|0,T}(\cdot \mid \boldsymbol{x}_0, \boldsymbol{x}_T)$ is associated with $(\boldsymbol{X}_t^{0,T})_{t \in [0,T]}$ given by
+and that for any $(\boldsymbol{x}_0, \boldsymbol{x}_T) \in \R^n \times \R^n$, the diffusion bridge $\mathbb{Q}_{|0,T}(\cdot \mid \boldsymbol{x}_0, \boldsymbol{x}_T)$ is associated with $(\boldsymbol{U}_t^{0,T})_{t \in [0,T]}$ given by
 \begin{equation*}
-    \dd\boldsymbol{X}_t^{0,T} = \{f(\boldsymbol{X}_t^{0,T}, t) + \boldsymbol{\sigma}(\boldsymbol{X}_t^{0,T}, t)^2 \nabla \log \mathbb{Q}_{T|t}(\boldsymbol{x}_T \mid \boldsymbol{X}_t^{0,T})\}\dd t + \boldsymbol{\sigma}(\boldsymbol{X}_t^{0,T}, t)\dd\boldsymbol{B}_t,
+    \dd\boldsymbol{U}_t^{0,T} = \{f(\boldsymbol{U}_t^{0,T}, t) + \boldsymbol{\sigma}(\boldsymbol{U}_t^{0,T}, t)^2 \nabla \log \mathbb{Q}_{T|t}(\boldsymbol{x}_T \mid \boldsymbol{U}_t^{0,T})\}\dd t + \boldsymbol{\sigma}(\boldsymbol{U}_t^{0,T}, t)\dd\boldsymbol{B}_t,
 \end{equation*}
-with $\boldsymbol{\sigma}(\cdot, \cdot) : \R^n \times [0, T] \to \R^{n \times n}$ a positive-definite diagonal matrix. Then, when it is well-defined, we introduce the \emph{Markovian projection} of $\Pi$, $\mathbb{M}^* = \mathrm{proj}_{\mathcal{M}}(\Pi) \in \mathcal{M}$, which is associated with the SDE
+with $\boldsymbol{\sigma}(\cdot, \cdot) : \R^n \times [0, T] \to \R^{n \times n}$ a positive-definite diagonal matrix. Then, when it is well-defined, we introduce the \emph{Markovian projection} of $\Lambda$, $\mathbb{M}^* = \mathrm{proj}_{\mathcal{M}}(\Lambda) \in \mathcal{M}$, which is associated with the SDE
 \begin{align}
-    \dd\boldsymbol{X}_t^* &= \{f(\boldsymbol{X}_t^*, t) + \boldsymbol{v}^*(\boldsymbol{X}_t^*, t)\}\dd t + \boldsymbol{\sigma}(\boldsymbol{X}_t^*, t)\dd\boldsymbol{B}_t,\nonumber \\
-    \boldsymbol{v}^*(\boldsymbol{x}, t) &= \boldsymbol{\sigma}(\boldsymbol{x}, t)^2\,\E_{\Pi_{T|t}}\!\left[\nabla \log \mathbb{Q}_{T|t}(\boldsymbol{X}_T \mid \boldsymbol{X}_t) \;\middle|\; \boldsymbol{X}_t = \boldsymbol{x}\right]. \label{eq:def_markovian_proj}
+    \dd\boldsymbol{U}_t^* &= \{f(\boldsymbol{U}_t^*, t) + \boldsymbol{v}^*(\boldsymbol{U}_t^*, t)\}\dd t + \boldsymbol{\sigma}(\boldsymbol{U}_t^*, t)\dd\boldsymbol{B}_t,\nonumber \\
+    \boldsymbol{v}^*(\boldsymbol{u}, t) &= \boldsymbol{\sigma}(\boldsymbol{u}, t)^2\,\E_{\Lambda_{T|t}}\!\left[\nabla \log \mathbb{Q}_{T|t}(\boldsymbol{U}_T \mid \boldsymbol{U}_t) \;\middle|\; \boldsymbol{U}_t = \boldsymbol{u}\right]. \label{eq:def_markovian_proj}
 \end{align}
 \end{defn}
 
-The Markovian projection satisfies $\mathbb{M}^* = \argmin_{\mathbb{M} \in \mathcal{M}} \mathrm{KL}(\Pi \| \mathbb{M})$ and preserves all time-marginals: $\mathbb{M}^*_t = \Pi_t$ for every $t \in [0, T]$ \cite[Proposition~2]{shi2023diffusion}. In the Brownian case ($f = 0$, $\boldsymbol{\sigma}(\boldsymbol{x}, t) = \boldsymbol{\sigma}$ constant), the bridge $\mathbb{Q}_{|0,T}(\cdot \mid \boldsymbol{x}, \boldsymbol{y})$ is a Brownian bridge with drift $(\boldsymbol{y} - \xib_t)/(T-t)$, so the Markovian projection drift~\eqref{eq:def_markovian_proj} reduces to
+The Markovian projection satisfies $\mathbb{M}^* = \argmin_{\mathbb{M} \in \mathcal{M}} \mathrm{KL}(\Lambda \| \mathbb{M})$ and preserves all time-marginals: $\mathbb{M}^*_t = \Lambda_t$ for every $t \in [0, T]$ \cite[Proposition~2]{shi2023diffusion}. In the Brownian case ($f = 0$, $\boldsymbol{\sigma}(\boldsymbol{u}, t) = \boldsymbol{\sigma}$ constant), the bridge $\mathbb{Q}_{|0,T}(\cdot \mid \boldsymbol{x}, \boldsymbol{y})$ is a Brownian bridge with drift $(\boldsymbol{y} - \xib_t)/(T-t)$, so the Markovian projection drift~\eqref{eq:def_markovian_proj} reduces to
 \begin{equation}
     \boldsymbol{v}^*(\xib_t, t) = \frac{\E[\boldsymbol{Y} \mid \xib_t] - \xib_t}{T - t}, \label{eq:markov_drift}
 \end{equation}
 recovering the random bridge drift from Proposition~\ref{prop:bridge_drift}.
 
-IMF \cite[Section~3.2]{shi2023diffusion} alternates between these projections, constructing a sequence $(\P^n)_{n \in \N}$ via
+IMF \cite[Section~3.2]{shi2023diffusion} alternates between these projections, constructing a sequence $(\Pi^n)_{n \in \N}$ via
 \begin{equation}
-    \P^{2n+1} = \mathrm{proj}_{\mathcal{M}}(\P^{2n}), \qquad \P^{2n+2} = \mathrm{proj}_{\mathcal{R}(\mathbb{Q})}(\P^{2n+1}), \label{eq:imf_iteration}
+    \Pi^{2n+1} = \mathrm{proj}_{\mathcal{M}}(\Pi^{2n}), \qquad \Pi^{2n+2} = \mathrm{proj}_{\mathcal{R}(\mathbb{Q})}(\Pi^{2n+1}), \label{eq:imf_iteration}
 \end{equation}
-with $\P^0 \in \mathcal{R}(\mathbb{Q})$ satisfying $\P^0_0 = \boldsymbol{\Phi}$ and $\P^0_T = \boldsymbol{\Psi}$. Both marginals are preserved at every iteration: $\P^n_0 = \boldsymbol{\Phi}$ and $\P^n_T = \boldsymbol{\Psi}$ for all $n$ \cite[Theorem~8]{shi2023diffusion}. The sequence converges to the unique \Schrodinger bridge $\P^{\mathrm{SB}}$, which is the solution to the \Schrodinger bridge problem: find the path measure closest to the reference process $\mathbb{Q}$ in KL divergence subject to boundary constraints,
+with $\Pi^0 \in \mathcal{R}(\mathbb{Q})$ satisfying $\Pi^0_0 = \boldsymbol{\Phi}$ and $\Pi^0_T = \boldsymbol{\Psi}$. Both marginals are preserved at every iteration: $\Pi^n_0 = \boldsymbol{\Phi}$ and $\Pi^n_T = \boldsymbol{\Psi}$ for all $n$ \cite[Theorem~8]{shi2023diffusion}. The sequence converges to the unique \Schrodinger bridge $\Pi^{\mathrm{SB}}$, the path measure closest to the reference $\mathbb{Q}$ in KL divergence subject to the boundary constraints,
 \begin{equation}
-    \P^{\mathrm{SB}} = \argmin_{\P \in \mathcal{P}(\mathcal{C})} \left\{ \mathrm{KL}(\P \| \mathbb{Q}) \;:\; \P_0 = \boldsymbol{\Phi},\; \P_T = \boldsymbol{\Psi} \right\}. \label{eq:sb_problem}
+    \Pi^{\mathrm{SB}} = \argmin_{\Lambda \in \mathcal{P}(\mathcal{C})} \left\{ \mathrm{KL}(\Lambda \| \mathbb{Q}) \;:\; \Lambda_0 = \boldsymbol{\Phi},\; \Lambda_T = \boldsymbol{\Psi} \right\}. \label{eq:sb_problem}
 \end{equation}
 The \Schrodinger bridge is equivalently characterised as the unique path measure in $\mathcal{M} \cap \mathcal{R}(\mathbb{Q})$ satisfying the boundary conditions \cite{leonard2014survey, shi2023diffusion}.
 
 \subsection{Random Bridge Training as a Single IMF Iteration}
 
-The training procedure in the training procedure of Section~\ref{sec:numerics} (Algorithm~\ref{alg:gaussian_bridge_training}) can now be decomposed into the two projections above. The training data generation samples $(\boldsymbol{x}, \boldsymbol{y}) \sim \Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi})$ and draws bridge states $\xib_t^{\boldsymbol{x}} \sim \mathcal{N}(\boldsymbol{E}_t, \boldsymbol{V}_t)$ from the Brownian bridge kernel conditioned on the endpoint. This is the reciprocal projection~\eqref{eq:def_reciprocal_proj}: the endpoint coupling $\Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi})$ is filled in with the reference bridge $\mathbb{Q}_{|0,T}$, producing the path measure
+The training procedure of Section~\ref{sec:numerics} (Algorithm~\ref{alg:gaussian_bridge_training}) can now be decomposed into the two projections above. The training data generation samples $(\boldsymbol{x}, \boldsymbol{y}) \sim \Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi})$ and draws bridge states $\xib_t^{\boldsymbol{x}} \sim \mathcal{N}(\boldsymbol{E}_t, \boldsymbol{V}_t)$ from the Brownian bridge kernel conditioned on the endpoint. This is the reciprocal projection~\eqref{eq:def_reciprocal_proj}: the endpoint coupling $\Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi})$ is filled in with the reference bridge $\mathbb{Q}_{|0,T}$, producing the path measure
 \begin{equation}
     \Pi^0 = \Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi}) \cdot \mathbb{Q}_{|0,T} \;\in\; \mathcal{R}(\mathbb{Q}), \label{eq:reciprocal_proj}
 \end{equation}
@@ -1252,18 +1252,10 @@ Together, these constitute one complete iteration of~\eqref{eq:imf_iteration} in
 
 The random bridge training performs only one such iteration rather than alternating to convergence. Further iterations would progressively refine the transport towards the \Schrodinger bridge. The single-iteration regime already produces a valid stochastic transport between $\boldsymbol{\Phi}$ and $\boldsymbol{\Psi}$, with the bridge kernel providing the correct conditional dynamics. This is analogous to the observation that standard score-based generative modelling corresponds to the first IPF iteration \cite{debortoli2021diffusion}, and that rectified flow arises as the limit as $\boldsymbol{\sigma} \to 0$ of DSBM-IMF \cite{shi2023diffusion}.
 
-A practical advantage of this single-iteration random bridge regime is that it avoids the \emph{simulation-inference mismatch} identified by \cite{peluchetti2023diffusion}. In iterative IPF-based methods such as DSB \cite{debortoli2021diffusion}, each iterate $\P^{n+1}$ is obtained by simulating trajectories from the \emph{previous} iterate $\P^n$ and regressing a new drift against them. Since $\P^n$ and $\P^{n+1}$ have different initial distributions, training data is drawn from a distribution that does not match the model being learned, leading to error accumulation across iterations. In contrast, the random bridge training samples directly from the known reference bridge $\mathbb{Q}_{|0,T}$ via an explicit reciprocal projection, so no learned drift is used to generate training data. This ensures exact consistency between the training distribution and the model at every stage.
+A practical advantage of this single-iteration random bridge regime is that it avoids the \emph{simulation-inference mismatch} identified by \cite{peluchetti2023diffusion}. In iterative IPF-based methods such as DSB \cite{debortoli2021diffusion}, each iterate $\Pi^{n+1}$ is obtained by simulating trajectories from the \emph{previous} iterate $\Pi^n$ and regressing a new drift against them. Since $\Pi^n$ and $\Pi^{n+1}$ have different initial distributions, training data is drawn from a distribution that does not match the model being learned, leading to error accumulation across iterations. In contrast, the random bridge training samples directly from the known reference bridge $\mathbb{Q}_{|0,T}$ via an explicit reciprocal projection, so no learned drift is used to generate training data. This ensures exact consistency between the training distribution and the model at every stage.
 
-\begin{remark}[General \levy reference]
-The \Schrodinger problem is defined relative to an arbitrary reference path measure $R$, not only
-Wiener measure, and its solution is Markov whenever $R$ is \cite{leonard2014survey}. Taking $R$ to be a
-\levy law, the reciprocal class is built from the \levy random bridges of
-Section~\ref{sec:framework}, and the Markovian-projection drift is the harmonic-function score
-$\beta^2\partial_x\log h_{tT}$ of Section~\ref{sec:semimartingale}, the engine this paper supplies. The
-Brownian reference is the special case that additionally connects to entropic optimal transport, the
-quadratic Benamou-Brenier reading being specific to the Wiener case. For a general \levy reference one
-obtains a bona-fide \levy-\Schrodinger problem. We establish the formulation and the single IMF
-iteration constructively, and leave full IMF convergence beyond the diffusion case as a conjecture.
+\begin{remark}[The \levy-\Schrodinger conjecture]
+For a general \levy reference, every ingredient above except the convergence theory is in place. The reciprocal class is generated by the \levy random bridges of Section~\ref{sec:framework}, the single IMF iteration is executable through the explicit representation of Theorem~\ref{thm:explicit-decomp}, and the marginals are preserved exactly as in the Brownian case. Full IMF convergence beyond the diffusion reference remains open, and we leave it as a conjecture.
 \end{remark}
 
 \section{Numerical Framework}\label{sec:numerics}
