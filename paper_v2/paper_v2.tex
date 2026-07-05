@@ -181,7 +181,7 @@ with state-space $(\mathbb{X},\mathcal{B}(\mathbb{X}))$ given $\mathbb{X} \subse
 \begin{align}
 \boldsymbol{Y}= [Y^{(1)}, \ldots,Y^{(j)}, \ldots, Y^{(n)}]^{\tp} \sim \boldsymbol{\Psi}
 \end{align}
-with state-space $(\mathbb{Y},\mathcal{B}(\mathbb{Y}))$ given $\mathbb{Y} \subseteq \R^n$. Hereafter, $\{\boldsymbol{Z}_t\}_{t\in\T}$ is an $\R^n$-valued c\`adl\`ag stochastic process we refer to as the \emph{driving} process -- we denote its natural filtration by $\{\mathcal{F}_t^{\boldsymbol{Z}}\}_{t\in\T}$ so that $\mathcal{F}_t^{\boldsymbol{Z}} \subset \mathcal{F}_t$ is a subalgebra for every $t\in\T$. We now recall $(\boldsymbol{\Phi}, \boldsymbol{\Psi})$-bridges from \cite{goria_random-bridges_2025} below.
+with state-space $(\mathbb{Y},\mathcal{B}(\mathbb{Y}))$ given $\mathbb{Y} \subseteq \R^n$. For any random bridge $\{\xib_t\}_{t\in\T}$ considered below, we identify the endpoint variables with the endpoint values of the process, $\boldsymbol{X} = \xib_0$ and $\boldsymbol{Y} = \xib_T$ $\P$-almost surely; equality of laws alone would not determine conditional expectations such as $\E[\boldsymbol{Y} \mid \xib_t]$, which this identification renders unambiguous. Hereafter, $\{\boldsymbol{Z}_t\}_{t\in\T}$ is an $\R^n$-valued c\`adl\`ag stochastic process we refer to as the \emph{driving} process -- we denote its natural filtration by $\{\mathcal{F}_t^{\boldsymbol{Z}}\}_{t\in\T}$ so that $\mathcal{F}_t^{\boldsymbol{Z}} \subset \mathcal{F}_t$ is a subalgebra for every $t\in\T$. We now recall $(\boldsymbol{\Phi}, \boldsymbol{\Psi})$-bridges from \cite{goria_random-bridges_2025} below.
 \begin{defn}
 \label{definitionRandomBridge}
 If $\{\xib_t\}_{t\in\T}$ is an $\R^n$-valued $\{\F_{t}\}$-adapted stochastic process such that
@@ -263,6 +263,9 @@ Let each coordinate of $\{\mathbf{Z}_t\}_{t\in\T}$ be a mutually independent \le
 \end{align}
 for every $t\in[0,T)$, where $\{\mathbf{M}_t\}_{t\in\T}$ is a $(\P,\{\F_{t}^{\xib^{\boldsymbol{x}}}\}_{t\in\T})$-martingale with $\mathbf{M}_{0} = \boldsymbol{x}$.
 \end{proposition}
+\begin{remark}
+Proposition~\ref{stochfiltlevyrandom} is inherited from \cite{goria_random-bridges_2025} as an identity in law, and we retain the distributional-equality notation wherever a result is quoted in that form. On the canonical filtered space carrying the bridge, Theorem~\ref{thm:main-rep} below upgrades the identity to a $\P$-almost-sure semimartingale decomposition: the Doob $h$-transform construction of Sections~\ref{sec:modified-levy} and~\ref{sec:explicit-decomp} identifies the semimartingale characteristics of $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ directly under the bridge law, and all pathwise manipulations in the sequel take place on that space.
+\end{remark}
 We prove and provide an explicit representation of the $(\P,\{\F_{t}^{\xib^{\boldsymbol{x}}}\}_{t\in\T})$-martingale $\{\mathbf{M}_t\}_{t\in\T}$ in Theorem~\ref{thm:main-rep} below, the first main result of this paper. For now, denoting  $\langle \boldsymbol{M}_t^c \rangle$ as the continuous part and $\Delta \boldsymbol{M}_t = \boldsymbol{M}_t - \boldsymbol{M}_{t-}$ for all $t\in[0,T)$, the quadratic variation process of $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$, written as $\{\langle\xib^{\boldsymbol{x}}_t\rangle\}_{t\in\T}$, is given by the following decomposition:
 \begin{align}
 \langle \xib^{\boldsymbol{x}}_t\rangle = \langle \boldsymbol{M}_t^c \rangle + \sum_{0 < s \leq t} (\Delta\boldsymbol{M}_s)^2. \notag
