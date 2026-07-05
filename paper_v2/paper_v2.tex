@@ -56,6 +56,7 @@
 \newtheorem{defn}[thm]{Definition}
 \newtheorem{rem}[thm]{Remark}
 \newtheorem{prop}[thm]{Proposition}
+\newtheorem{conj}[thm]{Conjecture}
 \newtheorem{asu}{Assumption}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\p}[1]{\ensuremath{\mathbb{#1}}}
@@ -166,6 +167,7 @@ We work in a more general setup, focusing on an analytically rich class of rando
 Our main contributions are as follows. First, we connect these processes to Rectified Flows, demonstrating that the conditional drift of such a bridge has the same functional form as the velocity field of rectified flow, and that this identity holds for every admissible driver (Section~\ref{sec:rf-connection}). We prove that generalised Brownian random bridges can be explicitly represented as the sum of Rectified Flows plus standard Brownian bridges (Section~\ref{sec:brownian}). This link places Rectified flow, random bridges, and \Schrodinger bridges on a common footing, a unifying perspective hitherto unavailable (Section~\ref{sec:schrodinger}). In addition, we provide a non-anticipative semimartingale representation for the generalised \levy random bridge, carrying an explicit martingale component (Theorem~\ref{thm:main-rep}). This result is what makes non-Gaussian and jump drivers usable as transports rather than merely definable, taking a significant step forward towards implementing them for practical use cases. For a detailed account, we treat the Brownian and Poisson bridges as canonical continuous and discontinuous cases, and combine them in a jump-diffusion bridge. Through this journey, we verify explicit connections to Rectified Flows, generalise Tweedie's formula (Section~\ref{sec:tweedie}), and establish a temporal transport consistency (Section~\ref{sec:temporal-consistency}) under which every sub-bridge is again a transport between intermediate laws. Finally, we provide training and simulation algorithms (Section~\ref{sec:numerics}), leaving the natural extension to discrete and mixed data to future work.
 
 \section{Mathematical Framework}\label{sec:framework}
+This section develops the framework in five movements. Subsection~\ref{sec:framework}.1 defines random bridges and their conditioning; Subsection~\ref{sec:semimartingale} states our first main result, the explicit pathwise representation of Theorem~\ref{thm:main-rep}; Subsections~\ref{sec:rf-connection} and~\ref{sec:temporal-consistency} draw its two structural consequences, the Rectified Flow correspondence and the temporal transport consistency; and Subsections~\ref{sec:modified-levy} and~\ref{sec:explicit-decomp} supply the proof through the bridge-modified \levy measure.
 We bring forward the mathematical setup from \cite{goria_random-bridges_2025}, while keeping notations the same. Set a finite time horizon $\T = [0,T]$ for some $T <\infty$, and let $(\Omega,\F,\P)$ a probability space equipped with a right-continuous and complete filtration $\{\F_{t}\}_{t \in \T}$. We use $\mathcal{B}(\cdot)$ for the Borel $\sigma$-field. Let $\boldsymbol{\Phi}$ and $\boldsymbol{\Psi}$ be measures on $(\Omega,\F)$ such that
 \begin{align}
 \boldsymbol{\Phi}\ll \P \,\,\,\,\, \text{and} \,\,\,\,\, \boldsymbol{\Psi}\ll \P. \notag
@@ -404,11 +406,23 @@ Finally, inserting the optimal solution $\boldsymbol{v}^*$ in (\ref{eq:rf_target
     \mathrm{d}\bar{\boldsymbol{R}}_t = \frac{\mathbb{E}[\boldsymbol{Y} \mid \bar{\boldsymbol{R}}_t] - \bar{\boldsymbol{R}}_t}{T-t}\mathrm{d}t \, , \label{odemodelbaseconnection}
 \end{equation}
 which shares the same functional form to the conditional expectation of a $\boldsymbol{\Phi}$-initialised random-bridge to $\boldsymbol{\Psi}$ as given in (\ref{criticalconnection}).
-\begin{remark}
+\begin{prop}[Rectified Flow correspondence]
 \label{coredynamicconnection}
-Remarkably, the connection between (\ref{criticalconnection}) and (\ref{odemodelbaseconnection}) holds for any choice of \levy process acting as the driving process, given $\E[|\xib^{\boldsymbol{x}}_t|] < \infty$. This highlights a fundamental relation between random bridges and Rectified Flows.
-\end{remark}
-Remark \ref{coredynamicconnection} paves a path that takes us well beyond Brownian motion frameworks, as commonly seen in the literature, and allows us to take a step forward in unifying different approaches. Finally, in the spirit of (\ref{purebridgeconstruct}), we define the following causal (non-anticipative) process:
+Let $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ be a $\boldsymbol{\Phi}$-initialised random bridge to $\boldsymbol{\Psi}$ under \emph{any} \levy driver with $\E[|\xib^{\boldsymbol{x}}_t|] < \infty$. Then:
+\begin{enumerate}
+    \item[(i)] \emph{(Dynamical layer.)} The conditional drift of the bridge coincides in functional form with the optimal Rectified Flow velocity field,
+    \begin{align}
+        \E\left[\dd \xib^{\boldsymbol{x}}_{t} \,|\, \xib^{\boldsymbol{x}}_{t} \right] = \frac{\E\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_t \right]  - \xib^{\boldsymbol{x}}_t }{T-t}\dd t \, = \, \boldsymbol{v}^*(\xib^{\boldsymbol{x}}_t, t)\,\dd t, \notag
+    \end{align}
+    where $\boldsymbol{v}^*$ is the velocity field of (\ref{odemodelbaseconnection}).
+    \item[(ii)] \emph{(Statistical layer.)} The mean of the pinned bridge is the Rectified Flow interpolant, $\E[\boldsymbol{\xi}^{\boldsymbol{x},\boldsymbol{y}}_t] = \boldsymbol{R}^{\boldsymbol{x,y}}_t$ for every $t \in \T$.
+\end{enumerate}
+\end{prop}
+\begin{proof}
+Part (i) is (\ref{criticalconnection}), which rests on Theorem~\ref{thm:main-rep} and holds for any \levy driver satisfying the stated moment condition, compared against the target-pull form (\ref{eq:rf_target_pull}) of the Rectified Flow velocity. Part (ii) follows from (\ref{coreexpectationbridge}).
+\end{proof}
+Proposition~\ref{coredynamicconnection} is the sense in which generalised \levy random bridges are stochastic extensions of Rectified Flows: neither layer depends on the driver being Brownian.
+Proposition \ref{coredynamicconnection} paves a path that takes us well beyond Brownian motion frameworks, as commonly seen in the literature, and allows us to take a step forward in unifying different approaches. Finally, in the spirit of (\ref{purebridgeconstruct}), we define the following causal (non-anticipative) process:
 \begin{align}
 \boldsymbol{R}^{\boldsymbol{x,y}}_t \triangleq  \boldsymbol{R}_t \, |_{\boldsymbol{X} = \boldsymbol{x} \, , \, \boldsymbol{Y} = \boldsymbol{y} \,\, , \,\, (\boldsymbol{x},\boldsymbol{y}) \leftarrow \boldsymbol{\Gamma}(\boldsymbol{\Phi},\boldsymbol{\Psi})} \hspace{0.1in} \forall t\in\T. \label{nonanticipativerectifiedconstruct}
 \end{align}
@@ -420,7 +434,7 @@ which is a linear interpolation between any given $\boldsymbol{x}\in\R^n$ and $\
 \begin{equation}
         \E\left[\boldsymbol{\xi}^{\boldsymbol{x},\boldsymbol{y}}_t\right] \, = \, \boldsymbol{R}^{\boldsymbol{x,y}}_t, \label{rectifiedrandomexpectationequality}
     \end{equation}
-for any $t\in\T$, which follows from (\ref{coreexpectationbridge}). Again, the equality in (\ref{rectifiedrandomexpectationequality}) holds for any choice of \levy process acting as the driving process, given $\E[|\xib^{\boldsymbol{x}}_t|] < \infty$. This is another statistical layer that establishes a fundamental relation between random bridges and Rectified Flows.
+for any $t\in\T$, restating part (ii) of Proposition~\ref{coredynamicconnection} in the pinned notation.
 \begin{remark}
 Let $\{\xib_t\}_{t\in\T}$ be a generalised \levy random bridge as per above. Then one can observe the similarity of the functional forms
 \begin{align}
@@ -540,13 +554,14 @@ for any $0\leq r < t < u \leq T$. Since the proposed framework through Definitio
 \end{align}
 each $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in [r,u]}$ defines a \emph{$\boldsymbol{\Phi}_r$-initialised random-bridge to $\boldsymbol{\Psi}_u$} for any $u\in(t,T]$. Accordingly, due to the consistency property above, such random bridges -- e.g. when the driving process $\{\boldsymbol{Z}_{t}\}_{t\in\T}$ is a \levy process -- can be viewed as collections of stochastic (sub)-transports across $\boldsymbol{\Phi}_r$ and $\boldsymbol{\Psi}_u$ for any $0\leq r < u \leq T$. We call this the \emph{temporal transport consistency property}.
 
-\begin{remark}
+\begin{conj}[Temporal consistency of Rectified Flows]
+\label{conj:rf-consistency}
 Due to the aforementioned connection with Rectified Flows through (\ref{criticalconnection}) and (\ref{odemodelbaseconnection}), we conjecture that
 \begin{equation}
     \frac{\mathbb{E}[\boldsymbol{Y} \mid \bar{\boldsymbol{R}}_t] - \bar{\boldsymbol{R}}_t}{T-t}\mathrm{d}t \, = \, \frac{\mathbb{E}[\bar{\boldsymbol{R}}_u \mid \bar{\boldsymbol{R}}_t] - \bar{\boldsymbol{R}}_t}{u-t}\mathrm{d}t \,\,\,\, \Rightarrow \,\,\,\, \mathrm{d}\bar{\boldsymbol{R}}_t = \frac{\mathbb{E}[\bar{\boldsymbol{R}}_u \mid \bar{\boldsymbol{R}}_t] - \bar{\boldsymbol{R}}_t}{u-t}\mathrm{d}t, \notag
 \end{equation}
-for any $u\in(t,T]$. We shall leave this as a hypothesis, since establishing such a relation is beyond the scope of this paper.
-\end{remark}
+for any $u\in(t,T]$. Establishing this relation is beyond the scope of this paper; we return to it in Section~\ref{sec:conclusion}.
+\end{conj}
 
 \begin{remark}[Relation to LRB dynamic consistency]
 Proposition~\ref{prop:temporal-consistency} is the stochastic-transport reading of the dynamic
@@ -699,7 +714,8 @@ Only the diffusion expansion contributes to the coefficient of $f''(x)$, giving 
 The remaining jump integral $\int [f(x+y) - f(x) - yf'(x)\1_{|y|<1}]\,\frac{h_{tT}(x+y)}{h_{tT}(x)}\,\eta(\d y)$ from~\eqref{eq:jump-mod} is the bridge-modified jump term, completing~\eqref{eq:modified-generator-app}.
 \end{proof}
 
-\begin{rem}
+\begin{coro}[Score form of the bridge drift]
+\label{cor:score-drift}
 The Brownian-shift term in~\eqref{eq:modified-drift-app} is exactly the score of the harmonic function:
 \begin{equation}\label{eq:drift-score-form}
   \widetilde{\alpha}(t, x)
@@ -707,7 +723,7 @@ The Brownian-shift term in~\eqref{eq:modified-drift-app} is exactly the score of
     + \int_{|y|<1} y\,\Bigl[\frac{h_{tT}(x+y)}{h_{tT}(x)} - 1\Bigr]\,\eta(\d y).
 \end{equation}
 In the purely continuous case ($\eta = 0$, Brownian driver), this reduces to $\widetilde{\alpha}(t, x) = \alpha + \beta^2\,\partial_x \log h_{tT}(x)$, the canonical score-based drift of the conditioned diffusion. This is the Brownian-reference DSBM bridge drift discussed in Section~\ref{sec:imf} (cf.~\cite[Proposition~2]{shi2023diffusion} and the surrounding Markovian-projection discussion). The jump-integral term in~\eqref{eq:drift-score-form} is the natural \levy-driver extension absent from the diffusion-only DSBM setting.
-\end{rem}
+\end{coro}
 
 \begin{rem}
 Theorem~\ref{thm:modified-levy-app} (and the explicit decomposition that follows in Subsection~\ref{sec:explicit-decomp}) is a special case of Girsanov's theorem for semimartingale characteristics: under a change of measure with density $h_{tT}(Z_t)$, a process with $\P$-characteristics $(B, C, \nu)$ has new characteristics $(B', C, Y\cdot\nu)$, with the diffusion coefficient $C$ unchanged, the compensator $\nu$ multiplied by a state-dependent density $Y$, and the drift modified accordingly (\cite[Theorem~III.3.24]{JacodShiryaev2003}). Specialised to the LRB Doob $h$-transform, the multiplier $Y$ becomes the ratio $h_{tT}(z + y)/h_{tT}(z)$, recovering~\eqref{eq:modified-levy-measure-app}. We gave a direct, self-contained derivation here to avoid invoking the full semimartingale-characteristics formalism.
