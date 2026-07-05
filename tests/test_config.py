@@ -172,3 +172,26 @@ class TestTransportConfig:
         assert loaded.data.classes == ["dog"]
         assert loaded.data.source_dataset == "afhq"
         assert loaded.data.source_classes == ["cat"]
+
+
+class TestTransportYamlConfigs:
+    """The shipped transport configs must load and be transport-mode."""
+
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "cifar_cat2dog.yaml",
+            "cifar_cat2dog_smoke.yaml",
+            "afhq_cat2dog_64.yaml",
+            "afhq_cat2dog_smoke.yaml",
+        ],
+    )
+    def test_config_loads_and_is_transport(self, name) -> None:
+        from pathlib import Path as _Path
+
+        path = _Path(__file__).parent.parent / "configs" / name
+        config = ExperimentConfig.from_yaml(path)
+        assert config.method == "bridge"
+        assert config.data.source_dataset is not None
+        assert config.data.classes == ["dog"]
+        assert config.data.source_classes == ["cat"]

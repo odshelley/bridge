@@ -1,0 +1,59 @@
+# AFHQ cat -> dog transport at 64x64 with the Gaussian bridge.
+# Headline transport experiment (cf. Rectified Flow / DSBM / DDBM benchmarks).
+# Sized for a single modern CUDA GPU (A100/4090: roughly 1-2 days at 150k steps).
+# Requires: bash scripts/download_afhq.sh
+
+name: bridge_afhq_cat2dog_64
+output_dir: ./outputs/afhq_cat2dog_64
+method: bridge
+
+model:
+  in_channels: 3
+  out_channels: 3
+  sample_size: 64
+  block_out_channels: [128, 256, 384, 512]
+  layers_per_block: 2
+  down_block_types:
+    - DownBlock2D
+    - DownBlock2D
+    - AttnDownBlock2D
+    - AttnDownBlock2D
+  up_block_types:
+    - AttnUpBlock2D
+    - AttnUpBlock2D
+    - UpBlock2D
+    - UpBlock2D
+  attention_head_dim: 8
+  dropout: 0.1
+
+training:
+  batch_size: 64
+  num_steps: 150000
+  learning_rate: 0.0001
+  weight_decay: 0.0
+  grad_clip_norm: 1.0
+  checkpoint_every: 10000
+  log_every: 100
+  seed: 42
+  use_ema: true
+  ema_decay: 0.9999
+
+bridge:
+  T: 0.1
+  eps: 0.0000001
+
+sampling:
+  num_steps: 100
+  num_samples: 64
+  show_progress: true
+  clip_samples: true
+
+data:
+  dataset: afhq
+  classes: [dog]
+  source_dataset: afhq
+  source_classes: [cat]
+  data_dir: ./data
+  image_size: 64
+  num_workers: 8
+  pin_memory: true
