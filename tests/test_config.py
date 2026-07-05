@@ -157,6 +157,14 @@ class TestTransportConfig:
         with pytest.raises(ValueError, match="source_classes requires source_dataset"):
             DataConfig(source_classes=["cat"])
 
+    def test_ddpm_with_source_dataset_raises(self) -> None:
+        with pytest.raises(ValueError, match="requires method='bridge'"):
+            ExperimentConfig(method="ddpm", data=DataConfig(source_dataset="mnist"))
+
+    def test_poisson_bridge_with_source_dataset_raises(self) -> None:
+        with pytest.raises(ValueError, match="requires method='bridge'"):
+            ExperimentConfig(method="poisson_bridge", data=DataConfig(source_dataset="mnist"))
+
     def test_yaml_round_trip_with_transport_fields(self, tmp_path) -> None:
         config = ExperimentConfig(
             data=DataConfig(

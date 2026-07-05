@@ -156,6 +156,13 @@ class ExperimentConfig:
         # Default mlflow tracking to output_dir if not specified
         if self.mlflow_tracking_uri is None:
             self.mlflow_tracking_uri = f"sqlite:///{self.output_dir}/mlflow.db"
+        # Transport mode (source_dataset) is only mathematically valid for the
+        # Gaussian bridge: ddpm would silently train on the wrong distribution,
+        # and poisson_bridge would feed [-1, 1] floats where it expects counts.
+        if self.data.source_dataset is not None and self.method != "bridge":
+            raise ValueError(
+                f"Transport mode (source_dataset) requires method='bridge', got method='{self.method}'"
+            )
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "ExperimentConfig":
