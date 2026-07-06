@@ -14,6 +14,23 @@ from torch.utils.data import DataLoader, TensorDataset
 logger = logging.getLogger(__name__)
 
 
+def _require_torch_fidelity():
+    """Import torch_fidelity or fail with an actionable message."""
+    try:
+        import torch_fidelity
+    except ImportError:
+        logger.error("torch-fidelity not installed. Install with: pip install torch-fidelity")
+        raise
+    return torch_fidelity
+
+
+def _to_uint8(images: torch.Tensor) -> torch.Tensor:
+    """Convert [-1, 1] or [0, 1] float images to [0, 255] uint8 (NCHW)."""
+    if images.min() < 0:
+        images = (images + 1) / 2
+    return (images * 255).clamp(0, 255).to(torch.uint8)
+
+
 def compute_fid(
     real_images: torch.Tensor,
     generated_images: torch.Tensor,
@@ -31,23 +48,11 @@ def compute_fid(
     Returns:
         FID score (lower is better).
     """
-    try:
-        import torch_fidelity
-    except ImportError:
-        logger.error("torch-fidelity not installed. Install with: pip install torch-fidelity")
-        raise
+    torch_fidelity = _require_torch_fidelity()
 
     # Ensure images are in [0, 255] uint8 format as expected by torch-fidelity
-    def prepare_images(images: torch.Tensor) -> torch.Tensor:
-        # If in [-1, 1], convert to [0, 1]
-        if images.min() < 0:
-            images = (images + 1) / 2
-        # Convert to [0, 255] uint8
-        images = (images * 255).clamp(0, 255).to(torch.uint8)
-        return images
-
-    real_images = prepare_images(real_images)
-    generated_images = prepare_images(generated_images)
+    real_images = _to_uint8(real_images)
+    generated_images = _to_uint8(generated_images)
 
     # torch-fidelity expects images in NCHW format with uint8 values
     metrics = torch_fidelity.calculate_metrics(
@@ -79,11 +84,7 @@ def compute_fid_from_paths(
     Returns:
         FID score.
     """
-    try:
-        import torch_fidelity
-    except ImportError:
-        logger.error("torch-fidelity not installed. Install with: pip install torch-fidelity")
-        raise
+    torch_fidelity = _require_torch_fidelity()
 
     metrics = torch_fidelity.calculate_metrics(
         input1=str(generated_path),
@@ -114,16 +115,10 @@ def compute_fid_against_dataset(
     Returns:
         FID score.
     """
-    try:
-        import torch_fidelity
-    except ImportError:
-        logger.error("torch-fidelity not installed. Install with: pip install torch-fidelity")
-        raise
+    torch_fidelity = _require_torch_fidelity()
 
     # Prepare generated images
-    if generated_images.min() < 0:
-        generated_images = (generated_images + 1) / 2
-    generated_images = (generated_images * 255).clamp(0, 255).to(torch.uint8)
+    generated_images = _to_uint8(generated_images)
 
     metrics = torch_fidelity.calculate_metrics(
         input1=TensorDataset(generated_images),
