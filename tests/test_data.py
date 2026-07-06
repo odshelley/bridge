@@ -2,6 +2,7 @@
 
 import pytest
 import torch
+from PIL import Image
 from torchvision import datasets as tv_datasets
 
 from bridge_diffusion.config import DataConfig
@@ -13,6 +14,7 @@ from bridge_diffusion.data import (
     get_dataset,
     load_source_val_images,
 )
+from bridge_diffusion.data.datasets import get_afhq_int_transforms, get_cifar10_int_transforms
 
 
 class TestDataInfo:
@@ -46,6 +48,68 @@ class TestDataInfo:
         object.__setattr__(config, "dataset", "unknown")
         with pytest.raises(ValueError, match="Unknown dataset"):
             get_data_info(config)
+
+
+class TestCifar10IntTransforms:
+    """Tests for the CIFAR-10 integer-pixel transform path (Poisson bridge)."""
+
+    def test_output_is_integer_valued_float32_in_range(self) -> None:
+        img = Image.new("RGB", (32, 32), color=(7, 100, 250))
+        out = get_cifar10_int_transforms(image_size=32)(img)
+        assert out.dtype == torch.float32
+        assert out.shape == (3, 32, 32)
+        assert out.min() >= 0.0
+        assert out.max() <= 255.0
+        assert torch.equal(out, out.round())
+
+    def test_resize_preserves_integer_values(self) -> None:
+        img = Image.new("RGB", (64, 64), color=(13, 37, 201))
+        out = get_cifar10_int_transforms(image_size=32)(img)
+        assert out.shape == (3, 32, 32)
+        assert torch.equal(out, out.round())
+
+    def test_eval_transform_has_no_flip(self) -> None:
+        t = get_cifar10_int_transforms(image_size=32, train=False)
+        names = [type(op).__name__ for op in t.transforms]
+        assert "RandomHorizontalFlip" not in names
+
+
+class TestAfhqIntTransforms:
+    """Tests for the AFHQ integer-pixel transform path (Poisson bridge)."""
+
+    def test_output_is_integer_valued_float32_in_range(self) -> None:
+        img = Image.new("RGB", (512, 512), color=(7, 100, 250))
+        out = get_afhq_int_transforms(image_size=64)(img)
+        assert out.dtype == torch.float32
+        assert out.shape == (3, 64, 64)
+        assert out.min() >= 0.0
+        assert out.max() <= 255.0
+        assert torch.equal(out, out.round())
+
+    def test_eval_transform_has_no_flip(self) -> None:
+        t = get_afhq_int_transforms(image_size=64, train=False)
+        names = [type(op).__name__ for op in t.transforms]
+        assert "RandomHorizontalFlip" not in names
+
+    def test_raw_pixels_dataset_returns_int_pixels(self, afhq_dir) -> None:
+        config = DataConfig(
+            dataset="afhq",
+            data_dir=afhq_dir,
+            image_size=16,
+            raw_pixels=True,
+        )
+        ds = get_dataset(config, train=True)
+        img, _ = ds[0]
+        assert img.dtype == torch.float32
+        assert img.max() > 1.0
+        assert torch.equal(img, img.round())
+
+    def test_normalised_path_unchanged(self, afhq_dir) -> None:
+        config = DataConfig(dataset="afhq", data_dir=afhq_dir, image_size=16)
+        ds = get_dataset(config, train=True)
+        img, _ = ds[0]
+        assert img.min() >= -1.0
+        assert img.max() <= 1.0
 
 
 class TestDataConfig:
@@ -112,6 +176,20 @@ class TestDataLoading:
         images, labels = batch
         assert images.shape == (4, 3, 32, 32)
         assert labels.shape == (4,)
+
+    def test_cifar10_raw_pixels_dataloader(self, tmp_path) -> None:
+        """CIFAR-10 with raw_pixels=True yields integer pixels in [0, 255]."""
+        config = DataConfig(
+            dataset="cifar10",
+            data_dir=tmp_path,
+            image_size=32,
+            raw_pixels=True,
+        )
+        loader = get_dataloader(config, batch_size=4, train=True)
+        images, _ = next(iter(loader))
+        assert images.dtype == torch.float32
+        assert images.max() > 1.0
+        assert torch.equal(images, images.round())
 
 
 class TestFilterClasses:

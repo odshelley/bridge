@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gaussian and Poisson Generation on CIFAR-10 and AFHQ — Design Spec</title>
+<style>
+  :root {
+    --bg: #fdfdfc;
+    --fg: #1a1a1a;
+    --muted: #666;
+    --accent: #7c3aed;
+    --accent-soft: #f3eefe;
+    --border: #e4e4e0;
+    --code-bg: #f4f2ef;
+    --ok: #15803d;
+    --warn: #b45309;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16161a;
+      --fg: #e8e8e6;
+      --muted: #9a9a94;
+      --accent: #a78bfa;
+      --accent-soft: #241f33;
+      --border: #2d2d33;
+      --code-bg: #232328;
+      --ok: #4ade80;
+      --warn: #fbbf24;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 3rem 1.5rem 5rem;
+    background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+  }
+  main { max-width: 46rem; margin: 0 auto; }
+  h1 { font-size: 1.7rem; line-height: 1.25; margin: 0 0 .3rem; letter-spacing: -0.02em; }
+  h2 {
+    font-size: 1.15rem; margin: 2.4rem 0 .7rem; letter-spacing: -0.01em;
+    padding-bottom: .35rem; border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 1rem; margin: 1.6rem 0 .5rem; }
+  p { margin: .6rem 0; }
+  .meta { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+  .meta .badge {
+    display: inline-block; background: var(--accent-soft); color: var(--accent);
+    font-weight: 600; font-size: .78rem; padding: .1rem .55rem; border-radius: 999px;
+    margin-left: .5rem; vertical-align: 1px;
+  }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: .86em; background: var(--code-bg);
+    padding: .12em .38em; border-radius: 4px;
+  }
+  ul { padding-left: 1.3rem; margin: .5rem 0; }
+  li { margin: .3rem 0; }
+  .card {
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: .9rem 1.1rem; margin: .8rem 0;
+  }
+  .card h4 { margin: 0 0 .3rem; font-size: .95rem; }
+  .card p { margin: .2rem 0; font-size: .92rem; color: var(--muted); }
+  .pill { font-weight: 600; }
+  .pill.gauss { color: var(--accent); }
+  .pill.poisson { color: var(--warn); }
+  .scope { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin: 1rem 0; }
+  @media (max-width: 560px) { .scope { grid-template-columns: 1fr; } }
+  .scope .card { margin: 0; }
+  .scope .in h4 { color: var(--ok); }
+  .scope .out h4 { color: var(--muted); }
+  .flow {
+    background: var(--code-bg); border-radius: 8px; padding: .8rem 1rem;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .82rem;
+    overflow-x: auto; white-space: nowrap;
+  }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }
+  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--border); }
+  th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .check { color: var(--ok); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Gaussian and Poisson Generation on CIFAR-10 and AFHQ</h1>
+  <p class="meta">2026-07-06 · diffusion-bridge <span class="badge">Approved</span></p>
+
+  <h2>Goal</h2>
+  <p>Enable noise-to-data generation training for both the <span class="pill gauss">Gaussian bridge</span>
+  and the <span class="pill poisson">Poisson bridge</span> on the two real datasets already supported:
+  CIFAR-10 (32×32) and AFHQ (64×64, all three classes). Gaussian generation on CIFAR-10 already
+  exists (<code>configs/cifar10.yaml</code>); everything else is new.</p>
+
+  <div class="scope">
+    <div class="card in">
+      <h4>In scope</h4>
+      <p>Integer-pixel data path for CIFAR-10/AFHQ; four new configs; tests.</p>
+    </div>
+    <div class="card out">
+      <h4>Out of scope</h4>
+      <p>Poisson data-to-data transport (cat→dog). The transport guard restricting
+      transport to <code>method: bridge</code> stays; deferred to a later design.</p>
+    </div>
+  </div>
+
+  <h2>Background</h2>
+  <p>The Poisson bridge (<code>models/poisson_bridge.py</code>) operates on non-negative integer
+  pixel counts in [0, 255]. The pipeline supports this via <code>DataConfig.raw_pixels</code>, but
+  the integer-pixel transform path is wired for MNIST only — the CIFAR-10 and AFHQ branches of
+  <code>_make_base_dataset</code> always normalise to [−1, 1] floats. The Poisson model itself is
+  per-pixel and channel-agnostic, so <strong>no model changes are needed</strong>.</p>
+
+  <h2>1 · Data path</h2>
+  <p><code>src/bridge_diffusion/data/datasets.py</code> — two new transform builders mirroring
+  <code>get_mnist_int_transforms</code>. PIL-side geometric ops preserve integer values;
+  <code>PILToTensor</code> keeps [0, 255].</p>
+
+  <p><strong><code>get_cifar10_int_transforms(image_size)</code></strong></p>
+  <div class="flow">Resize → RandomHorizontalFlip → PILToTensor → _ToFloat</div>
+
+  <p style="margin-top:.9rem"><strong><code>get_afhq_int_transforms(image_size, train)</code></strong></p>
+  <div class="flow">Resize → CenterCrop → RandomHorizontalFlip (train only) → PILToTensor → _ToFloat</div>
+
+  <p>Output: float32, integer-valued, [0, 255], shape (3, H, W). <code>_make_base_dataset</code>
+  selects the int transforms for the <code>cifar10</code> and <code>afhq</code> branches when
+  <code>config.raw_pixels</code> is true, exactly as the MNIST branch does.</p>
+
+  <h2>2 · Configs</h2>
+  <table>
+    <tr><th>File</th><th>Method</th><th>Notes</th></tr>
+    <tr>
+      <td><code>afhq_64.yaml</code></td>
+      <td><span class="pill gauss">bridge</span></td>
+      <td>All classes, 64px. Same UNet/training/bridge sections as
+      <code>afhq_cat2dog_64.yaml</code>, no <code>source_dataset</code>/<code>classes</code> keys.</td>
+    </tr>
+    <tr>
+      <td><code>afhq_poisson_64.yaml</code></td>
+      <td><span class="pill poisson">poisson_bridge</span></td>
+      <td>All classes, 64px, <code>raw_pixels: true</code>, <code>num_levels: 256</code>,
+      <code>prior: zeros</code>, <code>clip_samples: false</code>. Same UNet as <code>afhq_64.yaml</code>.</td>
+    </tr>
+    <tr>
+      <td><code>cifar10_poisson.yaml</code></td>
+      <td><span class="pill poisson">poisson_bridge</span></td>
+      <td>32px, <code>raw_pixels: true</code>, same UNet as <code>cifar10.yaml</code>.</td>
+    </tr>
+    <tr>
+      <td><code>cifar10_poisson_smoke.yaml</code></td>
+      <td><span class="pill poisson">poisson_bridge</span></td>
+      <td>200-step, small-batch variant for cheap end-to-end verification.</td>
+    </tr>
+  </table>
+  <p>Poisson bridge hyperparameters (<code>T</code>, <code>eps</code>) follow
+  <code>mnist_poisson.yaml</code>.</p>
+
+  <h2>3 · Model / trainer</h2>
+  <p>No changes. The trainer already dispatches on <code>method: poisson_bridge</code> (proven by
+  the MNIST Poisson run) and the transport guard in <code>DataConfig.__post_init__</code> already
+  rejects Poisson transport.</p>
+
+  <h2>4 · Tests</h2>
+  <ul>
+    <li>New transform builders: dtype float32, values in [0, 255], integer-valued after resize,
+    RGB shape (3, H, W) at the requested size.</li>
+    <li><code>_make_base_dataset</code> wiring: <code>raw_pixels: true</code> gives int-pixel
+    samples for cifar10/afhq; <code>false</code> keeps the existing [−1, 1] behaviour.
+    AFHQ tests use the existing synthetic directory-tree fixture.</li>
+    <li>Config round-trip: all four new YAMLs load via <code>ExperimentConfig.from_yaml()</code>.</li>
+  </ul>
+
+  <h2>Error handling</h2>
+  <p>No new failure modes. AFHQ missing-data and unknown-dataset errors unchanged.
+  <code>raw_pixels</code> with <code>method: bridge</code> remains permitted (as today) — a user
+  configuration choice, not validated.</p>
+
+  <h2>Acceptance</h2>
+  <ul>
+    <li><span class="check">✓</span> <code>uv run pytest</code> passes.</li>
+    <li><span class="check">✓</span> <code>uv run bridge-diffusion train --config
+    configs/cifar10_poisson_smoke.yaml</code> runs end-to-end on real CIFAR-10 data
+    (already in <code>./data</code>) and produces a sample grid.</li>
+  </ul>
+</main>
+</body>
+</html>
