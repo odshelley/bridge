@@ -1,7 +1,8 @@
 """Bridge Diffusion model.
 
 Implements the Gaussian Random Bridge diffusion process for generative modelling,
-following Algorithm 2.2.1 (Training) and Algorithm 2.2.2 (Simulation) from the paper.
+following Algorithm 1, Gaussian Bridge Training, and Algorithm 2, Gaussian
+Bridge Simulation (paper_v2 §8).
 """
 
 import torch
@@ -113,7 +114,8 @@ class BridgeDiffusion(nn.Module):
         x: torch.Tensor,
         y: torch.Tensor,
     ) -> torch.Tensor:
-        """Compute the training loss following Corollary 2.7 from the paper.
+        """Compute the training loss following the MSE-minimiser identity
+        E[Y|xi_t] (paper_v2 §8, eq. for L^f).
 
         The network learns to predict the data (y) directly from xi_t.
         Bridge interpolates: noise (x) at t=0 → data (y) at t=T.
@@ -171,7 +173,8 @@ class BridgeDiffusion(nn.Module):
         x: torch.Tensor,
         num_steps: int = 100,
     ) -> torch.Tensor:
-        """Generate samples using Corollary 2.9 from the paper.
+        """Generate samples using Algorithm 2, Gaussian Bridge Simulation
+        (paper_v2 §8).
 
         The network predicts the data y directly. The sampling follows:
         xi_{t+dt} = xi_t + (1/(T-t)) * (f(xi_t, t) - xi_t) * dt + dW

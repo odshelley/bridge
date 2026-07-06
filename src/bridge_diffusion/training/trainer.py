@@ -1,7 +1,7 @@
 """Training module for Bridge Diffusion.
 
-Implements the training loop following Algorithm 2.2.1 from the paper,
-with MLflow experiment tracking and checkpointing.
+Implements the training loop following Algorithm 1, Gaussian Bridge Training
+(paper_v2 §8), with MLflow experiment tracking and checkpointing.
 """
 
 import logging
@@ -169,7 +169,7 @@ class Trainer:
     def train(self) -> None:
         """Run the training loop.
 
-        Implements Algorithm 2.2.1:
+        Implements Algorithm 1, Gaussian Bridge Training (paper_v2 §8):
         1. Sample (x, y) pairs where x is data, y is noise
         2. Sample t uniformly
         3. Compute bridge samples and targets
