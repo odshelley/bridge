@@ -209,6 +209,8 @@ class Sampler:
         batch_size: int,
     ) -> torch.Tensor:
         """Generate total_samples in chunks of batch_size via sample_fn(start, n)."""
+        if batch_size <= 0:
+            raise ValueError(f"batch_size must be positive, got {batch_size}")
         all_samples = []
         start = 0
         while start < total_samples:
