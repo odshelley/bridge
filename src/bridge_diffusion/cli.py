@@ -37,6 +37,13 @@ def create_model(config: ExperimentConfig, network: DiffusersUNetWrapper):
         raise ValueError(f"Unknown method: {config.method}")
 
 
+def _apply_data_info(config: ExperimentConfig, data_info: dict) -> None:
+    """Override model config with the dataset's actual shape."""
+    config.model.in_channels = data_info["num_channels"]
+    config.model.out_channels = data_info["num_channels"]
+    config.model.sample_size = data_info["image_size"]
+
+
 def _load_source_images(
     source_dir: Path,
     image_size: int,
@@ -118,10 +125,7 @@ def train_main(args: argparse.Namespace) -> None:
         train=True,
     )
 
-    # Override config with actual data info
-    config.model.in_channels = data_info["num_channels"]
-    config.model.out_channels = data_info["num_channels"]
-    config.model.sample_size = data_info["image_size"]
+    _apply_data_info(config, data_info)
 
     network = DiffusersUNetWrapper(config.model)
     model = create_model(config, network)
@@ -165,9 +169,7 @@ def sample_main(args: argparse.Namespace) -> None:
 
     data_info = get_data_info(config.data)
 
-    config.model.in_channels = data_info["num_channels"]
-    config.model.out_channels = data_info["num_channels"]
-    config.model.sample_size = data_info["image_size"]
+    _apply_data_info(config, data_info)
 
     network = DiffusersUNetWrapper(config.model)
     model = create_model(config, network)
