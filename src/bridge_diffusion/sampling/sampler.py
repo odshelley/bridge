@@ -6,7 +6,6 @@ and the probability flow ODE variant with higher-order solvers.
 
 import logging
 from enum import Enum
-from pathlib import Path
 from typing import Optional
 
 import torch
@@ -423,54 +422,3 @@ class Sampler:
 
         return self._batched(sample_fn, total_samples, batch_size)
 
-    def save_samples(
-        self,
-        samples: torch.Tensor,
-        output_dir: Path,
-        prefix: str = "sample",
-    ) -> None:
-        """Save generated samples as images.
-
-        Args:
-            samples: Samples of shape (num_samples, channels, height, width).
-            output_dir: Directory to save images.
-            prefix: Prefix for filenames.
-        """
-        from torchvision.utils import save_image
-
-        output_dir = Path(output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        # Denormalise from [-1, 1] to [0, 1]
-        samples = (samples + 1) / 2
-        samples = torch.clamp(samples, 0, 1)
-
-        for i, sample in enumerate(samples):
-            path = output_dir / f"{prefix}_{i:04d}.png"
-            save_image(sample, path)
-
-        logger.info(f"Saved {len(samples)} samples to {output_dir}")
-
-    def save_grid(
-        self,
-        samples: torch.Tensor,
-        output_path: Path,
-        nrow: int = 8,
-    ) -> None:
-        """Save samples as a grid image.
-
-        Args:
-            samples: Samples of shape (num_samples, channels, height, width).
-            output_path: Path for output image.
-            nrow: Number of images per row.
-        """
-        from torchvision.utils import make_grid, save_image
-
-        # Denormalise from [-1, 1] to [0, 1]
-        samples = (samples + 1) / 2
-        samples = torch.clamp(samples, 0, 1)
-
-        grid = make_grid(samples, nrow=nrow, padding=2, normalize=False)
-        save_image(grid, output_path)
-
-        logger.info(f"Saved sample grid to {output_path}")
