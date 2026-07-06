@@ -45,7 +45,6 @@ def create_model(config: ExperimentConfig, network: DiffusersUNetWrapper):
     elif config.method == "ddpm":
         return DDPMDiffusion(
             network,
-            config.bridge,
             num_train_timesteps=config.ddpm.num_train_timesteps,
             beta_schedule=config.ddpm.beta_schedule,
         )

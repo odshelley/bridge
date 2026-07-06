@@ -3,7 +3,7 @@
 import torch
 
 from bridge_diffusion.cli import _generate_ddpm_samples
-from bridge_diffusion.config import BridgeConfig, ModelConfig
+from bridge_diffusion.config import ModelConfig
 from bridge_diffusion.models import DDPMDiffusion, DiffusersUNetWrapper
 
 
@@ -18,7 +18,7 @@ def _tiny_ddpm() -> DDPMDiffusion:
         up_block_types=("UpBlock2D", "UpBlock2D"),
     )
     network = DiffusersUNetWrapper(model_config)
-    return DDPMDiffusion(network, BridgeConfig(), num_train_timesteps=10)
+    return DDPMDiffusion(network, num_train_timesteps=10)
 
 
 def test_generate_ddpm_samples_shape_and_batching() -> None:
