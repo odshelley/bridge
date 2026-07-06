@@ -1,7 +1,7 @@
 """Training module for Bridge Diffusion.
 
-Implements the training loop following Algorithm 2.2.1 from the paper,
-with MLflow experiment tracking and checkpointing.
+Implements the training loop following Algorithm 1, Gaussian Bridge Training
+(paper_v2 §8), with MLflow experiment tracking and checkpointing.
 """
 
 import logging
@@ -16,7 +16,6 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from bridge_diffusion.config import ExperimentConfig
-from bridge_diffusion.models import BridgeDiffusion
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +43,7 @@ class Trainer:
 
     def __init__(
         self,
-        model: BridgeDiffusion,
+        model: nn.Module,
         train_loader: DataLoader,
         config: ExperimentConfig,
         device: torch.device,
@@ -53,7 +52,10 @@ class Trainer:
         """Initialise Trainer.
 
         Args:
-            model: Bridge diffusion model to train.
+            model: Diffusion model exposing compute_training_loss, called as
+                compute_training_loss(x=prior, y=data) (bridge and Poisson
+                bridge; DDPM training is not currently wired correctly — see
+                evaluate/sample for DDPM inference).
             train_loader: DataLoader for training data.
             config: Experiment configuration.
             device: Device to train on.
@@ -169,8 +171,8 @@ class Trainer:
     def train(self) -> None:
         """Run the training loop.
 
-        Implements Algorithm 2.2.1:
-        1. Sample (x, y) pairs where x is data, y is noise
+        Implements Algorithm 1, Gaussian Bridge Training (paper_v2 §8):
+        1. Sample (x, y) pairs where x is the prior (noise), y is data
         2. Sample t uniformly
         3. Compute bridge samples and targets
         4. Minimise MSE loss
@@ -261,7 +263,7 @@ class Trainer:
 
                 if self.global_step % log_interval == 0:
                     avg_loss = running_loss / log_interval
-                    current_lr = self.config.training.learning_rate  # constant LR
+                    current_lr = self.optimiser.param_groups[0]["lr"]
 
                     mlflow.log_metrics(
                         {

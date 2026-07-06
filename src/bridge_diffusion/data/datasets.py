@@ -91,6 +91,30 @@ def get_cifar10_eval_transforms(image_size: int = 32) -> transforms.Compose:
     ])
 
 
+def get_cifar10_int_transforms(image_size: int = 32, train: bool = True) -> transforms.Compose:
+    """Get raw integer pixel transforms for CIFAR-10.
+
+    Returns pixel values as float32 in the range [0, 255] (integers preserved),
+    required by the Poisson Bridge which operates on non-negative count data.
+    Geometric ops run on the PIL side so values stay integral.
+
+    Args:
+        image_size: Target image size.
+        train: Whether to include training augmentation (horizontal flip).
+
+    Returns:
+        Composed transforms.
+    """
+    ops: list = [transforms.Resize(image_size)]
+    if train:
+        ops.append(transforms.RandomHorizontalFlip())
+    ops += [
+        transforms.PILToTensor(),  # uint8 tensor in [0, 255]
+        _ToFloat(),                # cast to float32, keep range — picklable
+    ]
+    return transforms.Compose(ops)
+
+
 def get_afhq_transforms(image_size: int = 64, train: bool = True) -> transforms.Compose:
     """Get transforms for AFHQ (512x512 source images).
 
@@ -107,6 +131,30 @@ def get_afhq_transforms(image_size: int = 64, train: bool = True) -> transforms.
     ops += [
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),  # Scale to [-1, 1]
+    ]
+    return transforms.Compose(ops)
+
+
+def get_afhq_int_transforms(image_size: int = 64, train: bool = True) -> transforms.Compose:
+    """Get raw integer pixel transforms for AFHQ (512x512 source images).
+
+    Returns pixel values as float32 in the range [0, 255] (integers preserved),
+    required by the Poisson Bridge which operates on non-negative count data.
+    Geometric ops run on the PIL side so values stay integral.
+
+    Args:
+        image_size: Target image size.
+        train: Whether to include training augmentation (horizontal flip).
+
+    Returns:
+        Composed transforms.
+    """
+    ops: list = [transforms.Resize(image_size), transforms.CenterCrop(image_size)]
+    if train:
+        ops.append(transforms.RandomHorizontalFlip())
+    ops += [
+        transforms.PILToTensor(),  # uint8 tensor in [0, 255]
+        _ToFloat(),                # cast to float32, keep range — picklable
     ]
     return transforms.Compose(ops)
 
@@ -139,7 +187,9 @@ def _make_base_dataset(name: str, config: DataConfig, train: bool) -> torch.util
             transform=transform,
         )
     elif name.lower() == "cifar10":
-        if train:
+        if config.raw_pixels:
+            transform = get_cifar10_int_transforms(config.image_size, train=train)
+        elif train:
             transform = get_cifar10_transforms(config.image_size)
         else:
             transform = get_cifar10_eval_transforms(config.image_size)
@@ -156,10 +206,12 @@ def _make_base_dataset(name: str, config: DataConfig, train: bool) -> torch.util
             raise FileNotFoundError(
                 f"AFHQ not found at {root}. Download it first: bash scripts/download_afhq.sh"
             )
-        return datasets.ImageFolder(
-            root=str(root),
-            transform=get_afhq_transforms(config.image_size, train=train),
+        transform = (
+            get_afhq_int_transforms(config.image_size, train=train)
+            if config.raw_pixels
+            else get_afhq_transforms(config.image_size, train=train)
         )
+        return datasets.ImageFolder(root=str(root), transform=transform)
     else:
         raise ValueError(f"Unknown dataset: {name}")
 

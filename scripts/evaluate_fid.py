@@ -45,7 +45,6 @@ def create_model(config: ExperimentConfig, network: DiffusersUNetWrapper):
     elif config.method == "ddpm":
         return DDPMDiffusion(
             network,
-            config.bridge,
             num_train_timesteps=config.ddpm.num_train_timesteps,
             beta_schedule=config.ddpm.beta_schedule,
         )
@@ -123,6 +122,15 @@ def generate_samples(
             # Normalise from [0, num_levels-1] to [0, 1]
             batch = (batch / (model.num_levels - 1)).clamp(0, 1)
             all_samples.append(batch)
+        return torch.cat(all_samples, dim=0)
+
+    if config.method == "ddpm":
+        # DDPM uses its own reverse-process sample(), not the bridge Sampler
+        all_samples = []
+        for start in range(0, num_samples, batch_size):
+            n = min(batch_size, num_samples - start)
+            batch = model.sample(n, shape, device=device, num_inference_steps=num_steps)
+            all_samples.append(batch.cpu())
         return torch.cat(all_samples, dim=0)
 
     if use_ode:

@@ -9,7 +9,7 @@ import torch
 from bridge_diffusion.config import BridgeConfig, ExperimentConfig, SamplingConfig
 from bridge_diffusion.data import get_data_info, get_dataloader
 from bridge_diffusion.models import BridgeDiffusion, DDPMDiffusion, DiffusersUNetWrapper, PoissonBridgeDiffusion
-from bridge_diffusion.sampling import Sampler
+from bridge_diffusion.sampling import Sampler, save_grid, save_samples
 from bridge_diffusion.training import Trainer
 from bridge_diffusion.utils import get_device, set_seed
 
@@ -29,12 +29,18 @@ def create_model(config: ExperimentConfig, network: DiffusersUNetWrapper):
     elif config.method == "ddpm":
         return DDPMDiffusion(
             network,
-            config.bridge,  # passed for compatibility
             num_train_timesteps=config.ddpm.num_train_timesteps,
             beta_schedule=config.ddpm.beta_schedule,
         )
     else:
         raise ValueError(f"Unknown method: {config.method}")
+
+
+def _apply_data_info(config: ExperimentConfig, data_info: dict) -> None:
+    """Override model config with the dataset's actual shape."""
+    config.model.in_channels = data_info["num_channels"]
+    config.model.out_channels = data_info["num_channels"]
+    config.model.sample_size = data_info["image_size"]
 
 
 def _load_source_images(
@@ -77,6 +83,27 @@ def _load_source_images(
     return images, [p.stem for p in paths]
 
 
+def _generate_ddpm_samples(
+    model: DDPMDiffusion,
+    num_samples: int,
+    shape: tuple[int, ...],
+    batch_size: int,
+    num_inference_steps: int,
+    device: torch.device,
+) -> torch.Tensor:
+    """Generate samples with the DDPM reverse process, in batches."""
+    model = model.to(device)
+    model.eval()
+    all_samples = []
+    for start in range(0, num_samples, batch_size):
+        n = min(batch_size, num_samples - start)
+        samples = model.sample(
+            n, shape, device=device, num_inference_steps=num_inference_steps
+        )
+        all_samples.append(samples.cpu())
+    return torch.cat(all_samples, dim=0)
+
+
 def train_main(args: argparse.Namespace) -> None:
     """Main training function."""
     config = ExperimentConfig.from_yaml(args.config)
@@ -97,10 +124,7 @@ def train_main(args: argparse.Namespace) -> None:
         train=True,
     )
 
-    # Override config with actual data info
-    config.model.in_channels = data_info["num_channels"]
-    config.model.out_channels = data_info["num_channels"]
-    config.model.sample_size = data_info["image_size"]
+    _apply_data_info(config, data_info)
 
     network = DiffusersUNetWrapper(config.model)
     model = create_model(config, network)
@@ -144,9 +168,7 @@ def sample_main(args: argparse.Namespace) -> None:
 
     data_info = get_data_info(config.data)
 
-    config.model.in_channels = data_info["num_channels"]
-    config.model.out_channels = data_info["num_channels"]
-    config.model.sample_size = data_info["image_size"]
+    _apply_data_info(config, data_info)
 
     network = DiffusersUNetWrapper(config.model)
     model = create_model(config, network)
@@ -230,6 +252,24 @@ def sample_main(args: argparse.Namespace) -> None:
 
         grid = make_grid(samples[:64], nrow=8, padding=2, normalize=False)
         save_image(grid, output_dir.parent / f"{output_dir.name}_grid.png")
+    elif config.method == "ddpm":
+        if x0 is not None:
+            logger.warning("ddpm does not support source images; ignoring source priors.")
+        logger.info(
+            f"Generating {args.num_samples} samples with DDPM reverse process "
+            f"({args.num_steps} steps)..."
+        )
+        samples = _generate_ddpm_samples(
+            model,
+            num_samples=args.num_samples,
+            shape=shape,
+            batch_size=args.batch_size,
+            num_inference_steps=args.num_steps,
+            device=device,
+        )
+        output_dir = Path(args.output_dir)
+        save_samples(samples, output_dir)
+        save_grid(samples[:64], output_dir.parent / f"{output_dir.name}_grid.png")
     else:
         logger.info(f"Generating {num_to_sample} samples with {args.num_steps} steps...")
         samples = sampler.sample_batch(
@@ -248,8 +288,8 @@ def sample_main(args: argparse.Namespace) -> None:
             for stem, sample in zip(source_stems, samples):
                 save_image((sample.clamp(-1, 1) + 1) / 2, output_dir / f"{stem}_translated.png")
         else:
-            sampler.save_samples(samples, output_dir)
-        sampler.save_grid(samples[:64], output_dir.parent / f"{output_dir.name}_grid.png")
+            save_samples(samples, output_dir)
+        save_grid(samples[:64], output_dir.parent / f"{output_dir.name}_grid.png")
 
     logger.info(f"Saved samples to {output_dir}")
 
