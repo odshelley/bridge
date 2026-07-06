@@ -67,6 +67,7 @@ class PoissonBridgeDiffusion(nn.Module):
         self.num_levels = config.num_levels
         self.prior_type = config.prior
         self.prior_lambda = config.prior_lambda
+        self._warned_prior_violation = False
 
     def sample_prior(
         self,
@@ -154,13 +155,14 @@ class PoissonBridgeDiffusion(nn.Module):
         batch_size = y.shape[0]
         device = y.device
 
-        if (y < x).any():
+        if not self._warned_prior_violation and (y < x).any():
             logger.warning(
                 "Poisson bridge assumes y >= x coordinatewise (paper_v2 §5, "
                 "y in x + N_0^n); %d coordinates violate this and will be "
                 "clamped, so generation cannot reach them from above.",
                 int((y < x).sum()),
             )
+            self._warned_prior_violation = True
 
         # Sample time uniformly in [0, T)
         t = torch.rand(batch_size, device=device) * (self.T - self.eps)

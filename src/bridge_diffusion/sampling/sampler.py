@@ -7,7 +7,7 @@ higher-order solvers.
 
 import logging
 from enum import Enum
-from typing import Optional
+from typing import Callable, Optional
 
 import torch
 import torch.nn as nn
@@ -204,7 +204,7 @@ class Sampler:
 
     def _batched(
         self,
-        sample_fn,
+        sample_fn: Callable[[int, int], torch.Tensor],
         total_samples: int,
         batch_size: int,
     ) -> torch.Tensor:
