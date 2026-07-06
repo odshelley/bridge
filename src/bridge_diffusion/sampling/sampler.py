@@ -421,6 +421,7 @@ class Sampler:
         shape: tuple[int, ...],
         batch_size: int = 64,
         num_steps: Optional[int] = None,
+        x0: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """Generate samples in batches to manage memory.
 
@@ -429,18 +430,24 @@ class Sampler:
             shape: Shape of each sample.
             batch_size: Batch size for generation.
             num_steps: Number of discretisation steps.
+            x0: Optional prior samples of shape (total_samples, *shape). Chunked
+                alongside the batches; if None, each batch starts from N(0, I).
 
         Returns:
             Generated samples of shape (total_samples, *shape).
         """
-        all_samples = []
-        remaining = total_samples
+        if x0 is not None and x0.shape[0] < total_samples:
+            raise ValueError(f"x0 has {x0.shape[0]} samples but total_samples={total_samples}")
 
-        while remaining > 0:
-            current_batch = min(batch_size, remaining)
-            samples = self.sample(current_batch, shape, num_steps=num_steps)
+        all_samples = []
+        start = 0
+
+        while start < total_samples:
+            current_batch = min(batch_size, total_samples - start)
+            x0_batch = x0[start : start + current_batch] if x0 is not None else None
+            samples = self.sample(current_batch, shape, x0=x0_batch, num_steps=num_steps)
             all_samples.append(samples.cpu())
-            remaining -= current_batch
+            start += current_batch
 
         return torch.cat(all_samples, dim=0)
 

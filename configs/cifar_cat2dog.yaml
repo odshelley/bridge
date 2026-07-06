@@ -1,0 +1,56 @@
+# CIFAR-10 cat -> dog transport with the Gaussian bridge.
+# Stepping-stone experiment before AFHQ; runs overnight on Apple Silicon
+# or in a few hours on a single CUDA GPU.
+
+name: bridge_cifar_cat2dog
+output_dir: ./outputs/cifar_cat2dog
+method: bridge
+
+model:
+  in_channels: 3
+  out_channels: 3
+  sample_size: 32
+  block_out_channels: [128, 256, 256, 256]
+  layers_per_block: 2
+  down_block_types:
+    - DownBlock2D
+    - AttnDownBlock2D
+    - AttnDownBlock2D
+    - AttnDownBlock2D
+  up_block_types:
+    - AttnUpBlock2D
+    - AttnUpBlock2D
+    - AttnUpBlock2D
+    - UpBlock2D
+  attention_head_dim: 8
+  dropout: 0.1
+
+training:
+  batch_size: 128
+  num_steps: 50000
+  learning_rate: 0.0002
+  weight_decay: 0.0
+  grad_clip_norm: 1.0
+  checkpoint_every: 10000
+  log_every: 100
+  seed: 42
+
+bridge:
+  T: 0.1
+  eps: 0.0000001
+
+sampling:
+  num_steps: 100
+  num_samples: 64
+  show_progress: true
+  clip_samples: true
+
+data:
+  dataset: cifar10
+  classes: [dog]
+  source_dataset: cifar10
+  source_classes: [cat]
+  data_dir: ./data
+  image_size: 32
+  num_workers: 4
+  pin_memory: true

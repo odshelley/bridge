@@ -83,6 +83,32 @@ class Trainer:
         self.global_step = 0
         self.best_loss = float("inf")
 
+        # Transport mode: bridge prior x comes from the source dataset, not noise
+        self.transport = config.data.source_dataset is not None
+        self._sample_sources: Optional[torch.Tensor] = None
+        if self.transport:
+            self._sample_sources = self._load_sample_sources()
+
+    def _load_sample_sources(self, num_samples: int = 16) -> torch.Tensor:
+        """Load a fixed batch of held-out source (val) images for sample logging."""
+        from bridge_diffusion.data import load_source_val_images
+
+        return load_source_val_images(self.config.data, num_samples, spread=True)
+
+    def _prepare_batch(self, batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
+        """Extract (x, y) for the bridge loss from a dataloader batch.
+
+        Transport mode: x is the source image from the paired batch.
+        Otherwise: x is a prior sample (Gaussian noise, or the model's own prior).
+        """
+        if self.transport:
+            x = batch[0].to(self.device)
+            y = batch[1].to(self.device)
+        else:
+            y = batch[0].to(self.device)
+            x = _sample_prior(self.model, y)
+        return x, y
+
     def _create_ema_model(self) -> nn.Module:
         """Create EMA copy of the model."""
         import copy
@@ -117,7 +143,10 @@ class Trainer:
             # Generate samples
             shape = (num_samples, self.config.model.in_channels,
                      self.config.model.sample_size, self.config.model.sample_size)
-            x = _sample_prior(model_to_sample, torch.zeros(shape, device=self.device))
+            if self.transport and self._sample_sources is not None:
+                x = self._sample_sources.to(self.device)
+            else:
+                x = _sample_prior(model_to_sample, torch.zeros(shape, device=self.device))
             
             # Sample using the model's generate method (Euler-Maruyama simulation)
             samples = model_to_sample.generate(x, num_steps=100)
@@ -173,6 +202,9 @@ class Trainer:
                 "layers_per_block": self.config.model.layers_per_block,
                 "attention_head_dim": self.config.model.attention_head_dim,
                 "dropout": self.config.model.dropout,
+                "classes": str(self.config.data.classes),
+                "source_dataset": str(self.config.data.source_dataset),
+                "source_classes": str(self.config.data.source_classes),
             })
             
             # Log DDPM-specific params if using DDPM
@@ -206,9 +238,8 @@ class Trainer:
                     data_iter = iter(self.train_loader)
                     batch = next(data_iter)
 
-                # Paper notation: x = noise (prior), y = data (target)
-                y = batch[0].to(self.device)
-                x = _sample_prior(self.model, y)
+                # Paper notation: x = prior (noise or source image), y = data (target)
+                x, y = self._prepare_batch(batch)
 
                 self.optimiser.zero_grad()
                 loss = self.model.compute_training_loss(x, y)

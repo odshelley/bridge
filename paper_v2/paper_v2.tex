@@ -1,0 +1,1853 @@
+%%%%%%%%% BEGIN DOCUMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bm} % For bold math symbols
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{ifthen}
+\usepackage{verbatim}
+\usepackage{amsmath}
+\usepackage{setspace}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{lscape}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{ifthen}
+\usepackage{verbatim}
+\usepackage{dsfont}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{todonotes}
+\usepackage{xspace}
+
+% --- Title/authors ---
+\usepackage[blocks]{authblk}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{datetime2}
+\DTMlangsetup[en-GB]{ord=omit}   % drop Òst/nd/rd/thÓ
+
+%\usepackage[flushleft]{threeparttable}
+%\usepackage{bbm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%\textheight 220mm \textwidth 172 mm \topmargin -5 mm
+%%\addtolength{\oddsidemargin}{-.62in}
+%\textheight 270mm \textwidth 175mm \topmargin -25mm
+%\addtolength{\oddsidemargin}{-.70in}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{ex}[thm]{Example}
+\newtheorem{coro}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{rem}[thm]{Remark}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{conj}[thm]{Conjecture}
+\newtheorem{asu}{Assumption}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\p}[1]{\ensuremath{\mathbb{#1}}}
+\newcommand{\levy}{{L\'evy }}
+\newcommand{\cadlag}{{c\`adl\`ag }}
+\newcommand{\Schrodinger}{Schr\"odinger\xspace}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\1{\mathds{1}}
+\def\R{\mathbb{R}}
+\def\P{\mathbb{P}}
+\def\B{\mathbb{B}}
+\def\E{\mathbb{E}}
+\def\N{\mathbb{N}}
+\def\S{\mathbb{S}}
+\def\T{\mathbb{T}}
+\def\d{\,\mathrm{d}}
+\def\dd{\mathrm{d}}
+\def\half{\frac{1}{2}}
+\def\var{\mathrm{Var}}
+\def\cov{\mathrm{Cov}}
+\def\th{\theta}
+\def\Th{\Theta}
+\def\e{\mathrm{e}}
+\def\b{\beta}
+\def\g{\gamma}
+\def\G{\Gamma}
+\def\a{\alpha}
+\def\ba{\boldsymbol\alpha}
+\def\s{\boldsymbol{\Sigma}}
+\def\l{\lambda}
+\def\law{\overset{\textnormal{law}}{=}}
+\def\tp{\top}
+\def\F{\mathcal{F}}
+\def\Z{\mathcal{Z}}
+\def\H{\mathcal{H}}
+\def\i{\mathrm{i}}
+\def\Borel{\mathcal{B}(\R)}
+\def\k{\kappa}
+\def\t{\tau}
+\def\D{\Delta}
+\def\B{\mathrm{B}}
+\def\ab{\boldsymbol{\alpha}}
+\def\betab{\boldsymbol{\beta}}
+\def\Lambdab{\boldsymbol{\Phi}}
+\def\xib{\boldsymbol{\xi}}
+\def\zib{\boldsymbol{\zeta}}
+\def\sib{\boldsymbol{S}}
+\def\mub{\boldsymbol{\mu}}
+\def\etab{\boldsymbol{\eta}}
+\def\xb{\mathbf{x}}
+\def\yb{\mathbf{y}}
+\def\mb{\mathbf{m}}
+\def\sumel{\mathbf{1}\cdot}
+\DeclareMathOperator*{\argmin}{argmin}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% --- Title/authors ---
+\usepackage[blocks]{authblk}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{datetime2}
+\DTMlangsetup[en-GB]{ord=omit}   % drop Òst/nd/rd/thÓ
+
+% Setup theorem environments to match the image numbering
+\newtheoremstyle{boldremark}
+{\topsep}{\topsep}{}{}{\bfseries}{.}{.5em}{}
+
+\theoremstyle{definition}
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}[proposition]{Corollary}
+\newtheorem{remark}[proposition]{Remark}
+\newtheorem{preliminary}[proposition]{Preliminary}
+
+% Adjust counter to match the image 
+\input{math_shortcuts.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\title{Connecting Generalised \levy Random Bridges \\ 
+with Rectified Flow Matching}
+\author[1]{Osian Shelley}
+\author[1,2]{Levent Ali Meng\"ut\"urk}
+
+\affil[1]{Artificial Intelligence and Mathematics Research Lab, 
+James Carter Road, Mildenhall, Bury St. Edmunds IP28 7DE, UK}
+
+\affil[2]{Department of Mathematics, University College London, 
+25 Gordon Street, London, 
+WC1H 0AY, UK}
+
+\date{}
+\maketitle
+\begin{abstract}
+This paper connects Flow Matching from generative modelling with a family of Markov random bridges acting as stochastic transports between pairs of distributions. More precisely, using the non-anticipative semimartingale representation of generalised \levy random bridges, we provide a unified framework with Rectified Flows, and in turn, \Schrodinger bridges, through the corresponding stochastic and ordinary differential equations. For a more detailed account, we focus on Brownian random bridges and Poisson random bridges, both of which we consider to be canonical constructs with purely continuous and purely discontinuous paths, respectively. We present numerous mathematical properties, and finally, present numerical training and simulation algorithms followed by generative examples for demonstration.
+\end{abstract}
+{\bf Keywords:} \levy process, generative models, random bridges, rectified flows, \Schrodinger bridges
+
+\section{Introduction}\label{sec:intro}
+
+Many recent advances in generative modelling construct a transport between two probability distributions: a tractable reference and the target one wishes to sample. Denoising diffusion and score-based models \cite{HoJainAbbeel2020,nichol_improved_2021,SongMengErmon2021,song_score-based_2021} build this transport by noising the data and learning to reverse the corruption through a time-reversed stochastic differential equation \cite{anderson_reverse-time_1982,HaussmannPardoux1986,MilletNualartSanz1989}. Flow matching and rectified flow \cite{LipmanChen2023,liu_flow_2023,TongFatras2024} instead learn an ordinary differential equation whose marginals interpolate between the two laws, while \Schrodinger-bridge methods \cite{debortoli2021diffusion,shi2023diffusion} cast the transport as an entropy-regularised optimal coupling. Despite their differing dynamics, these methods universally rely on a shared foundational element: the driving noise is exclusively Brownian, and hence Gaussian.
+
+Each of these constructions is a special case of a single object. Given two prescribed laws, a stochastic process whose distribution is conditioned to coincide with the first at the initial time and with the second at the terminal time is a bridge between them, and the transport it effects is determined by its conditional drift. The denoising-diffusion, flow-matching and \Schrodinger-bridge models emerge naturally as particular choices of this drift and of the law of the noise that drives the bridge \cite{debortoli2021diffusion,goria_random-bridges_2025,GushchinKholkin2024,peluchetti2023diffusion,peluchetti2023first,shi2023diffusion,WangJiaoYang2021,ZhouLouKhannaErmon2024}. Crucially, in each case that noise is Brownian, though nothing in the construction requires it.
+
+Our starting point is the random-bridge framework of \cite{goria_random-bridges_2025}, the construction closest to the present work. A random bridge is a \cadlag process conditioned to assume prescribed laws at fixed times, and the definition is remarkably minimal: requiring only right-continuity, it makes no assumptions regarding path-dependence or continuity, adapting entirely to the chosen driver. Goria et al. conceptualise such a transport as a process of dynamic information propagation rather than a cost-minimisation problem. They view the terminal law as a signal observed through noise and the bridge as the continuous updating of information about it, with the posterior entropy decreasing to zero at the terminal time. Accordingly, the framework places stochastic filtering and noisy information processes in a central position (as opposed to optimal transport machinery) \cite{hoylehughstonmacrina_2011, Menguturk_2018}. Random bridges in this sense predate generative modelling, having served in quantum measurement, the pricing of derivatives, and information-based asset models \cite{BrodyHughstonMacrina_2008, BrodyHughston_2005, BrodyHughston_2006, hoylehmacrinamenguturk_2020, Menguturk_2016, Menguturk_2018, Menguturk_2023}.
+
+This change of vantage point raises the question of what optimal transport machinery would add. A random bridge coupling is already a valid transport: the endpoint marginals are met exactly by construction, and no optimality is needed for this to hold. What an entropic optimal coupling buys is inference efficiency rather than validity. Under an arbitrary coupling, the marginal drift averages over many candidate endpoints, producing curved and crossing trajectories that demand many integration steps, whereas the \Schrodinger coupling straightens paths and permits accurate few-step sampling \cite{shi2023diffusion}. Entropic regularisation, moreover, acts on the coupling alone and never corrupts the endpoint marginals, which enter the \Schrodinger problem as hard constraints \cite{leonard2014survey}. Our stance in this paper is to trade optimality of the coupling for analytic tractability and for drivers beyond Brownian motion. We recover the \Schrodinger bridge in the Brownian case, and iterative schemes that push the coupling towards entropic optimality remain available as an optional refinement, as we detail in Section~\ref{sec:schrodinger}.\todo{I think we get this in the Levy case too?}
+
+We work in a more general setup, focusing on an analytically rich class of random bridges that we refer to as \emph{generalised \levy random bridges}. They extend the \levy random bridges of \cite{hoylehughstonmacrina_2011} through couplings between initial and terminal laws, allowing the driver to be any \levy process of integrable first moment. We do not set out to compete with the generative models used in practice, but to give a rigorous mathematical account of the single construction that underlies them. 
+
+Our main contributions are as follows. First, we connect these processes to Rectified Flows, demonstrating that the conditional drift of such a bridge has the same functional form as the velocity field of rectified flow, and that this identity holds for every admissible driver (Section~\ref{sec:rf-connection}). We prove that generalised Brownian random bridges can be explicitly represented as the sum of Rectified Flows plus standard Brownian bridges (Section~\ref{sec:brownian}). This link places Rectified flow, random bridges, and \Schrodinger bridges on a common footing, a unifying perspective hitherto unavailable (Section~\ref{sec:schrodinger}). In addition, we provide a non-anticipative semimartingale representation for the generalised \levy random bridge, carrying an explicit martingale component (Theorem~\ref{thm:main-rep}). This result is what makes non-Gaussian and jump drivers usable as transports rather than merely definable, taking a significant step forward towards implementing them for practical use cases. For a detailed account, we treat the Brownian and Poisson bridges as canonical continuous and discontinuous cases, and combine them in a jump-diffusion bridge. Through this journey, we verify explicit connections to Rectified Flows, generalise Tweedie's formula (Section~\ref{sec:tweedie}), and establish a temporal transport consistency (Section~\ref{sec:temporal-consistency}) under which every sub-bridge is again a transport between intermediate laws. Finally, we provide training and simulation algorithms (Section~\ref{sec:numerics}), leaving the natural extension to discrete and mixed data to future work.
+
+\section{Mathematical Framework}\label{sec:framework}
+This section develops the framework in five movements. Subsection~\ref{sec:framework}.1 defines random bridges and their conditioning; Subsection~\ref{sec:semimartingale} states our first main result, the explicit pathwise representation of Theorem~\ref{thm:main-rep}; Subsections~\ref{sec:rf-connection} and~\ref{sec:temporal-consistency} draw its two structural consequences, the Rectified Flow correspondence and the temporal transport consistency; and Subsections~\ref{sec:modified-levy} and~\ref{sec:explicit-decomp} supply the proof through the bridge-modified \levy measure.
+We bring forward the mathematical setup from \cite{goria_random-bridges_2025}, while keeping notations the same. Set a finite time horizon $\T = [0,T]$ for some $T <\infty$, and let $(\Omega,\F,\P)$ a probability space equipped with a right-continuous and complete filtration $\{\F_{t}\}_{t \in \T}$. We use $\mathcal{B}(\cdot)$ for the Borel $\sigma$-field. Let $\boldsymbol{\Phi}$ and $\boldsymbol{\Psi}$ be measures on $(\Omega,\F)$ such that
+\begin{align}
+\boldsymbol{\Phi}\ll \P \,\,\,\,\, \text{and} \,\,\,\,\, \boldsymbol{\Psi}\ll \P. \notag
+\end{align}
+Hence, both $\boldsymbol{\Phi}$ and $\boldsymbol{\Psi}$ are absolutely continuous with respect to $\P$, or in other words, the Radon-Nikodym derivatives $\dd \boldsymbol{\Phi} / \dd \P$ and $\dd \boldsymbol{\Psi} / \dd \P$ exist. We highlight that $\boldsymbol{\Phi}$, $\boldsymbol{\Psi}$ and $\P$ are measures on the same-measurable-space, and thus, absolute-continuities above are well-defined. We denote $\boldsymbol{\Gamma}(\boldsymbol{\Phi},\boldsymbol{\Psi})$ as a joint probability measure on $\R^n\times\R^n$ with marginals $\boldsymbol{\Phi}$ and $\boldsymbol{\Psi}$; accordingly, $\boldsymbol{\Gamma}(\boldsymbol{\Phi},\boldsymbol{\Psi})$ is a coupling on $(\Omega \times \Omega, \F \otimes \F)$.
+
+\subsection{Random Bridges}
+For some fixed $n\in\N_+$, we introduce a $\boldsymbol{\Phi}$-distributed square-integrable random variable
+\begin{align}
+\boldsymbol{X} = [X^{(1)}, \ldots,X^{(j)}, \ldots, X^{(n)}]^{\tp} \sim \boldsymbol{\Phi}
+\end{align}
+with state-space $(\mathbb{X},\mathcal{B}(\mathbb{X}))$ given $\mathbb{X} \subseteq \R^n$, and a $\boldsymbol{\Psi}$-distributed square-integrable random variable
+\begin{align}
+\boldsymbol{Y}= [Y^{(1)}, \ldots,Y^{(j)}, \ldots, Y^{(n)}]^{\tp} \sim \boldsymbol{\Psi}
+\end{align}
+with state-space $(\mathbb{Y},\mathcal{B}(\mathbb{Y}))$ given $\mathbb{Y} \subseteq \R^n$. For any random bridge $\{\xib_t\}_{t\in\T}$ considered below, we identify the endpoint variables with the endpoint values of the process, $\boldsymbol{X} = \xib_0$ and $\boldsymbol{Y} = \xib_T$ $\P$-almost surely; equality of laws alone would not determine conditional expectations such as $\E[\boldsymbol{Y} \mid \xib_t]$, which this identification renders unambiguous. Hereafter, $\{\boldsymbol{Z}_t\}_{t\in\T}$ is an $\R^n$-valued c\`adl\`ag stochastic process we refer to as the \emph{driving} process -- we denote its natural filtration by $\{\mathcal{F}_t^{\boldsymbol{Z}}\}_{t\in\T}$ so that $\mathcal{F}_t^{\boldsymbol{Z}} \subset \mathcal{F}_t$ is a subalgebra for every $t\in\T$. We now recall $(\boldsymbol{\Phi}, \boldsymbol{\Psi})$-bridges from \cite{goria_random-bridges_2025} below.
+\begin{defn}
+\label{definitionRandomBridge}
+If $\{\xib_t\}_{t\in\T}$ is an $\R^n$-valued $\{\F_{t}\}$-adapted stochastic process such that
+\begin{enumerate}
+\item $(\xib_0,\xib_T) \sim \boldsymbol{\Gamma}(\boldsymbol{\Phi},\boldsymbol{\Psi})$,
+\item For all $m\in\mathbb{N}_{+}$, every $0 < t_{1}<\ldots<t_{m}<T$ and $(\boldsymbol{z}_{1},\ldots,\boldsymbol{z}_{m})\in\R^{n\times m}$,
+\begin{align}
+&\mathbb{P}\left(\xib_{t_{1}}\leq \boldsymbol{z}_{1},\ldots, \xib_{t_{m}}\leq \boldsymbol{z}_{m} \, \left| \, \xib_0=\boldsymbol{x}, \xib_T=\boldsymbol{y}\right.\right)=
+    \mathbb{P}\left(\boldsymbol{Z}_{t_{1}}\leq \boldsymbol{z}_{1},\ldots, \boldsymbol{Z}_{t_{m}}\leq \boldsymbol{z}_{m} \, \left| \, \boldsymbol{Z}_0=\boldsymbol{x}, \boldsymbol{Z}_T=\boldsymbol{y}\right.\right) \nonumber
+\end{align}
+for $\boldsymbol{\Phi}$-almost-everywhere $\boldsymbol{x}\in\R^n$ and $\boldsymbol{\Psi}$-almost-everywhere $\boldsymbol{y}\in\R^n$
+\end{enumerate}
+then $\{\xib_t\}_{t\in\T}$ is a $(\boldsymbol{\Phi}, \boldsymbol{\Psi})$-bridge under action of $\{\boldsymbol{Z}_t\}_{t\in\T}$.
+\end{defn}
+Note that from Definition \ref{definitionRandomBridge}, since $\boldsymbol{\Gamma}(\boldsymbol{\Phi},\boldsymbol{\Psi})$ is a coupling, we can set the following:
+\begin{align}
+\boldsymbol{X}  = \xib_0 \sim \boldsymbol{\Phi}, \quad \text{and} \quad \boldsymbol{Y} = \xib_T  \sim \boldsymbol{\Psi}. \notag
+\end{align}
+Since $\{\boldsymbol{Z}_{t}\}_{t\in\T}$ and $\{\xib_{t}\}_{t\in\T}$ are \cadlag, Definition \ref{definitionRandomBridge} is a well-defined stochastic process using Kolmogorov extension theorem. Accordingly, $(\boldsymbol{\Phi}, \boldsymbol{\Psi})$-bridges form stochastic transports between $\boldsymbol{X}$ and $\boldsymbol{Y}$. Note that Definition \ref{definitionRandomBridge} does not assume a specific model nor pinpoints a particular dynamical form. Accordingly, the construct may at first be deemed too abstract to put in practice, but it essentially offers a general mathematical language for building different transport patterns via the choice of some $\{\boldsymbol{Z}_t\}_{t\in\T}$. At this point, we shall also recall the following result from \cite{goria_random-bridges_2025}.
+\begin{proposition}
+The equality in law $\{\xib_{t}\}_{t\in\T} \law\{\boldsymbol{Z}_{t}\}_{t\in\T}$ holds if and only if $(\boldsymbol{Z}_0,\boldsymbol{Z}_T) \sim \boldsymbol{\Gamma}(\boldsymbol{\Phi},\boldsymbol{\Psi})$.
+\end{proposition}
+If one produces a sufficient collection of initialised samples for $\{\xib_{t}\}_{t\in\T}$, one can \emph{approximate} stochastic transports $\boldsymbol{\Phi}$ to $\boldsymbol{\Psi}$ progressively. Accordingly, we shall introduce $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ given by
+\begin{align}
+\xib^{\boldsymbol{x}}_t \triangleq  \xib_t \, |_{\boldsymbol{X} = \boldsymbol{x} \, , \,\boldsymbol{x} \leftarrow \boldsymbol{\Phi}} \hspace{0.1in} \forall t\in\T, \label{sampledinit}
+\end{align}
+where $\boldsymbol{x} \leftarrow \boldsymbol{\Phi}$ denotes a vector $\boldsymbol{x}\in\R^n$ sampled from $\boldsymbol{\Phi}$. For the rest of this paper (\ref{sampledinit}) shall be referred to a \emph{$\boldsymbol{\Phi}$-initialised random-bridge to $\boldsymbol{\Psi}$}. Note that $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ defines a $(\boldsymbol{\delta}_{\boldsymbol{x}}, \boldsymbol{\Psi})$-bridge under action of $\{\boldsymbol{Z}_t\}_{t\in\T}$ with $\boldsymbol{Z}_0 =\boldsymbol{x}$ for any fixed $\boldsymbol{x}\in\R^n$, where $\boldsymbol{\delta}_{\boldsymbol{x}}$ stands for the Dirac measure centered at $\boldsymbol{x}\in\R^n$.
+\begin{remark}
+Having $\boldsymbol{\Gamma}(\boldsymbol{\delta}_{\boldsymbol{x}},\boldsymbol{\Psi})$ a measure on $(\Omega \times \Omega, \F \otimes \F)$, we have
+\begin{align}
+(\xib^{\boldsymbol{x}}_0,\xib^{\boldsymbol{x}}_T) \sim \boldsymbol{\Gamma}(\boldsymbol{\delta}_{\boldsymbol{x}},\boldsymbol{\Psi}) = \boldsymbol{\delta}_{\boldsymbol{x}}\boldsymbol{\Psi}
+\end{align}
+for  any fixed $\boldsymbol{x}\in\R^n$.
+\end{remark}
+Following the same logic, we can also define a \emph{$\boldsymbol{\Psi}$-initialised random-bridge to $\boldsymbol{\Phi}$}, which we denote as $\{\xib^{\boldsymbol{y}}_t\}_{t\in\T}$, given by
+\begin{align}
+\xib^{\boldsymbol{y}}_t \triangleq  \xib_t \, |_{\boldsymbol{Y} = \boldsymbol{y} \, , \,\boldsymbol{y} \leftarrow \boldsymbol{\Psi}} \hspace{0.1in} \forall t\in\T, \label{sampledinittarget}
+\end{align}
+which is a $(\boldsymbol{\Phi},\boldsymbol{\delta}_{\boldsymbol{y}})$-bridge under action of $\{\boldsymbol{Z}_t\}_{t\in\T}$ with $\boldsymbol{Z}_T =\boldsymbol{y}$ for any fixed $\boldsymbol{y}\in\R^n$. Certainly, we can initialise both ends
+\begin{align}
+\xib^{\boldsymbol{x,y}}_t \triangleq  \xib_t \, |_{\boldsymbol{X} = \boldsymbol{x} \, , \, \boldsymbol{Y} = \boldsymbol{y} \,\, , \,\, (\boldsymbol{x},\boldsymbol{y}) \leftarrow \boldsymbol{\Gamma}(\boldsymbol{\Phi},\boldsymbol{\Psi})} \hspace{0.1in} \forall t\in\T, \label{purebridgeconstruct}
+\end{align}
+which yields a $(\boldsymbol{\delta}_{\boldsymbol{x}},\boldsymbol{\delta}_{\boldsymbol{y}})$-bridge under action of $\{\boldsymbol{Z}_t\}_{t\in\T}$ with $\boldsymbol{Z}_0 =\boldsymbol{x}$ and $\boldsymbol{Z}_T =\boldsymbol{y}$ for any fixed $\boldsymbol{x},\boldsymbol{y}\in\R^n$. Such a process can be viewed as a ``classical" bridge evolving from $\xib^{\boldsymbol{x,y}}_0 = \boldsymbol{x}$ to $\xib^{\boldsymbol{x,y}}_T = \boldsymbol{y}$. For the purposes of this paper, classical bridges can be viewed as stochastic transports between a pair of Dirac measures centered at their given masses.
+\begin{remark}
+In generative modelling literature, it is common to see reversed stochastic processes. Since Definition \ref{definitionRandomBridge} does not enforce any time direction, it encapsulates both forward and backward constructs for $\{\boldsymbol{Z}_t\}_{t\in\T}$. For example, (\ref{sampledinittarget}) can be understood with a driving process that evolves backwards in time, initialised with $\boldsymbol{Z}_T =\boldsymbol{y}$ for any fixed $\boldsymbol{y}\in\R^n$.
+\end{remark}
+\begin{remark}[Bridge conditioning as a Doob $h$-transform]
+\label{rem:doob-h-forward}
+The conditioning in Definition~\ref{definitionRandomBridge} is a Doob $h$-transform of the driver's
+generator. For a \levy driver with transition density $f_t$ and terminal law $\boldsymbol{\Psi}$, the
+harmonic function
+\begin{align}
+  h_{tT}(\boldsymbol{z}) = \int \frac{f_{T-t}(\boldsymbol{w}-\boldsymbol{z})}{f_T(\boldsymbol{w}-\boldsymbol{x})}\,\boldsymbol{\Psi}(\dd \boldsymbol{w}), \qquad 0\le t<T, \notag
+\end{align}
+is the Radon--Nikod\'ym density that converts the free \levy law into the random-bridge law on path
+space \cite[Proposition~2.7]{hoylehughstonmacrina_2011}. Hoyle, Hughston and Macrina frame $h_{tT}$ as
+a measure-change density, an $\mathbb{L}$-martingale, and do not call it a Doob $h$-transform.
+Recognising it as the Doob $h$-transform harmonic function is what licenses the bridge-modified
+generator and the explicit martingale of Section~\ref{sec:semimartingale}. The two-sided \Schrodinger
+bridge generalises this to the time-symmetric $(f,g)$-transform \cite{leonard2014survey}.
+\end{remark}
+For our purposes, we shall focus on a specific class of $(\boldsymbol{\Phi}, \boldsymbol{\Psi})$-bridges, where we choose the driving process $\{\boldsymbol{Z}_t\}_{t\in\T}$ to be a \levy process -- a large family of \cadlag paths with independent and stationary increments (e.g. Brownian motion) that can encapsulate discontinuities (e.g. Poisson process), fat-tails and heavy-skewness.
+\begin{remark}
+If $\{\boldsymbol{Z}_t\}_{t\in\T}$ is a \levy process, we call $\{\xib_t\}_{t\in\T}$ a \emph{generalised \levy random bridge}, given that $\{\xib^{\boldsymbol{0}}_t\}_{t\in\T}$ from (\ref{sampledinit}) with $\boldsymbol{x} = \boldsymbol{0}$ is a \levy random bridge of \cite{hoylehughstonmacrina_2011}.
+\end{remark}
+We shall surface the following result from \cite{menguturkmenguturk_2020}, which will implicitly be revoked in our statements since \levy processes are Markovian.
+\begin{proposition}
+\label{markovprop}
+Let $\{\F_{t}^{\xib}\}_{t\in\T}$ be the filtration of $\{\boldsymbol{\xi}_t\}_{t\in\T}$. Any $\{\xib_t\}_{t\in\T}$ is Markov with respect to $\{\F_t^{\xib}\}$ if its driving process $\{\boldsymbol{Z}_t\}_{t\in\T}$ is Markov with respect to $\{\F_t^{\boldsymbol{Z}}\}$.
+\end{proposition}
+\subsection{Non-anticipative Semimartingale Representation}\label{sec:semimartingale}
+We shall also recall the following result from \cite{goria_random-bridges_2025}, albeit slightly rephrased, which will be central to the rest of this paper. Additional results on $\{\xib_t\}_{t\in\T}$ when $\{\mathbf{Z}_t\}_{t\in\T}$ is a \levy process can be found in the Appendix \ref{app:resultsongeneralisedlevy}. Hereafter $\E[.]$ denotes expectation under $\P$-measure.
+\begin{proposition}
+\label{stochfiltlevyrandom}
+Let each coordinate of $\{\mathbf{Z}_t\}_{t\in\T}$ be a mutually independent \levy process. If $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ is a $\boldsymbol{\Phi}$-initialised random-bridge to $\boldsymbol{\Psi}$, where $\E[|\xib^{\boldsymbol{x}}_t|] < \infty$, then $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ admits the following non-anticipative representation:
+\begin{align}
+\label{nonanticipativereplevyrandombridge}
+\xib^{\boldsymbol{x}}_t \overset{d}{=} \int_0^t \frac{  \E\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_s \right]  - \xib^{\boldsymbol{x}}_s }{T-s}\dd s + \mathbf{M}_t,
+\end{align}
+for every $t\in[0,T)$, where $\{\mathbf{M}_t\}_{t\in\T}$ is a $(\P,\{\F_{t}^{\xib^{\boldsymbol{x}}}\}_{t\in\T})$-martingale with $\mathbf{M}_{0} = \boldsymbol{x}$.
+\end{proposition}
+\begin{remark}
+Proposition~\ref{stochfiltlevyrandom} is inherited from \cite{goria_random-bridges_2025} as an identity in law, and we retain the distributional-equality notation wherever a result is quoted in that form. On the canonical filtered space carrying the bridge, Theorem~\ref{thm:main-rep} below upgrades the identity to a $\P$-almost-sure semimartingale decomposition: the Doob $h$-transform construction of Sections~\ref{sec:modified-levy} and~\ref{sec:explicit-decomp} identifies the semimartingale characteristics of $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ directly under the bridge law, and all pathwise manipulations in the sequel take place on that space.
+\end{remark}
+We prove and provide an explicit representation of the $(\P,\{\F_{t}^{\xib^{\boldsymbol{x}}}\}_{t\in\T})$-martingale $\{\mathbf{M}_t\}_{t\in\T}$ in Theorem~\ref{thm:main-rep} below, the first main result of this paper. For now, denoting  $\langle \boldsymbol{M}_t^c \rangle$ as the continuous part and $\Delta \boldsymbol{M}_t = \boldsymbol{M}_t - \boldsymbol{M}_{t-}$ for all $t\in[0,T)$, the quadratic variation process of $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$, written as $\{\langle\xib^{\boldsymbol{x}}_t\rangle\}_{t\in\T}$, is given by the following decomposition:
+\begin{align}
+\langle \xib^{\boldsymbol{x}}_t\rangle = \langle \boldsymbol{M}_t^c \rangle + \sum_{0 < s \leq t} (\Delta\boldsymbol{M}_s)^2. \notag
+\end{align}
+This continuous and jump split of the quadratic variation is made explicit by Theorem~\ref{thm:main-rep} below, where $\langle \boldsymbol{M}^c\rangle$ is the Brownian contribution and $\sum(\Delta\boldsymbol{M})^2$ the Poisson and jump contribution.
+
+\begin{thm}[Explicit representation of the generalised \levy random bridge]
+\label{thm:main-rep}
+Work in one dimension, the multivariate case following coordinatewise. Let $\{\xi^{x}_t\}_{t \in \T}$ be a $\delta_x$-initialised random bridge to $\Psi$ under a \levy driver $\{Z_t\}_{t\in\T}$ with triplet $(\widetilde{\alpha}, \beta^2, \eta)$ and transition densities $\{f_t\}$, where $\E[|\xi^{x}_t|] < \infty$. Define the space-time harmonic function
+\begin{equation}\label{eq:main-harmonic}
+  h_{tT}(z) = \int_{\R} \frac{f_{T-t}(w - z)}{f_T(w - x)}\,\Psi(\d w), \qquad 0 \leq t < T.
+\end{equation}
+Then there exist a standard Brownian motion $\{W_t\}_{t\in\T}$ and an integer-valued random measure $N(\d s, \d y)$ counting the jumps of $\{\xi^{x}_t\}_{t\in\T}$, with predictable compensator
+\begin{equation}\label{eq:main-compensator}
+  \nu^{\xi}(\d s, \d y) = \frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\,\eta(\d y)\,\d s,
+\end{equation}
+such that, for every $t \in [0,T)$,
+\begin{equation}\label{eq:main-rep}
+  \xi^{x}_t = x + \int_0^t \frac{\E[Y \mid \xi^{x}_s] - \xi^{x}_s}{T-s}\,\d s
+    + \beta\,W_t
+    + \int_0^t\!\int_{\R \setminus \{0\}} y \left[N(\d s, \d y) - \nu^{\xi}(\d s, \d y)\right].
+\end{equation}
+In particular, the martingale of Proposition~\ref{stochfiltlevyrandom} is $M_t = x + \beta W_t + \int_0^t\!\int_{\R\setminus\{0\}} y\,[N(\d s,\d y) - \nu^{\xi}(\d s,\d y)]$.
+\end{thm}
+The drift pulls the bridge towards the conditional mean of the terminal value, the Brownian term carries the diffusive part of the driver unchanged, and the conditioning acts entirely through the jump compensator~\eqref{eq:main-compensator}, which tilts the \levy measure by the ratio of harmonic functions. The proof occupies Sections~\ref{sec:modified-levy} and~\ref{sec:explicit-decomp}: the harmonic function~\eqref{eq:main-harmonic} implements the bridge conditioning as a Doob $h$-transform of the driver's generator, and the decomposition is then read off the transformed generator. The regularity and integrability hypotheses under which the representation holds are collected there, in Proposition~\ref{prop:harmonic-app} and Theorem~\ref{thm:modified-levy-app}.
+
+The representation of Theorem~\ref{thm:main-rep} holds $\P$-almost surely on the canonical bridge space, so its differential form may be manipulated pathwise. Taking the conditional expectation of that differential form yields the following:
+\begin{align}
+\E\left[\dd \xib^{\boldsymbol{x}}_{t} \,|\, \xib^{\boldsymbol{x}}_{t} \right] = \frac{  \E\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_t \right]  - \xib^{\boldsymbol{x}}_t }{T-t}\dd t, \label{criticalconnection}
+\end{align}
+since the martingale part of Theorem~\ref{thm:main-rep} has vanishing conditional increments. The conditional expectation provided in (\ref{criticalconnection}) will have a crucial stance for the rest of this paper towards connecting Rectified Flows and \Schrodinger Bridges with \levy random bridges.
+\begin{lem}
+\label{refconditional}
+Let $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ be a $\boldsymbol{\Phi}$-initialised random-bridge to $\boldsymbol{\Psi}$. Then $\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] = \mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_T \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t]$
+for every $t\in\T$.
+\end{lem}
+\begin{proof}
+Define a conditional probability measure process $\{\pi_{t}\}_{t\in\T}$ such that
+\begin{align}
+\pi_{t}(\dd \boldsymbol{y}) \triangleq \mathbb{P}(\boldsymbol{Y} \in \dd \boldsymbol{y} \,| \,\mathcal{F}^{\xib^{\boldsymbol{x}}}_{t}), \label{measurevaluedprocess}
+\end{align}
+for every $t\in\T$. Since $\xib^{\boldsymbol{x}}_{T}\sim\boldsymbol{\Psi}$ from Definition \ref{definitionRandomBridge}, we have $\mathbb{P}(\xib^{\boldsymbol{x}}_{T} \in \dd \boldsymbol{y}) = \mathbb{P}(\boldsymbol{Y} \in \dd \boldsymbol{y})$. In addition, $\{\boldsymbol{Z}_t\}_{t\in\T}$ is Markov with respect to $\{\F_t^{\boldsymbol{Z}}\}$, and thus,
+\begin{align}
+\pi_{t}(\dd \boldsymbol{y}) &= \frac{\mathbb{P}(\xib^{\boldsymbol{x}}_{t} \in \dd \xib \,|\, \boldsymbol{Y} =  \boldsymbol{y})\mathbb{P}(\boldsymbol{Y} \in \dd \boldsymbol{y})}{\int_{\mathbb{Y}}\mathbb{P}(\xib^{\boldsymbol{x}}_{t} \in \dd \xib \,|\, \boldsymbol{Y} =  \boldsymbol{y})\mathbb{P}(\boldsymbol{Y} \in \dd \boldsymbol{y})} = \frac{\mathbb{P}(\xib^{\boldsymbol{x}}_{t} \in \dd \xib \,|\, \xib^{\boldsymbol{x}}_T = \boldsymbol{y})\mathbb{P}(\xib^{\boldsymbol{x}}_{T} \in \dd \boldsymbol{y})}{\int_{\mathbb{Y}}\mathbb{P}(\xib^{\boldsymbol{x}}_{t} \in \dd \xib \,|\, \xib^{\boldsymbol{x}}_{T} = \boldsymbol{y})\mathbb{P}(\xib^{\boldsymbol{x}}_{T} \in \dd \boldsymbol{y})} = \mathbb{P}(\xib^{\boldsymbol{x}}_{T} \in \dd \boldsymbol{y} | \xib^{\boldsymbol{x}}_{t}), \notag
+\end{align}
+using Proposition \ref{markovprop}. Therefore,
+\begin{align}
+\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] = \int_{\mathbb{Y}} \boldsymbol{y}\pi_{t}(\dd \boldsymbol{y})= \mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_T \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t], \notag
+\end{align}
+which holds for every $t\in\T$.
+\end{proof}
+Using Lemma \ref{refconditional}, we see that the conditional expectation process $\{\bar{\mathbf{M}}_t\}_{t\in\T}$ -- or in stochastic filtering terms the $\mathcal{L}^2$-best-estimate process -- given by
+\begin{align}
+\bar{\mathbf{M}}_t = \E\left[ \boldsymbol{Y} \, | \, \F_{t}^{\xib^{\boldsymbol{x}}} \right] \,\,\, \forall t \in \T, \label{equilibriummartingale}
+\end{align}
+is itself a $(\P,\{\F_{t}^{\xib^{\boldsymbol{x}}}\}_{t\in\T})$-martingale. In fact, $\{\bar{\mathbf{M}}_t\}_{t\in\T}$ is a martingale \textit{transport} process that satisfies the following:
+\begin{align}
+\bar{\mathbf{M}}_0 = \E\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_0 \right] \,\,\,\, \text{and} \,\,\,\, \bar{\mathbf{M}}_T = \boldsymbol{Y} \,\,\,\, \text{$\P$-a.s.} \notag
+\end{align}
+where the second equality holds due to conditional measurability at $t=T$. In addition, if we further have the following convex-order relation: $\boldsymbol{\delta}_{\boldsymbol{x}} \, \preceq \,  \boldsymbol{\Psi}$, where $\preceq$ denotes convex-ordering between two measures, then $\E\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_0 \right] = \xib^{\boldsymbol{x}}_0 = \boldsymbol{x}$, which further means that the martingale $\{\bar{\mathbf{M}}_t\}_{t\in\T}$ is a $\P$-a.s. transport between $\boldsymbol{x}$ and $\boldsymbol{Y}$, just like $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$. Accordingly, denoting $\kappa_t = (T-t)^{-1}$ for all $t\in[0,T)$, and writing $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ in differential form
+\begin{align}
+\label{ornsteinuhlenbeck}
+\dd\xib^{\boldsymbol{x}}_t \overset{d}{=} \kappa_t(\bar{\mathbf{M}}_t  - \xib^{\boldsymbol{x}}_t )\dd t + \dd \mathbf{M}_t,
+\end{align}
+we observe that the stochastic transport process $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ is essentially a generalised Ornstein-Uhlenbeck process driven by two $(\P,\{\F_{t}^{\xib^{\boldsymbol{x}}}\}_{t\in\T})$-martingales $\{\mathbf{M}_t\}_{t\in\T}$ and $\{\bar{\mathbf{M}}_t\}_{t\in\T}$, wherein its equilibrium process $\{\bar{\mathbf{M}}_t\}_{t\in\T}$ is a (martingale) transport process itself.
+
+Using Proposition \ref{stochfiltlevyrandom}, we can \emph{lift} $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ to $\{\xib_t\}_{t\in\T}$ by randomising the initial value so that we have the following representation for generalised \levy random bridges:
+\begin{align}
+\label{generalsemimartrep}
+\xib_t \overset{d}{=} \int_0^t \frac{\bar{\mathbf{M}}^{\xib}_s - \xib_s }{T-s}\dd s + \mathbf{M}^{\xib}_t,
+\end{align}
+for every $t\in[0,T)$, where $\{\mathbf{M}^{\xib}_t\}_{t\in\T}$ is a $(\P,\{\mathcal{F}_{t}^{\xib}\}_{t\in\T})$-martingale with $\mathbf{M}^{\xib}_{0} = \boldsymbol{X}$, and
+\begin{align}
+\label{martingaledriftexp}
+\bar{\mathbf{M}}^{\xib}_t = \E\left[ \boldsymbol{Y} \, | \, \mathcal{F}_{t}^{\xib} \right] = \E\left[ \boldsymbol{Y} \, | \, \xib_t \right],
+\end{align}
+for every $t\in\T$, where the second equality in (\ref{martingaledriftexp}) follows from Proposition \ref{markovprop}. We note that (\ref{generalsemimartrep}) is no longer a strictly non-anticipative representation due to its initial random value $\mathbf{M}^{\xib}_{0} = \boldsymbol{X}$.
+In addition, following similar steps as done for Lemma \ref{refconditional}, we can see that $\{\bar{\mathbf{M}}^{\xib}_t\}_{t\in\T}$ is a $(\P,\{\mathcal{F}_{t}^{\xib}\}_{t\in\T})$-martingale. Therefore, if the following convex-order relation holds:
+\begin{align}
+\boldsymbol{\Phi} \, \preceq \,  \boldsymbol{\Psi}, \notag
+\end{align}
+then we have $\bar{\mathbf{M}}^{\xib}_0 = \boldsymbol{X}$, which makes $\{\bar{\mathbf{M}}^{\xib}_t\}_{t\in\T}$ a martingale transport process $\P$-a.s. between $\boldsymbol{X}$ and $\boldsymbol{Y}$, just like $\{\xib_t\}_{t\in\T}$, since $\bar{\mathbf{M}}^{\xib}_T = \boldsymbol{Y}$ by conditional measurability.
+Finally, we shall close this section with the following result, which will be useful for the rest of this paper in connection to flow matching.
+\begin{proposition}
+\label{expectationcorelink}
+Let each coordinate of $\{\mathbf{Z}_t\}_{t\in\T}$ be a mutually independent \levy process. If $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ is a $\boldsymbol{\Phi}$-initialised random-bridge to $\boldsymbol{\Psi}$, where $\E[|\xib^{\boldsymbol{x}}_t|] < \infty$, then
+\begin{align}
+\label{coreexpectationbridge}
+\E\left[\xib^{\boldsymbol{x},\boldsymbol{y}}_t\right] = \frac{t}{T}\boldsymbol{y} + \left(\frac{T-t}{T}\right)\boldsymbol{x},
+\end{align}
+for every $t\in\T$.
+\end{proposition}
+\begin{proof}
+From \cite{hoylehughstonmacrina_2011}, we have the following:
+\begin{align}
+\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_t \mid \boldsymbol{\xi}^{\boldsymbol{x}}_s] = \left(\frac{t-s}{T-s}\right)\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_T \mid \boldsymbol{\xi}^{\boldsymbol{x}}_s] + \left(\frac{T-t}{T-s}\right) \boldsymbol{\xi}^{\boldsymbol{x}}_s, \notag
+\end{align}
+for any $0 \leq s \leq t \leq T$, which implies that
+\begin{align}
+\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_t] = \frac{t}{T}\mathbb{E}[\boldsymbol{Y}] + \left(\frac{T-t}{T}\right) \boldsymbol{x} \,\, \Rightarrow \,\, \mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x},\boldsymbol{y}}_t] = \frac{t}{T}\boldsymbol{y} + \left(\frac{T-t}{T}\right)\boldsymbol{x}, \notag
+\end{align}
+for every $t\in\T$.
+\end{proof}
+The linear-interpolation backbone of these conditional expectations is due to \cite[Corollary~2.10]{hoylehughstonmacrina_2011}.
+
+\subsection{Rectified Flows}\label{sec:rf-connection}
+It was conjectured in \cite{goria_random-bridges_2025} that the conditional expectation in (\ref{criticalconnection}) is connected to flow matching; and this paper establishes that connection explicitly through Rectified Flows. We shall also highlight how the expectation process in (\ref{coreexpectationbridge}) is connected to Rectified Flows. The connection in~\eqref{criticalconnection} holds for \emph{any} \levy driver with $\E[|\xib^{\boldsymbol{x}}_t|]<\infty$ (Remark~\ref{coredynamicconnection}), and the explicit martingale of Section~\ref{sec:semimartingale} makes this concrete for the whole class. We develop Brownian motion and the Poisson process in detail as the canonical purely-continuous and purely-discontinuous worked examples, and combine them in Section~\ref{sec:jumpdiff}.
+
+In this section, we briefly review Rectified Flows from \cite{liu_flow_2023}, a generative modelling framework that learns an Ordinary Differential Equation (ODE) to transport a source distribution to a target distribution along straight paths. Percolating the notations from above, given empirical observations $\boldsymbol{X}\sim \boldsymbol{\Phi}$ and $\boldsymbol{Y} \sim \boldsymbol{\Psi}$, define a linear interpolation process $\{\boldsymbol{R}_t\}_{t\in\mathbb{T}}$ as
+\begin{equation}
+    \boldsymbol{R}_t = \frac{t}{T}\boldsymbol{Y} + \frac{T-t}{T}\boldsymbol{X}. \label{eq:linear_interp}
+\end{equation}
+While $\{\boldsymbol{R}_t\}_{t\in\mathbb{T}}$ implicitly maps $\boldsymbol{\Phi}$ to $\boldsymbol{\Psi}$, it is nonetheless a non-causal (anticipative) process, because computing $\boldsymbol{R}_t$ requires knowledge of random variables $\boldsymbol{X}$ and $\boldsymbol{Y}$ at every $t\in(0,T)$. We recall that Rectified Flow seeks to learn a causal ODE model
+\begin{equation}
+    \mathrm{d}\bar{\boldsymbol{R}}_t = \boldsymbol{v}(\bar{\boldsymbol{R}}_t, t)\mathrm{d}t \, , \label{odemodelbase}
+\end{equation}
+such that the marginal distribution of $\bar{\boldsymbol{R}}_t$ matches that of $\boldsymbol{R}_t$ at every time $t\in\mathbb{T}$. The drift force (or velocity field) $\boldsymbol{v}: \mathbb{R}^n \to \mathbb{R}^n$ is trained to mimic the true continuous velocity of the straight line. Noting that the time derivative of \eqref{eq:linear_interp} is $(\boldsymbol{Y}-\boldsymbol{X})/T$, this is achieved by solving the following nonlinear least-square optimisation problem,
+\begin{equation}
+    \min_{\boldsymbol{v}} \int_{0}^{T} \mathbb{E}\left[ \left\| \frac{\boldsymbol{Y} - \boldsymbol{X}}{T} - \boldsymbol{v}(\boldsymbol{R}_t, t) \right\|^2 \right] \mathrm{d}t \, . \label{eq:rectified_flow_obj}
+\end{equation}
+The optimal solution is the conditional expectation of the linear velocity given the current state,
+\begin{equation}
+\boldsymbol{v}^*(\boldsymbol{z},t) = \mathbb{E}\left[\frac{\boldsymbol{Y} - \boldsymbol{X}}{T} \;\middle|\; \boldsymbol{R}_t = \boldsymbol{z}\right]. \label{eq:rf_conditional_exp}
+\end{equation}
+Crucially, we can algebraically rearrange \eqref{eq:linear_interp} to express this target velocity strictly in terms of the endpoint $\boldsymbol{Y}$ and the current state $\boldsymbol{R}_t$ as follows:
+\begin{equation}
+    \boldsymbol{Y} - \boldsymbol{R}_t = \frac{T-t}{T}(\boldsymbol{Y} - \boldsymbol{X}) \,\, \Rightarrow \,\,\frac{\boldsymbol{Y}-\boldsymbol{X}}{T} = \frac{\boldsymbol{Y} - \boldsymbol{R}_t}{T-t} \, .
+\end{equation}
+Substituting this back into the optimal velocity field yields the exact target-pull formulation
+\begin{equation}
+    \boldsymbol{v}^*(\boldsymbol{z},t) = \frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{R}_t = \boldsymbol{z}] - \boldsymbol{z}}{T-t} \, . \label{eq:rf_target_pull}
+\end{equation}
+This formulation exposes Rectified Flow as a pure conditional target-pulling velocity.\footnote{This target-pull form coincides with \cite[Eq.~(5)]{shi2023diffusion} in the $\sigma\to0$ limit.} This yields a deterministic coupling $(\boldsymbol{R}_0, \boldsymbol{R}_T)$ with provably non-increasing convex transport costs, and allows for efficient simulation using standard numerical ODE solvers.
+Finally, inserting the optimal solution $\boldsymbol{v}^*$ in (\ref{eq:rf_target_pull}) for $\boldsymbol{v}$ in the ODE (\ref{odemodelbase}), we receive the following:
+\begin{equation}
+    \mathrm{d}\bar{\boldsymbol{R}}_t = \frac{\mathbb{E}[\boldsymbol{Y} \mid \bar{\boldsymbol{R}}_t] - \bar{\boldsymbol{R}}_t}{T-t}\mathrm{d}t \, , \label{odemodelbaseconnection}
+\end{equation}
+which shares the same functional form to the conditional expectation of a $\boldsymbol{\Phi}$-initialised random-bridge to $\boldsymbol{\Psi}$ as given in (\ref{criticalconnection}).
+\begin{prop}[Rectified Flow correspondence]
+\label{coredynamicconnection}
+Let $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ be a $\boldsymbol{\Phi}$-initialised random bridge to $\boldsymbol{\Psi}$ under \emph{any} \levy driver with $\E[|\xib^{\boldsymbol{x}}_t|] < \infty$. Then:
+\begin{enumerate}
+    \item[(i)] \emph{(Dynamical layer.)} The conditional drift of the bridge coincides in functional form with the optimal Rectified Flow velocity field,
+    \begin{align}
+        \E\left[\dd \xib^{\boldsymbol{x}}_{t} \,|\, \xib^{\boldsymbol{x}}_{t} \right] = \frac{\E\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_t \right]  - \xib^{\boldsymbol{x}}_t }{T-t}\dd t \, = \, \boldsymbol{v}^*(\xib^{\boldsymbol{x}}_t, t)\,\dd t, \notag
+    \end{align}
+    where $\boldsymbol{v}^*$ is the velocity field of (\ref{odemodelbaseconnection}).
+    \item[(ii)] \emph{(Statistical layer.)} The mean of the pinned bridge is the Rectified Flow interpolant, $\E[\boldsymbol{\xi}^{\boldsymbol{x},\boldsymbol{y}}_t] = \boldsymbol{R}^{\boldsymbol{x,y}}_t$ for every $t \in \T$.
+\end{enumerate}
+\end{prop}
+\begin{proof}
+Part (i) is (\ref{criticalconnection}), which rests on Theorem~\ref{thm:main-rep} and holds for any \levy driver satisfying the stated moment condition, compared against the target-pull form (\ref{eq:rf_target_pull}) of the Rectified Flow velocity. Part (ii) follows from (\ref{coreexpectationbridge}).
+\end{proof}
+Proposition~\ref{coredynamicconnection} is the sense in which generalised \levy random bridges are stochastic extensions of Rectified Flows: neither layer depends on the driver being Brownian.
+Proposition \ref{coredynamicconnection} paves a path that takes us well beyond Brownian motion frameworks, as commonly seen in the literature, and allows us to take a step forward in unifying different approaches. Finally, in the spirit of (\ref{purebridgeconstruct}), we define the following causal (non-anticipative) process:
+\begin{align}
+\boldsymbol{R}^{\boldsymbol{x,y}}_t \triangleq  \boldsymbol{R}_t \, |_{\boldsymbol{X} = \boldsymbol{x} \, , \, \boldsymbol{Y} = \boldsymbol{y} \,\, , \,\, (\boldsymbol{x},\boldsymbol{y}) \leftarrow \boldsymbol{\Gamma}(\boldsymbol{\Phi},\boldsymbol{\Psi})} \hspace{0.1in} \forall t\in\T. \label{nonanticipativerectifiedconstruct}
+\end{align}
+The process $\{\boldsymbol{R}^{\boldsymbol{x,y}}_t\}_{t\in\mathbb{T}}$ in (\ref{nonanticipativerectifiedconstruct}) can be explicitly represented as follows:
+\begin{align}
+\boldsymbol{R}^{\boldsymbol{x,y}}_t  \, = \, \frac{t}{T}\boldsymbol{y} + \left(\frac{T-t}{T}\right)\boldsymbol{x} \hspace{0.1in} \forall t\in\T, \notag
+\end{align}
+which is a linear interpolation between any given $\boldsymbol{x}\in\R^n$ and $\boldsymbol{y}\in\R^n$. Therefore, the process $\{\boldsymbol{R}^{\boldsymbol{x,y}}_t\}_{t\in\mathbb{T}}$ in (\ref{nonanticipativerectifiedconstruct}) is connected to $\{\xib^{\boldsymbol{x,y}}_t\}_{t\in\mathbb{T}}$ through the relation:
+\begin{equation}
+        \E\left[\boldsymbol{\xi}^{\boldsymbol{x},\boldsymbol{y}}_t\right] \, = \, \boldsymbol{R}^{\boldsymbol{x,y}}_t, \label{rectifiedrandomexpectationequality}
+    \end{equation}
+for any $t\in\T$, restating part (ii) of Proposition~\ref{coredynamicconnection} in the pinned notation.
+\begin{remark}
+Let $\{\xib_t\}_{t\in\T}$ be a generalised \levy random bridge as per above. Then one can observe the similarity of the functional forms
+\begin{align}
+\xib_t \overset{d}{=}  \boldsymbol{X} + \int_0^t \frac{\E\left[ \boldsymbol{Y} \, | \, \xib_s \right] - \xib_s }{T-s}\dd s + \int_0^t \d \mathbf{M}^{\xib}_s \,\,\,\,\,\, \text{vs.} \,\,\,\,\,\, \bar{\boldsymbol{R}}_t \overset{d}{=} \boldsymbol{X} + \int_0^t \frac{\mathbb{E}[\boldsymbol{Y} \mid \bar{\boldsymbol{R}}_s] - \bar{\boldsymbol{R}}_s}{T-s}\mathrm{d}s \notag
+\end{align}
+for every $t\in[0,T)$, given the representations in (\ref{generalsemimartrep}) and (\ref{odemodelbaseconnection}).
+\end{remark}
+\subsection{Temporal Transport Consistency}\label{sec:temporal-consistency}
+
+The bridge construction distinguishes no privileged initial time. The following proposition makes this precise: the restriction of a random bridge to any subinterval is again a random bridge between the induced marginal laws, so a single transport encodes a family of mutually consistent sub-transports.
+
+\begin{proposition}[Temporal transport consistency]
+\label{prop:temporal-consistency}
+Let $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ be a c\`adl\`ag $\boldsymbol{\Phi}$-initialised random bridge to $\boldsymbol{\Psi}$ under a \levy driver $\{\boldsymbol{Z}_t\}_{t\in\T}$, with endpoint coupling absolutely continuous with respect to the law of $(\boldsymbol{Z}_0, \boldsymbol{Z}_T)$. For $0\le r<u\le T$, let $\boldsymbol{\Phi}_r$ and $\boldsymbol{\Psi}_u$ denote the laws of $\xib^{\boldsymbol{x}}_r$ and $\xib^{\boldsymbol{x}}_u$ respectively. Then $\{\xib^{\boldsymbol{x}}_t\}_{t\in[r,u]}$ is a $\boldsymbol{\Phi}_r$-initialised random bridge to $\boldsymbol{\Psi}_u$ under the restricted driver $\{\boldsymbol{Z}_t\}_{t\in[r,u]}$, and
+\begin{align}
+\boldsymbol{\Phi}_r\xrightarrow{d}\boldsymbol{\Phi} \,\,\, \text{as} \,\,\, r \downarrow 0
+\qquad \text{and} \qquad
+\boldsymbol{\Psi}_u\xrightarrow{d}\boldsymbol{\Psi} \,\,\, \text{as} \,\,\, u \uparrow T. \notag
+\end{align}
+As a consequence, the drift re-anchors to any intermediate horizon,
+\begin{align}
+\frac{\E[\boldsymbol{Y}\mid\xib^{\boldsymbol{x}}_t]-\xib^{\boldsymbol{x}}_t}{T-t}
+ = \frac{\E[\xib^{\boldsymbol{x}}_u\mid\xib^{\boldsymbol{x}}_t]-\xib^{\boldsymbol{x}}_t}{u-t}, \notag
+\end{align}
+for all $u\in(t,T]$.
+\end{proposition}
+
+The proof rests on a screening property of Markov processes: conditionally on the states at two times, the path between them is independent of the path outside them.
+
+\begin{lem}[Screening by intermediate endpoints]
+\label{lem:screening}
+Let $\{\boldsymbol{Z}_t\}_{t\in\T}$ be an $\R^n$-valued Markov process with regular transition kernels. Fix $0\le r<t_1<\cdots<t_m<u\le T$. Then, for every bounded Borel function $F$,
+\begin{align}
+\E\!\left[
+F(\boldsymbol{Z}_{t_1},\ldots,\boldsymbol{Z}_{t_m})
+\mid
+\boldsymbol{Z}_0,\boldsymbol{Z}_r,\boldsymbol{Z}_u,\boldsymbol{Z}_T
+\right]
+=
+\E\!\left[
+F(\boldsymbol{Z}_{t_1},\ldots,\boldsymbol{Z}_{t_m})
+\mid
+\boldsymbol{Z}_r,\boldsymbol{Z}_u
+\right]. \notag
+\end{align}
+\end{lem}
+
+\begin{proof}
+Let $P_{s,t}$ denote the transition kernel of $\{\boldsymbol{Z}_t\}_{t\in\T}$ and let $K^{\boldsymbol{t}}_{r,u}((\boldsymbol{a},\boldsymbol{b}),\cdot)$ be a regular conditional law of $(\boldsymbol{Z}_{t_1},\ldots,\boldsymbol{Z}_{t_m})$ given $(\boldsymbol{Z}_r,\boldsymbol{Z}_u)=(\boldsymbol{a},\boldsymbol{b})$, obtained by disintegrating the product
+$P_{r,t_1}(\boldsymbol{a},\dd \boldsymbol{z}_1) P_{t_1,t_2}(\boldsymbol{z}_1,\dd \boldsymbol{z}_2)\cdots P_{t_m,u}(\boldsymbol{z}_m,\dd \boldsymbol{b})$
+with respect to $P_{r,u}(\boldsymbol{a},\dd \boldsymbol{b})$. For bounded Borel functions $G_0,G_r,G_u,G_T$, writing the joint law of $(\boldsymbol{Z}_0, \boldsymbol{Z}_r, \boldsymbol{Z}_{t_1}, \ldots, \boldsymbol{Z}_{t_m}, \boldsymbol{Z}_u, \boldsymbol{Z}_T)$ as the product of transition kernels and integrating out the interior variables gives
+\begin{align}
+\E\!\left[
+G_0(\boldsymbol{Z}_0)G_r(\boldsymbol{Z}_r)
+F(\boldsymbol{Z}_{t_1},\ldots,\boldsymbol{Z}_{t_m})
+G_u(\boldsymbol{Z}_u)G_T(\boldsymbol{Z}_T)
+\right]
+=
+\E\!\left[
+G_0(\boldsymbol{Z}_0)G_r(\boldsymbol{Z}_r)
+G_u(\boldsymbol{Z}_u)G_T(\boldsymbol{Z}_T)\,
+(K^{\boldsymbol{t}}_{r,u}F)(\boldsymbol{Z}_r,\boldsymbol{Z}_u)
+\right], \notag
+\end{align}
+where $(K^{\boldsymbol{t}}_{r,u}F)(\boldsymbol{a},\boldsymbol{b}) = \int F\,\dd K^{\boldsymbol{t}}_{r,u}((\boldsymbol{a},\boldsymbol{b}),\cdot)$. This identifies both conditional expectations in the statement with $(K^{\boldsymbol{t}}_{r,u}F)(\boldsymbol{Z}_r,\boldsymbol{Z}_u)$. The boundary cases $r=0$ and $u=T$ follow by omitting the corresponding exterior variable.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:temporal-consistency}]
+Let $\boldsymbol{\Gamma}_{r,u}$ denote the joint law of $(\xib^{\boldsymbol{x}}_r,\xib^{\boldsymbol{x}}_u)$; its marginals are $\boldsymbol{\Phi}_r$ and $\boldsymbol{\Psi}_u$. Fix $r<t_1<\cdots<t_m<u$ and a bounded Borel function $F$. By Definition~\ref{definitionRandomBridge}, applied to the finite set of times $\{r,t_1,\ldots,t_m,u\}$, the conditional finite-dimensional law of the bridge given $(\xib^{\boldsymbol{x}}_0,\xib^{\boldsymbol{x}}_T)$ agrees with that of the driver given $(\boldsymbol{Z}_0,\boldsymbol{Z}_T)$. Lemma~\ref{lem:screening} therefore yields
+\begin{align}
+\E\!\left[
+F(\xib^{\boldsymbol{x}}_{t_1},\ldots,\xib^{\boldsymbol{x}}_{t_m})
+\mid
+\xib^{\boldsymbol{x}}_r,\xib^{\boldsymbol{x}}_u
+\right]
+=
+\E\!\left[
+F(\boldsymbol{Z}_{t_1},\ldots,\boldsymbol{Z}_{t_m})
+\mid
+\boldsymbol{Z}_r,\boldsymbol{Z}_u
+\right] \notag
+\end{align}
+for $\boldsymbol{\Gamma}_{r,u}$-almost every endpoint pair. Taking $F$ to be indicators of lower orthants gives precisely condition (2) of Definition~\ref{definitionRandomBridge} on the interval $[r,u]$, while condition (1) holds by construction of $\boldsymbol{\Gamma}_{r,u}$. Hence the restriction is a $\boldsymbol{\Phi}_r$-initialised random bridge to $\boldsymbol{\Psi}_u$.
+
+For the endpoint limits, right-continuity of the c\`adl\`ag paths at zero gives $\xib^{\boldsymbol{x}}_r\to\xib^{\boldsymbol{x}}_0$ $\P$-almost surely as $r\downarrow0$, hence $\boldsymbol{\Phi}_r\xrightarrow{d}\boldsymbol{\Phi}$. For the terminal endpoint, a \levy process has no fixed times of discontinuity, so $\P(\Delta\boldsymbol{Z}_T\ne0)=0$, and therefore $q(\boldsymbol{a},\boldsymbol{b}) = \P(\Delta\boldsymbol{Z}_T\ne0\mid \boldsymbol{Z}_0=\boldsymbol{a},\boldsymbol{Z}_T=\boldsymbol{b}) = 0$ for almost every endpoint pair under the law of $(\boldsymbol{Z}_0, \boldsymbol{Z}_T)$. Since the endpoint coupling $\boldsymbol{\Gamma}$ is absolutely continuous with respect to that law,
+\begin{align}
+\P(\Delta\xib^{\boldsymbol{x}}_T\ne0)
+=
+\int q(\boldsymbol{a},\boldsymbol{b})\,
+\boldsymbol{\Gamma}(\dd\boldsymbol{a},\dd\boldsymbol{b})
+=0. \notag
+\end{align}
+Thus $\xib^{\boldsymbol{x}}_{T-}=\xib^{\boldsymbol{x}}_T$ $\P$-almost surely, so $\xib^{\boldsymbol{x}}_u\to\xib^{\boldsymbol{x}}_T$ almost surely as $u\uparrow T$, and $\boldsymbol{\Psi}_u\xrightarrow{d}\boldsymbol{\Psi}$. Finally, the linear interpolation identity $\E[\xib^{\boldsymbol{x}}_u\mid\xib^{\boldsymbol{x}}_t] = \frac{u-t}{T-t}\E[\xib^{\boldsymbol{x}}_T\mid\xib^{\boldsymbol{x}}_t] + \frac{T-u}{T-t}\xib^{\boldsymbol{x}}_t$ of \cite[Corollary~2.10]{hoylehughstonmacrina_2011}, together with $\boldsymbol{Y}=\xib^{\boldsymbol{x}}_T$ $\P$-almost surely, rearranges to the drift re-anchoring identity.
+\end{proof}
+
+\begin{remark}
+The absolute-continuity hypothesis on the endpoint coupling holds throughout the $h$-transform framework of Section~\ref{sec:modified-levy}, where $\boldsymbol{\Psi}$ is absolutely continuous with respect to the terminal law of the driver and the coupling is built from the corresponding conditional kernels. It excludes pinned bridges with atomic terminal laws, such as the classical bridge to $\boldsymbol{\delta}_{\boldsymbol{y}}$, for which the terminal limit must be verified directly from the bridge kernel; for the Brownian and Poisson pinned bridges of Sections~\ref{sec:brownian} and~\ref{sec:poisson} this is immediate, by path continuity in the former case and by the non-atomicity of the conditional jump-time laws in the latter. The screening lemma itself uses only the Markov property of the driver; independence and stationarity of increments play no role in the restriction step.
+\end{remark}
+
+The drift re-anchoring admits a dynamical reading: the conditional target velocity can be understood as an appropriately time-adjusted mean-reversion on the $\mathcal{L}^2$-best-estimate of \emph{any} future state of the random bridge $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$. Combining (\ref{nonanticipativereplevyrandombridge}) with the re-anchoring identity of Proposition~\ref{prop:temporal-consistency}, we have
+\begin{align}
+\label{nonanticipativerewritten}
+\xib^{\boldsymbol{x}}_t \overset{d}{=} \int_0^t \frac{  \E\left[ \boldsymbol{\xi}^{\boldsymbol{x}}_u \, | \, \xib^{\boldsymbol{x}}_s \right]  - \xib^{\boldsymbol{x}}_s }{u-s}\dd s + \mathbf{M}_t,
+\end{align}
+for any fixed $u\in(t,T]$, which further implies that we are implicitly working with infinitely many random bridges parametrized through $u\in(t,T]$. More specifically, having
+\begin{align}
+\boldsymbol{\xi}^{\boldsymbol{x}}_u \sim \boldsymbol{\Psi}_u \,\, \text{where} \,\, \boldsymbol{\Psi}_u \overset{d}{\rightarrow} \boldsymbol{\Psi} \,\,\, \text{as} \,\,\, u \rightarrow T, \notag
+\end{align}
+each $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in [0,u]}$ defines a \emph{$\boldsymbol{\Phi}$-initialised random-bridge to $\boldsymbol{\Psi}_u$} for any $u\in(t,T]$. In fact, note that we have the following:
+\begin{align}
+\xib^{\boldsymbol{x}}_t \overset{d}{=} \xib^{\boldsymbol{x}}_r + \int_r^t \frac{  \E\left[ \boldsymbol{\xi}^{\boldsymbol{x}}_u \, | \, \xib^{\boldsymbol{x}}_s \right]  - \xib^{\boldsymbol{x}}_s }{u-s}\dd s + \int_r^t \dd \mathbf{M}_s, \label{twowayconstruct}
+\end{align}
+for any $0\leq r < t < u \leq T$. Since the proposed framework through Definition \ref{definitionRandomBridge} implicitly imposes the existence of the following distributional limits:
+\begin{align}
+\boldsymbol{\xi}^{\boldsymbol{x}}_r \sim \boldsymbol{\Phi}_r \,\, \text{where} \,\, \boldsymbol{\Phi}_r \overset{d}{\rightarrow} \boldsymbol{\Phi} \,\,\, \text{as} \,\,\, r \rightarrow 0 \,\,\,\, \text{and} \,\,\,\,
+\boldsymbol{\xi}^{\boldsymbol{x}}_u \sim \boldsymbol{\Psi}_u \,\, \text{where} \,\, \boldsymbol{\Psi}_u \overset{d}{\rightarrow} \boldsymbol{\Psi} \,\,\, \text{as} \,\,\, u \rightarrow T, \label{twodistributionsubtransports}
+\end{align}
+each $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in [r,u]}$ defines a \emph{$\boldsymbol{\Phi}_r$-initialised random-bridge to $\boldsymbol{\Psi}_u$} for any $u\in(t,T]$. Accordingly, due to the consistency property above, such random bridges -- e.g. when the driving process $\{\boldsymbol{Z}_{t}\}_{t\in\T}$ is a \levy process -- can be viewed as collections of stochastic (sub)-transports across $\boldsymbol{\Phi}_r$ and $\boldsymbol{\Psi}_u$ for any $0\leq r < u \leq T$. We call this the \emph{temporal transport consistency property}.
+
+\begin{conj}[Temporal consistency of Rectified Flows]
+\label{conj:rf-consistency}
+Due to the aforementioned connection with Rectified Flows through (\ref{criticalconnection}) and (\ref{odemodelbaseconnection}), we conjecture that
+\begin{equation}
+    \frac{\mathbb{E}[\boldsymbol{Y} \mid \bar{\boldsymbol{R}}_t] - \bar{\boldsymbol{R}}_t}{T-t}\mathrm{d}t \, = \, \frac{\mathbb{E}[\bar{\boldsymbol{R}}_u \mid \bar{\boldsymbol{R}}_t] - \bar{\boldsymbol{R}}_t}{u-t}\mathrm{d}t \,\,\,\, \Rightarrow \,\,\,\, \mathrm{d}\bar{\boldsymbol{R}}_t = \frac{\mathbb{E}[\bar{\boldsymbol{R}}_u \mid \bar{\boldsymbol{R}}_t] - \bar{\boldsymbol{R}}_t}{u-t}\mathrm{d}t, \notag
+\end{equation}
+for any $u\in(t,T]$. Establishing this relation is beyond the scope of this paper; we return to it in Section~\ref{sec:conclusion}.
+\end{conj}
+
+\begin{remark}[Relation to LRB dynamic consistency]
+Proposition~\ref{prop:temporal-consistency} is the stochastic-transport reading of the dynamic
+consistency of \levy random bridges \cite[Section~2.7, Corollary~2.12]{hoylehughstonmacrina_2011},
+where the time-shifted process $\eta_t=L_{tT}-L_{sT}$ is itself a \levy random bridge with a shifted
+terminal law. Casting each sub-path as a $\boldsymbol{\Phi}_r\!\to\!\boldsymbol{\Psi}_u$ transport, so
+that a single \levy random bridge encodes a family of mutually consistent sub-transports, is the
+transport interpretation this framework adds, and the hook for the multi-segment and multi-marginal
+extension of Section~\ref{sec:conclusion}.
+\end{remark}
+
+\subsection{Bridge-Modified \levy Measure}\label{sec:modified-levy}
+\label{sec:explicit_M}
+
+This subsection and the next are devoted to the proof of Theorem~\ref{thm:main-rep}: we compute the bridge-modified generator induced by the Doob $h$-transform, and then read off the decomposition of $\mathbf{M}_t$. We work in one dimension, the multivariate case following coordinatewise. Let $\{\xi^{x}_t\}_{t \in \T}$ be a $\delta_x$-initialised random bridge to $\Psi$ under action of the \levy driver $\{Z_t\}$ with $Z_0 = x$ (Definition~\ref{definitionRandomBridge}). This conditioning is implemented by a Doob $h$-transform of the driver's generator $\mathcal{A}$, with harmonic function
+\begin{equation}\label{eq:h-app}
+  h_{tT}(z) = \int_{\R} \frac{f_{T-t}(w - z)}{f_T(w - x)}\,\Psi(\d w),
+  \qquad 0 \leq t < T,\; z \in \R,
+\end{equation}
+where the $f_T(w - x)$ in the denominator reflects the initial condition $Z_0 = x$ (cf.\ Corollary~\ref{levycorodensity} for the fixed-endpoint case). Throughout this subsection and the next we assume the driver admits transition densities with respect to Lebesgue measure that are strictly positive on the relevant support, with $0 < f_T(w - x) < \infty$ for $\Psi$-almost every $w$; drivers without a Lebesgue density, such as the Poisson driver, are treated directly on their lattice in Section~\ref{sec:poisson}, where the role of the ratio~\eqref{eq:h-app} is played by the mass-function quotient of Corollary~\ref{poissondiscretetweedie}. This is the integrated form of the harmonic function $h_{tT}(z;y) = f_{T-t}(y - z)$ from Appendix~\ref{app:resultsongeneralisedlevy} (line below~\eqref{eq:ratio}), averaged against the terminal law $\Psi$.
+
+The following result, due to \cite{hoylehughstonmacrina_2011}, makes precise the role of $h_{tT}$ as the Radon--Nikod\'ym density that converts the free \levy law into the LRB law on path space.
+
+\begin{prop}[{\cite[Proposition~2.7]{hoylehughstonmacrina_2011}}]
+\label{prop:lrb-change-of-measure}
+The process $\{h_{tT}(Z_t)\}_{0 \leq t < T}$ is a strictly positive $(\mathcal{F}_t^Z)$-martingale under the law of the free \levy driver $\{Z_t\}$, normalised so that $h_{0T}(x) = 1$. The Radon--Nikod\'ym density
+\begin{equation}\label{eq:lrb-rn-density}
+  \frac{\d \P_{\mathrm{LRB}}}{\d \P_Z}\bigg|_{\mathcal{F}_t^Z} \;=\; h_{tT}(Z_t),
+  \qquad 0 \leq t < T,
+\end{equation}
+defines the LRB law $\P_{\mathrm{LRB}}$ from the \levy law $\P_Z$ on path space; under $\P_{\mathrm{LRB}}$, the coordinate process is the $\delta_x$-initialised LRB to terminal law $\Psi$.
+\end{prop}
+
+The Doob $h$-transform formula in the proof of Theorem~\ref{thm:modified-levy-app} below uses precisely this change-of-measure density $h_{tT}$ from Proposition~\ref{prop:lrb-change-of-measure}. The next proposition justifies the ``Doob $h$-transform'' label by establishing that $h_{tT}$ is space-time harmonic for the free \levy generator, which is the standard prerequisite for the $h$-transform construction.
+
+\begin{prop}
+\label{prop:harmonic-app}
+Assume the transition densities $f_t$ of the driver are of class $C^{1,2}$ on $(0,T] \times \R$ and satisfy the backward Kolmogorov equation, and that for each compact $K \subset [0,T) \times \R$,
+\begin{equation}\label{eq:harmonic-envelope}
+  \int_{\R} \sup_{(t,z) \in K} \frac{\bigl|\partial_t f_{T-t}(w - z)\bigr| + \bigl|\mathcal{A}_z f_{T-t}(w - z)\bigr|}{f_T(w - x)}\,\Psi(\d w) < \infty,
+\end{equation}
+together with the absolute double-integral bound for the nonlocal part,
+\begin{equation}\label{eq:harmonic-fubini}
+  \int_{\R} \int_{\R\setminus\{0\}} \sup_{(t,z) \in K} \frac{\bigl|f_{T-t}(w - z - y) - f_{T-t}(w - z) - y\,\partial_z f_{T-t}(w - z)\,\1_{|y|<1}\bigr|}{f_T(w - x)}\,\eta(\d y)\,\Psi(\d w) < \infty.
+\end{equation}
+Then the function $h_{tT}$ defined in~\eqref{eq:h-app} is space-time harmonic with respect to the generator~\eqref{eq:generator}: for every $t < T$ and $z \in \R$,
+\begin{equation}\label{eq:harmonic-app}
+  (\partial_t + \mathcal{A}_z)\,h_{tT}(z) = 0.
+\end{equation}
+\end{prop}
+
+\begin{proof}
+For fixed $w \in \R$, the transition density satisfies the backward Kolmogorov equation
+\begin{equation*}
+  (\partial_t + \mathcal{A}_z)\,f_{T-t}(w - z) = 0, \qquad t < T.
+\end{equation*}
+Since $f_T(w - x)$ and $\Psi(\d w)$ do not depend on $(t, z)$, the operator passes through the integral defining $h_{tT}$: differentiation under the integral sign handles the local part, licensed by the envelope~\eqref{eq:harmonic-envelope}, and Fubini's theorem handles the jump part, licensed by the absolute bound~\eqref{eq:harmonic-fubini}. Therefore
+\begin{equation*}
+  (\partial_t + \mathcal{A}_z)\,h_{tT}(z)
+  = \int_{\R} \frac{(\partial_t + \mathcal{A}_z)\,f_{T-t}(w - z)}{f_T(w - x)}\,\Psi(\d w)
+  = 0,
+\end{equation*}
+which is~\eqref{eq:harmonic-app}.
+\end{proof}
+
+\begin{thm}
+\label{thm:modified-levy-app}
+Assume that $h_{tT}$ is of class $C^{1,2}$ on $[0,T) \times \R$, strictly positive, a good function for the space-time generator $\partial_t + \mathcal{A}$ in the sense of \cite[Section~4]{PalmowskiRolski2002}, meaning that $h_{tT}$ and $1/h_{tT}$ preserve the domain, $\mathcal{D}((\partial_t + \mathcal{A})^{h}) = \mathcal{D}(\partial_t + \mathcal{A})$, and that for every $(t,x) \in [0,T) \times \R$,
+\begin{equation}\label{eq:levy-kernel-condition}
+  \int_{\R\setminus\{0\}} (1 \wedge y^2)\,\frac{h_{tT}(x+y)}{h_{tT}(x)}\,\eta(\d y) < \infty
+  \qquad \text{and} \qquad
+  \int_{|y|<1} |y|\,\Bigl|\frac{h_{tT}(x+y)}{h_{tT}(x)} - 1\Bigr|\,\eta(\d y) < \infty.
+\end{equation}
+Then the Doob $h$-transform of the \levy generator with harmonic function $h_{tT}$ is of the form
+\begin{equation}\label{eq:modified-generator-app}
+  \widetilde{\mathcal{A}}f(x)
+  = \widetilde{\alpha}(t,x)\,f'(x)
+    + \half\beta^2\,f''(x)
+    + \int_{\R\setminus\{0\}}\bigl[f(x+y) - f(x) - yf'(x)\1_{|y|<1}\bigr]\,
+      \frac{h_{tT}(x+y)}{h_{tT}(x)}\,\eta(\d y),
+\end{equation}
+with unchanged diffusion coefficient $\beta$, bridge-modified \levy measure
+\begin{equation}\label{eq:modified-levy-measure-app}
+  \widetilde{\eta}(t, x;\, \d y)
+  = \frac{h_{tT}(x+y)}{h_{tT}(x)}\,\eta(\d y),
+\end{equation}
+and modified drift
+\begin{equation}\label{eq:modified-drift-app}
+  \widetilde{\alpha}(t,x)
+  = \alpha
+    + \beta^2\,\frac{\partial_x h_{tT}(x)}{h_{tT}(x)}
+    + \int_{|y|<1} y\,\Bigl[\frac{h_{tT}(x+y)}{h_{tT}(x)} - 1\Bigr]\,\eta(\d y).
+\end{equation}
+\end{thm}
+
+
+\begin{proof}
+The harmonic function $h_{tT}$ is time-dependent, so the $h$-transform must be taken for the space-time process $(t, Z_t)$, whose generator is $\partial_t + \mathcal{A}$ and for which $h$ is harmonic by Proposition~\ref{prop:harmonic-app}; the positivity and martingale hypotheses of \cite[Theorem~4.2]{PalmowskiRolski2002} hold by Proposition~\ref{prop:lrb-change-of-measure}, and the construction of bridges as space-time Doob $h$-transforms is classical \cite{FitzsimmonsPitmanYor1993}. For a time-independent test function $f$, the space-time transform gives
+    \begin{equation}\label{eq:doob-h-formula}
+      \widetilde{\mathcal{A}}f
+      = \frac{(\partial_t + \mathcal{A})(f h_{tT})}{h_{tT}}
+      = \frac{\mathcal{A}(f h_{tT})}{h_{tT}} + f\,\frac{\partial_t h_{tT}}{h_{tT}}
+      = \frac{\mathcal{A}(f h_{tT})}{h_{tT}} - f\,\frac{\mathcal{A} h_{tT}}{h_{tT}},
+    \end{equation}
+    where the first equality holds because the subtracted term $f\,h_{tT}^{-1}(\partial_t + \mathcal{A})h_{tT}$ vanishes by space-time harmonicity~\eqref{eq:harmonic-app}, and the last equality substitutes $\partial_t h_{tT} = -\mathcal{A}h_{tT}$, again by~\eqref{eq:harmonic-app}. The subtraction of $f\,h_{tT}^{-1}\mathcal{A}h_{tT}$ below is therefore the space-time harmonicity acting, not an assumption that $\mathcal{A}h_{tT} = 0$.
+
+We now apply~\eqref{eq:generator} to $g = fh_{tT}$. The jump contribution to $\mathcal{A}(fh_{tT})$ is
+    \begin{equation*}
+      J = \int_{\R\setminus\{0\}}\bigl[f(x{+}y)\,h_{tT}(x{+}y)
+        - f(x)\,h_{tT}(x)
+        - y\bigl(f'(x)\,h_{tT}(x) + f(x)\,h_{tT}'(x)\bigr)
+        \1_{|y|<1}\bigr]\,\eta(\d y).
+    \end{equation*}
+Dividing by $h_{tT}(x)$ and using the identity
+    \begin{equation*}
+      \frac{f(x+y)\,h_{tT}(x+y)}{h_{tT}(x)} - f(x)
+      = [f(x+y) - f(x)]\,\frac{h_{tT}(x+y)}{h_{tT}(x)}
+        + f(x)\Bigl[\frac{h_{tT}(x+y)}{h_{tT}(x)} - 1\Bigr],
+    \end{equation*}
+    the integrand splits into three groups, each absolutely convergent under~\eqref{eq:levy-kernel-condition} together with the $C^{2}$ regularity of $f$ and $h_{tT}$ (the first group by the first condition, the second by the second condition, and the third since $h_{tT}$ lies in the domain of $\mathcal{A}$):
+    \begin{align}
+      \frac{J}{h_{tT}(x)}
+      &= \int_{\R\setminus\{0\}}\bigl[f(x{+}y) - f(x) - yf'(x)\1_{|y|<1}\bigr]\,
+         \frac{h_{tT}(x{+}y)}{h_{tT}(x)}\,\eta(\d y) \label{eq:jump-mod} \\
+      &\quad + f'(x)\int_{\R\setminus\{0\}} y\Bigl[
+         \frac{h_{tT}(x+y)}{h_{tT}(x)} - 1\Bigr]\1_{|y|<1}\,
+         \eta(\d y) \label{eq:drift-correction} \\
+      &\quad + \frac{f(x)}{h_{tT}(x)}\int_{\R\setminus\{0\}}\Bigl[
+        h_{tT}(x+y) - h_{tT}(x)
+         - yh_{tT}'(x)\1_{|y|<1}\Bigr]\,\eta(\d y).
+         \label{eq:zero-coefficient}
+    \end{align}
+Equation~\eqref{eq:jump-mod} is the jump integral with modified \levy measure $\frac{h_{tT}(x+y)}{h_{tT}(x)}\eta(\d y)$, giving~\eqref{eq:modified-levy-measure-app}. For the local terms, the Leibniz rule gives $(fh_{tT})' = f'h_{tT} + fh_{tT}'$ and $(fh_{tT})'' = f''h_{tT} + 2f'h_{tT}' + fh_{tT}''$. We substitute these into $\mathcal{A}(fh_{tT})/h_{tT}$ and collect the coefficients of $f^{(k)}(x)$ across the drift, diffusion, and jump expansions, the last contributed by~\eqref{eq:jump-mod},~\eqref{eq:drift-correction} and~\eqref{eq:zero-coefficient}.
+
+Only the diffusion expansion contributes to the coefficient of $f''(x)$, giving $\half\beta^2$; the diffusion coefficient is unchanged. For the coefficient of $f'(x)$, we combine $\alpha$ from the drift expansion, the cross-term $\beta^2\,h_{tT}'(x)/h_{tT}(x)$ from the diffusion expansion, and~\eqref{eq:drift-correction}:
+    \begin{equation*}
+      \alpha + \beta^2\,\frac{h_{tT}'(x)}{h_{tT}(x)} + \int_{|y|<1} y\,\Bigl[\frac{h_{tT}(x+y)}{h_{tT}(x)} - 1\Bigr]\,\eta(\d y) \;=\; \widetilde{\alpha}(t,x),
+    \end{equation*}
+    matching~\eqref{eq:modified-drift-app}. For the coefficient of $f(x)$ in $h_{tT}^{-1}\mathcal{A}(f h_{tT})$, we combine $\alpha\,h_{tT}'(x)/h_{tT}(x)$ from the drift expansion, $\half\beta^2\,h_{tT}''(x)/h_{tT}(x)$ from the diffusion expansion, and~\eqref{eq:zero-coefficient}:
+    \begin{equation*}
+      \alpha\,\frac{h_{tT}'(x)}{h_{tT}(x)}
+      + \half\beta^2\,\frac{h_{tT}''(x)}{h_{tT}(x)}
+      + \frac{1}{h_{tT}(x)}\int \bigl[h_{tT}(x+y) - h_{tT}(x) - y\,h_{tT}'(x)\1_{|y|<1}\bigr]\,\eta(\d y)
+      \;=\; \frac{\mathcal{A}h_{tT}(x)}{h_{tT}(x)}.
+    \end{equation*}
+    The Doob formula~\eqref{eq:doob-h-formula} subtracts $f(x)\,h_{tT}^{-1}\mathcal{A}h_{tT}(x)$, so the total coefficient of $f(x)$ in $\widetilde{\mathcal{A}}f(x)$ is
+    \begin{equation*}
+      \frac{\mathcal{A}h_{tT}(x)}{h_{tT}(x)} \;-\; \frac{\mathcal{A}h_{tT}(x)}{h_{tT}(x)} \;=\; 0.
+    \end{equation*}
+The remaining jump integral $\int [f(x+y) - f(x) - yf'(x)\1_{|y|<1}]\,\frac{h_{tT}(x+y)}{h_{tT}(x)}\,\eta(\d y)$ from~\eqref{eq:jump-mod} is the bridge-modified jump term, completing~\eqref{eq:modified-generator-app}.
+\end{proof}
+
+\begin{coro}[Score form of the bridge drift]
+\label{cor:score-drift}
+The Brownian-shift term in~\eqref{eq:modified-drift-app} is exactly the score of the harmonic function:
+\begin{equation}\label{eq:drift-score-form}
+  \widetilde{\alpha}(t, x)
+  = \alpha + \beta^2\,\partial_x \log h_{tT}(x)
+    + \int_{|y|<1} y\,\Bigl[\frac{h_{tT}(x+y)}{h_{tT}(x)} - 1\Bigr]\,\eta(\d y).
+\end{equation}
+In the purely continuous case ($\eta = 0$, Brownian driver), this reduces to $\widetilde{\alpha}(t, x) = \alpha + \beta^2\,\partial_x \log h_{tT}(x)$, the canonical score-based drift of the conditioned diffusion. This is the Brownian-reference DSBM bridge drift discussed in Section~\ref{sec:imf} (cf.~\cite[Proposition~2]{shi2023diffusion} and the surrounding Markovian-projection discussion). The jump-integral term in~\eqref{eq:drift-score-form} is the natural \levy-driver extension absent from the diffusion-only DSBM setting.
+\end{coro}
+
+\begin{rem}
+Theorem~\ref{thm:modified-levy-app} (and the explicit decomposition that follows in Subsection~\ref{sec:explicit-decomp}) is a special case of Girsanov's theorem for semimartingale characteristics: under a change of measure with density $h_{tT}(Z_t)$, a process with $\P$-characteristics $(B, C, \nu)$ has new characteristics $(B', C, Y\cdot\nu)$, with the diffusion coefficient $C$ unchanged, the compensator $\nu$ multiplied by a state-dependent density $Y$, and the drift modified accordingly (\cite[Theorem~III.3.24]{JacodShiryaev2003}). Specialised to the LRB Doob $h$-transform, the multiplier $Y$ becomes the ratio $h_{tT}(z + y)/h_{tT}(z)$, recovering~\eqref{eq:modified-levy-measure-app}. We gave a direct, self-contained derivation here to avoid invoking the full semimartingale-characteristics formalism.
+\end{rem}
+
+\subsection{Explicit Decomposition of the Martingale $M_t$}\label{sec:explicit-decomp}
+
+Combining the \levy--It\^{o} decomposition (Theorem~\ref{thm:levy-ito}) with the bridge-modified generator (Theorem~\ref{thm:modified-levy-app}) gives an explicit pathwise form for the martingale component $M_t$ of the LRB semimartingale representation (Proposition~\ref{stochfiltlevyrandom}).
+
+Let $\{\xi^{x}_t\}_{t \in \T}$ be the $\delta_x$-initialised random bridge to $\Psi$ from Subsection~\ref{sec:modified-levy}, with terminal random variable $Y \sim \Psi$ (so $\xi^{x}_T = Y$), satisfying $\E[|\xi^{x}_t|] < \infty$. The non-anticipative semimartingale representation of Proposition~\ref{stochfiltlevyrandom} gives
+\begin{equation}\label{eq:semimartingale-app}
+  \xi^{x}_t = \int_0^t \frac{\E[Y \mid \xi^{x}_s] - \xi^{x}_s}{T - s}\,\d s + M_t,
+  \qquad M_0 = x,
+\end{equation}
+where the drift is the predictable finite-variation part and follows from the LRB conditional expectation formula \cite[Corollary~2.10]{hoylehughstonmacrina_2011}. The following theorem identifies the martingale $M_t$ in~\eqref{eq:semimartingale-app} explicitly.
+
+\begin{thm}[Explicit form of $M_t$]
+\label{thm:explicit-decomp}
+Under the assumptions of Proposition~\ref{prop:harmonic-app} and Theorem~\ref{thm:modified-levy-app}, the martingale $M_t$ in~\eqref{eq:semimartingale-app} admits the decomposition
+\begin{equation}\label{eq:explicit-M}
+  M_t = x + \beta\,W_t
+    + \int_0^t\!\int_{\R \setminus \{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y),
+\end{equation}
+where $\{W_t\}$ is a standard Brownian motion, $N(\d s, \d y)$ is the jump measure of $\{\xi^{x}_t\}$ (Definition~\ref{def:jump-measure} applied to the bridge process), and
+\begin{equation}\label{eq:bridge-compensator-app}
+  \widetilde{N}^{\xi}(\d s, \d y)
+  = N(\d s, \d y) - \frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\,\eta(\d y)\,\d s
+\end{equation}
+is the compensated jump measure associated to the bridge dynamics, with bridge-modified compensator $\widetilde{\eta}$ given by Theorem~\ref{thm:modified-levy-app}. We emphasise that after the state-dependent tilt, $N$ is an integer-valued random measure with predictable compensator; it is no longer a Poisson random measure, its increments not being independent.
+\end{thm}
+
+\begin{proof}
+The \levy driver admits the decomposition~\eqref{eq:levy-ito-short}; under the bridge dynamics, that is, the Doob $h$-transform with harmonic function $h_{tT}$, the coordinate process becomes $\{\xi^{x}_t\}$ and the generator transforms to $\widetilde{\mathcal{A}}$ as in~\eqref{eq:modified-generator-app}.
+
+For the continuous part, the bridge law solves the martingale problem for $\widetilde{\mathcal{A}}$ on $C^2$ test functions of compact support, by construction of the Doob $h$-transform (Proposition~\ref{prop:lrb-change-of-measure} and Theorem~\ref{thm:modified-levy-app}). By the equivalence between martingale problems and semimartingale characteristics \cite[Theorem~II.2.42]{JacodShiryaev2003}, the second characteristic of $\{\xi^{x}_t\}$ is read off the coefficient of $\half f''$ in~\eqref{eq:modified-generator-app}, which equals $\beta^2$, unchanged from the driver; hence the continuous martingale part of $\xi^{x}_t$ has predictable quadratic variation $\langle M^c \rangle_t = \beta^2 t$, which is deterministic. By the \levy characterisation of Brownian motion \cite[Theorem~3.3.16]{KaratzasShreve1998}, there exists a standard Brownian motion $W_t$ with $M_t^c = \beta\,W_t$.
+
+For the jump part, by the same characteristics correspondence \cite[Theorem~II.2.42]{JacodShiryaev2003}, the third characteristic of $\{\xi^{x}_t\}$ is the jump kernel of~\eqref{eq:modified-generator-app}: the predictable compensator of $N$ under the bridge law is $\frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\eta(\d y)\,\d s$. Equivalently, this is the multiplicative tilt of the driver's compensator under the change of measure $h_{tT}(Z_t)$, by Girsanov's theorem for random measures \cite[Theorem~III.3.24]{JacodShiryaev2003}. The compensated jump integral $\int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$, with $\widetilde{N}^{\xi}$ as in~\eqref{eq:bridge-compensator-app}, is then a local martingale.
+
+It remains to upgrade the local martingale to a true martingale. The compensated jump integral is a priori only a local martingale; however, on the canonical bridge space the drift-subtracted process $M_t = \xi^x_t - \int_0^t (\E[Y \mid \xi^x_s] - \xi^x_s)(T-s)^{-1} \d s$ is a true martingale, since the drift is the predictable finite-variation characteristic identified above and $\E[|\xi^x_t|] < \infty$ transfers the martingale property of Proposition~\ref{stochfiltlevyrandom} to this representative; $\{\beta W_t\}$ is a true martingale; hence the purely discontinuous part $M_t - x - \beta W_t = \int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}^{\xi}(\d s, \d y)$ is a difference of true martingales, and is therefore itself a true martingale.
+
+Adding the initial value $x$ and summing the continuous and jump martingale parts gives~\eqref{eq:explicit-M}, and uniqueness of the canonical decomposition of a semimartingale \cite[Chapter~II, Theorem 2.4.2]{JacodShiryaev2003} identifies $M_t$ uniquely.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main-rep}]
+\phantomsection\label{rem:full-decomp-app}
+Substituting~\eqref{eq:explicit-M} into~\eqref{eq:semimartingale-app} gives the full pathwise representation of the LRB:
+\begin{equation}\label{eq:full-decomp-app}
+  \xi^{x}_t = x + \int_0^t \frac{\E[Y \mid \xi^{x}_s] - \xi^{x}_s}{T-s}\,\d s
+    + \beta\,W_t
+    + \int_0^t\!\int_{\R \setminus \{0\}} y \left[N(\d s, \d y) - \frac{h_{sT}(\xi^{x}_s + y)}{h_{sT}(\xi^{x}_s)}\,\eta(\d y)\,\d s\right].
+\end{equation}
+This is precisely~\eqref{eq:main-rep}, with the compensator~\eqref{eq:main-compensator}.
+\end{proof}
+
+\section{The Bridge Drift as a Generalised Tweedie Estimator}\label{sec:tweedie}
+
+The bridge drift admits two faces. Section~\ref{sec:modified-levy} gives it as the score of the
+harmonic function, $\beta^2\partial_x\log h_{tT}$, the \emph{generative} object one simulates. Here we
+give the \emph{same} drift as a posterior-mean estimator $\E[\boldsymbol{Y}\mid\xib_t]$ through the
+score of the \emph{marginal} density, the \emph{learnable} object. One observes samples of $\xib_t$
+and regresses, so the training objective of Section~\ref{sec:numerics} is exactly the fitting of a
+Tweedie estimator. The two faces meet at the marginal factorisation $p_t = f_t\,h_{tT}$,
+\begin{align}
+  \nabla\log p_t = \nabla\log f_t + \nabla\log h_{tT}. \notag
+\end{align}
+Classical Tweedie \cite{efron_tweedies_2011} covers the Gaussian (exponential-family) case. We
+generalise it to the \emph{generalised exponential} family so the estimator reading carries to the
+non-Gaussian and jump rungs of Sections~\ref{sec:poisson} and~\ref{sec:jumpdiff}.
+
+% Herbert Robbins (1956) credits personal correspondence with Maurice Kenneth Tweedie for a Bayesian estimation formula.
+Suppose that $\boldsymbol{\mu}$ has been sampled from a prior ``density'' $g$ (which might include discrete atoms) and there exists a random variable $\boldsymbol{Z}$ such that
+\begin{equation*}
+    \boldsymbol{\mu} \sim g(\cdot) \quad \text{and} \quad \boldsymbol{Z}|\boldsymbol{\mu} \sim \mathcal{N}(\boldsymbol{\mu}, \sigma^2 \boldsymbol{I}),
+\end{equation*}
+where $\sigma^2$ is known, and $\mathcal{N}$ is the Gaussian distribution. Let $f$ denote the marginal density of $\boldsymbol{Z}$, so that we have
+\begin{equation*}
+     f(\boldsymbol{z}) = \int \varphi_\sigma(\boldsymbol{z} - \boldsymbol{\mu})g(\boldsymbol{\mu}) \, \mathrm{d}\boldsymbol{\mu},
+\end{equation*}
+where $\varphi_\sigma$ is the probability density function
+\begin{equation*}
+    \varphi_\sigma(\boldsymbol{u}) = (2\pi\sigma^2)^{-n/2} \exp\left\{-\frac{\|\boldsymbol{u}\|^2}{2\sigma^2}\right\},
+\end{equation*}
+that of $\mathcal{N}(\boldsymbol{0}, \sigma^2 \boldsymbol{I})$. \textit{Tweedie's formula} calculates the posterior expectation of $\boldsymbol{\mu}$ given $\boldsymbol{Z} = \boldsymbol{z}$, as follows:
+\begin{equation}\label{eq:tweedie}
+     \mathbb{E}[\boldsymbol{\mu}\,|\,\boldsymbol{Z} = \boldsymbol{z}] = \boldsymbol{z} + \sigma^2 \nabla_{\bfz} \log f(\boldsymbol{z}).
+\end{equation}
+
+It is possible to extend this result to the exponential family \cite{efron_tweedies_2011}; we shall generalise this even further. In this paper, a probability density function is said to be in the \emph{generalised exponential} family with natural parameter $\bfeta$, sufficient statistic $F$, cumulant function $\psi$ and measure $h$, if
+\begin{equation}\label{eq:exp_family}
+    f(\bfz \mid \bfeta) = h(\bfz, \bfeta)\exp\left( \phi(\bfeta) \cdot F(\bfz) - \psi(\bfeta)\right),
+\end{equation}
+where $\phi$ is a vector-valued function. For the rest of this paper, if a random variable $\boldsymbol{Z}$ has a distribution that belongs to the generalised exponential family given the characterisation above,
+\begin{align}
+\boldsymbol{Z} \sim \text{GE}(h, \phi, F, \psi ; \bfeta). \notag
+\end{align}
+If $\textbf{GE}$ is the space of all distributions that belong to the generalised exponential family, then the space of all (classical) exponential family of distributions forms a subspace of $\textbf{GE}$ -- note that if $h(\bfz, \bfeta) = h(\bfz)$ for any $\bfz$ and $\bfeta$, then we recover a density that belongs to the  exponential family, for which we write
+\begin{align}
+\boldsymbol{Z} \sim \text{Exp}(h, \phi, F, \psi ; \bfeta). \notag
+\end{align}
+If $\textbf{Exp} \subset \textbf{GE}$ is the space of all distributions that belong to the exponential family, then $\mathcal{N} \in \textbf{Exp}$, and hence, $\mathcal{N} \in \textbf{GE}$. We now provide a generalised Tweedie's formula below.
+
+\begin{proposition}\label{prop:tweedie_gen}
+    Let $\bfeta$ admit the density $g$ with respect to a $\sigma$-finite measure on the parameter space, against which all $\bfeta$-integrals below are taken, and let $\boldsymbol{Z} \mid \bfeta \sim \text{GE}(h, \phi, F, \psi ; \bfeta)$, where the conditional densities share a common support not depending on $\bfeta$. Suppose that $F$ is differentiable with constant invertible Jacobian $J_F \in \R^{n \times n}$, that $\bfz \mapsto h(\bfz, \bfeta)$ is differentiable, and that $\nabla_{\bfz}\, g(\bfeta \mid \bfz)$ admits an integrable envelope in a neighbourhood of each point of the support. Let $f$ be the marginal density of $\boldsymbol{Z}$, and let $\bfz$ satisfy $f(\bfz) > 0$. Then
+    \begin{equation*}
+        \mathbb{E}[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z}] = (J_F^{\tp})^{-1}\left(\nabla_{\bfz} \log f(\bfz) - \E[\nabla_{\bfz} \log h(\bfz,\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ]\right).
+    \end{equation*}
+\end{proposition}
+
+\begin{corollary}\label{prop:tweedie_gen_coro}
+    Under the hypotheses of Proposition~\ref{prop:tweedie_gen}, let $\boldsymbol{Z} \mid \bfeta \sim \text{Exp}(h, \phi, F, \psi ; \bfeta)$ with $F(\bfz) = \bfz$, and suppose additionally that $f$ and $h$ are twice differentiable with a corresponding integrable envelope for the second derivatives. Then
+    \begin{equation*}
+        \mathbb{E}[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z}] = \nabla_{\bfz} \log f(\bfz) - \nabla_{\bfz} \log h(\bfz) \quad \text{and} \quad
+       \mathbb{V}[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z}] = \nabla_{\bfz}^2 \log f(\bfz) - \nabla_{\bfz}^2 \log h(\bfz).
+    \end{equation*}
+\end{corollary}
+
+\begin{remark}
+    Proposition \ref{prop:tweedie_gen} recovers \eqref{eq:tweedie} in the Gaussian case. In this setting, we have
+    \begin{equation*}
+        h(\bfz, \bfeta) = h(\bfz) \propto \exp\left(-\frac{\|\bfz\|^2}{2\sigma^2}\right), \,\, \phi(\bfeta) = \frac{\bfmu}{\sigma^2},  \,\, F(\bfz) = \bfz,  \,\,\psi(\bfeta) = \frac{\bfmu^{\tp}\bfmu}{2\sigma^2}, \,\, \text{and} \,\, \nabla_{\bfz} \log h(\bfz) = -\frac{\bfz}{\sigma^2}.
+    \end{equation*}
+\end{remark}
+
+The identities above are differential and presuppose a continuous ambient space. Their lattice counterpart replaces the score by a one-step likelihood ratio, and requires no differentiability or domination hypotheses at all.
+
+\begin{proposition}[Discrete Tweedie formula]\label{prop:tweedie_discrete}
+    Let $\bfeta$ admit the density $g$ with respect to a $\sigma$-finite measure $\varrho$ on the parameter space, and let $\boldsymbol{Z} \mid \bfeta$ take values in a lattice $\mathcal{S} \subseteq \boldsymbol{x} + \mathbb{N}_0^n$ with probability mass function $p(\bfz \mid \bfeta)$. Let $f(\bfz) = \int p(\bfz \mid \bfeta)\, g(\bfeta)\, \varrho(\dd \bfeta)$ be the marginal mass function. Then, for every $\bfz$ with $f(\bfz) > 0$ and every coordinate direction $\boldsymbol{e}_i$,
+    \begin{equation}\label{eq:tweedie-discrete}
+        \frac{f(\bfz + \boldsymbol{e}_i)}{f(\bfz)} = \E\left[\frac{p(\bfz + \boldsymbol{e}_i \mid \bfeta)}{p(\bfz \mid \bfeta)} \,\middle|\, \boldsymbol{Z} = \bfz\right].
+    \end{equation}
+\end{proposition}
+\begin{proof}
+    The posterior density of $\bfeta$ given $\boldsymbol{Z} = \bfz$ is $g(\bfeta \mid \bfz) = p(\bfz \mid \bfeta)\, g(\bfeta) / f(\bfz)$, supported on $\{p(\bfz \mid \bfeta) > 0\}$, so the ratio inside the expectation is well defined posterior-almost surely. Hence
+    \begin{equation*}
+        \E\left[\frac{p(\bfz + \boldsymbol{e}_i \mid \bfeta)}{p(\bfz \mid \bfeta)} \,\middle|\, \boldsymbol{Z} = \bfz\right]
+        = \int \frac{p(\bfz + \boldsymbol{e}_i \mid \bfeta)}{p(\bfz \mid \bfeta)}\, \frac{p(\bfz \mid \bfeta)\, g(\bfeta)}{f(\bfz)}\, \varrho(\dd \bfeta)
+        = \frac{f(\bfz + \boldsymbol{e}_i)}{f(\bfz)},
+    \end{equation*}
+    where the integrand is non-negative and the identity is Tonelli's theorem.
+\end{proof}
+\begin{remark}
+    For a Poisson likelihood $p(z \mid \lambda) = e^{-\lambda}\lambda^{z}/z!$, the likelihood ratio equals $\lambda/(z+1)$ and \eqref{eq:tweedie-discrete} becomes Robbins' empirical-Bayes formula $\E[\lambda \mid z] = (z+1)\, f(z+1)/f(z)$ \cite{robbins1956}. The marginal ratio on the left-hand side is the lattice analogue of the score $\nabla \log f$: it is estimable from samples of $\boldsymbol{Z}$ alone, without knowledge of the prior.
+\end{remark}
+
+Proofs of Proposition~\ref{prop:tweedie_gen} and Corollary~\ref{prop:tweedie_gen_coro} are given in Appendix~\ref{app:tweedie-proofs}. We now apply these estimators: Section~\ref{sec:brownian} identifies the Brownian bridge drift through the Gaussian form of Tweedie's formula, and Section~\ref{sec:poisson} identifies the Poisson bridge drift through the discrete formula of Proposition~\ref{prop:tweedie_discrete}.
+
+\section{Brownian Random Bridge as Rectified Flow}\label{sec:brownian}
+In this section, we detail the connection between Brownian random bridges and Rectified Flows. Herein, $\boldsymbol{\sigma} \in \mathbb{R}^{n \times n}$ is a diagonal-matrix with diagonals $\sigma^{(i)} > 0$ for $i=1, \dots, n$ and the driving process is given by
+\begin{align}
+\{\mathbf{Z}_t\}_{t \in \mathbb{T}} = \{\boldsymbol{\sigma}\mathbf{W}_t\}_{t \in \mathbb{T}}, \notag
+\end{align}
+where $\{\mathbf{W}_t\}_{t \in \mathbb{T}}$ is a standard Brownian motion having mutually-independent coordinates with $W^{(i)}_0 = x^{(i)}/\sigma^{(i)} \in \mathbb{R}$ for $i=1, \dots, n$. It follows that $\mathbf{Z}_0 = \boldsymbol{x}$. %First, we amalgamate relevant results from \cite{goria_random-bridges_2025} as follows.
+\begin{proposition}
+\label{prop:bridge_stats}
+Let $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$ be a $\boldsymbol{\Phi}$-initialised Gaussian random-bridge to $\boldsymbol{\Psi}$ as in \cite{goria_random-bridges_2025}. Then
+    \begin{equation*}
+        \boldsymbol{\xi}^{\boldsymbol{x},\boldsymbol{y}}_t \sim \mathcal{N}(\boldsymbol{E}_t, \, \boldsymbol{V}_t) \, ,
+    \end{equation*}
+    where the mean and variance functions are given by
+    \begin{equation*}
+        \boldsymbol{E}_t = \boldsymbol{x} + \frac{t}{T}(\boldsymbol{y} - \boldsymbol{x}) \;\; \text{and} \;\; \boldsymbol{V}_t = \frac{t(T-t)}{T}\boldsymbol{\sigma}^2, \;\; \forall t \in (0, T). \label{eq:bridge_mean_var}
+    \end{equation*}
+    In addition, $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$ satisfies an anticipative representation,
+    \begin{equation*}
+        \boldsymbol{\xi}^{\boldsymbol{x}}_t \overset{d}{=} \frac{t}{T}\boldsymbol{Y} +  \boldsymbol{\sigma}\left(\mathbf{W}_t - \frac{t}{T}\mathbf{W}_T \right) \,\,\, \forall t\in\T,
+    \end{equation*}
+    and a non-anticipative representation,
+    \begin{equation}
+        \boldsymbol{\xi}^{\boldsymbol{x}}_t \overset{d}{=} \int_0^t \frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_s] - \boldsymbol{\xi}^{\boldsymbol{x}}_s}{T-s} \mathrm{d} s + \boldsymbol{\sigma}\mathbf{W}_t \,\,\, \forall t \in [0, T). \label{eq:rep_integral_2}
+    \end{equation}
+\end{proposition}
+\begin{proof}
+The statements follow directly from Corollaries 2.9, 2.11 and 2.14 in \cite{goria_random-bridges_2025}.
+\end{proof}
+Note that Proposition \ref{prop:bridge_stats} immediately provides us with the statistic:\footnote{The non-anticipative SDE~\eqref{eq:rep_integral_2} coincides with \cite[Eq.~(4)]{shi2023diffusion} in the Brownian case ($f_t=0$, $\sigma_t=\sigma$).}
+    \begin{equation}
+        \E\left[\boldsymbol{\xi}^{\boldsymbol{x}}_t\right] = \frac{t}{T}\E\left[\boldsymbol{Y}\right] +  \E\left[\boldsymbol{\sigma}\left(\mathbf{W}_t - \frac{t}{T}\mathbf{W}_T \right)\right] = \frac{t}{T}\E\left[\boldsymbol{Y}\right] + \left(\frac{T-t}{T}\right)\boldsymbol{x} \,\,\, \forall t\in\T. \label{recifiedexpevtedform}
+    \end{equation}
+It follows that we recover the aforementioned connection to $\{\boldsymbol{R}^{\boldsymbol{x,y}}_t\}_{t\in\mathbb{T}}$ in (\ref{nonanticipativerectifiedconstruct}) through
+\begin{equation}
+        \E\left[\boldsymbol{\xi}^{\boldsymbol{x},\boldsymbol{y}}_t\right] = \frac{t}{T}\boldsymbol{y} + \left(\frac{T-t}{T}\right)\boldsymbol{x} \, = \, \boldsymbol{R}^{\boldsymbol{x,y}}_t \,\,\, \forall t\in\T. \label{recifiedexpevtedformnew}
+    \end{equation}
+Finally, using Definition \ref{definitionRandomBridge}, Proposition \ref{prop:bridge_stats} and Proposition \ref{generaldensityexpression}, we have the following anticipative representation:
+\begin{align}
+\label{browniangeneralisedantiipative}
+\boldsymbol{\xi}_t \overset{d}{=} \frac{t}{T}\boldsymbol{Y} +  \boldsymbol{\sigma}\left(\mathbf{\hat{W}}_t - \frac{t}{T}\mathbf{\hat{W}}_T \right) +  \left(\frac{T-t}{T}\right)\boldsymbol{X} \,\,\, \forall t\in\T,
+\end{align}
+where $\{\mathbf{\hat{W}}_t\}_{t \in \mathbb{T}}$ is a standard Brownian motion having mutually-independent coordinates with $\mathbf{\hat{W}}_0 = \boldsymbol{0}$. We see that (\ref{browniangeneralisedantiipative}) is a stochastic generalisation of the Rectified Flow construct in (\ref{eq:linear_interp}). Accordingly, employing (\ref{eq:linear_interp}) in (\ref{browniangeneralisedantiipative}), we have the anticipative representation:
+\begin{equation}
+    \boldsymbol{\xi}_t \overset{d}{=} \boldsymbol{R}_t +  \boldsymbol{\sigma}\left(\mathbf{\hat{W}}_t - \frac{t}{T}\mathbf{\hat{W}}_T \right) = \boldsymbol{R}_t +  \boldsymbol{\sigma}\mathbf{\hat{B}}_{t}\,\,\, \forall t\in\T, \label{brownianrectifiedcomb}
+\end{equation}
+which shows that in the Brownian case, a $(\boldsymbol{\Phi}, \boldsymbol{\Psi})$-bridge is Rectified Flow plus standard Brownian bridge $\{\mathbf{\hat{B}}_{t}\}_{t\in\T}$ with $\mathbf{\hat{B}}_{0} = 0$ and $\mathbf{\hat{B}}_{T} = 0$.
+\begin{remark}
+Herein, $(\boldsymbol{\Phi}, \boldsymbol{\Psi})$-bridges can be interpreted to define a general stochastic interpolation framework between $\boldsymbol{X}$ and $\boldsymbol{Y}$, under which, choosing $\boldsymbol{\sigma} = \boldsymbol{0}$ recovers the Rectified Flow setting.
+\end{remark}
+From {\cite[Corollary~2.14]{goria_random-bridges_2025}}, the martingale transport process $\{\bar{\mathbf{M}}_t\}_{t\in\T}$ as defined in (\ref{equilibriummartingale}) satisfies the following non-anticipative representation in the Gaussian case:
+\begin{align}
+\bar{\mathbf{M}}_t = \E\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_0 \right] +  \int_0^t \frac{\text{Var}\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_s \right]}{T-s} \boldsymbol{\sigma}\dd \mathbf{W}_s, \notag
+\end{align}
+for every $t\in[0,T)$. If we define the conditional variance process $\{\bar{\boldsymbol{V}}_t\}_{t\in\T}$ given by
+\begin{align}
+\bar{\boldsymbol{V}}_t = \text{Var}\left[ \boldsymbol{Y} \, | \, \F_{t}^{\xib^{\boldsymbol{x}}} \right] \,\,\,\, \forall t\in\T, \notag
+\end{align}
+we observe that the diffusion coefficient of the martingale transport process $\{\bar{\mathbf{M}}_t\}_{t\in\T}$ satisfies
+\begin{align}
+\bar{\boldsymbol{V}}_0 = \text{Var}\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_0 \right] \,\,\, \text{and} \,\,\, \bar{\boldsymbol{V}}_T = \boldsymbol{0} \,\,\,\, \text{$\P$-a.s.} \notag
+\end{align}
+\begin{remark}
+The diffusion coefficient process $\{\bar{\boldsymbol{V}}_t\}_{t\in\T}$ of the martingale transport process $\{\bar{\mathbf{M}}_t\}_{t\in\T}$ is itself a transport process between $\text{Var}\left[ \boldsymbol{Y} \, | \, \xib^{\boldsymbol{x}}_0 \right]$ and $\boldsymbol{0}$.
+\end{remark}
+
+\begin{proposition} \label{prop:bridge_drift}
+    The dynamics of $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$ has drift given by
+    \begin{equation*}
+       \frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} = \frac{\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t} + \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t),
+    \end{equation*}
+    where $p_t$ denotes the marginal density of $\boldsymbol{\xi}^{\boldsymbol{x}}_t$ for every $t\in[0, T)$. Hence,
+		\begin{align}
+		\mathbb{E}\left[\dd \boldsymbol{\xi}^{\boldsymbol{x}}_t \,|\, \xib^{\boldsymbol{x}}_{t} \right] = \left(t^{-1}(\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x})  + \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t)\right) \dd t,	 \notag
+		\end{align}
+		for every $t\in(0, T)$.
+\end{proposition}
+
+\begin{proof}
+    From Proposition \ref{prop:bridge_stats}, we have
+    \begin{equation*}
+        \boldsymbol{\xi}^{\boldsymbol{x},\boldsymbol{y}}_t \sim \mathcal{N}\left(\boldsymbol{x} + \frac{t}{T}(\boldsymbol{y} - \boldsymbol{x}), \frac{t(T-t)}{T}\boldsymbol{\sigma}^2\right).
+    \end{equation*}
+    Thus, it follows from Proposition \ref{prop:tweedie_gen} that
+    \begin{equation}\label{eq:bridge_drift_conditional_expectation}
+        \mathbb{E}\left[\bfx + \frac{t}{T}(\bfY - \bfx)  \mid \boldsymbol{\xi}_t^{\boldsymbol{x}}\right] = \bfxi_t^{\bfx} + \frac{t(T-t)}{T}\boldsymbol{\sigma}^2 \nabla_{\bfxi} \log p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t).
+    \end{equation}
+    The result follows from (\ref{eq:rep_integral_2}), \eqref{eq:bridge_drift_conditional_expectation} and algebraic manipulation:
+    \begin{align*}
+    \frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} &= \frac{\frac{T}{t} \left\{ \mathbb{E}\left[ \boldsymbol{x} + \frac{t}{T}(\boldsymbol{Y}-\boldsymbol{x}) \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t\right] - \boldsymbol{x}\frac{T-t}{T} \right\} - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} \\
+    &= \frac{\frac{T}{t} \left\{ \boldsymbol{\xi}^{\boldsymbol{x}}_t + \frac{t(T-t)\boldsymbol{\sigma}^2}{T}\nabla_{\boldsymbol{\xi}} \log p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t) - \boldsymbol{x}\frac{T-t}{T} \right\} - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} \\
+    &= \frac{T-t}{T-t} \left\{ \frac{\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t} + \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t) \right\} \\
+    &= \frac{\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t} + \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t).
+    \end{align*}
+		The second part of the statement follows since $\boldsymbol{\sigma}\mathbb{E}[\mathbf{W}_t ] = \boldsymbol{x}$ for any $t\in\T$.
+\end{proof}
+
+\begin{remark}
+\label{rem:brownian-specialisation}
+Proposition~\ref{prop:bridge_drift} is the Brownian specialisation of the general drift-score form of
+Section~\ref{sec:semimartingale}. The shift term is exactly $\beta^2\partial_x\log h_{tT}$, which for
+$\boldsymbol{\eta}=0$ reduces to the canonical score-based drift of the conditioned diffusion, the
+Brownian-reference DSBM bridge drift \cite[Proposition~2]{shi2023diffusion}. The jump-integral term
+present for a general \levy driver is our genuine generalisation of that drift, absent from the
+diffusion-only DSBM setting.
+\end{remark}
+
+According to Anderson's theorem \cite{anderson_reverse-time_1982}, the reverse-time dynamics of a forward It\^{o} diffusion $\mathrm{d}\boldsymbol{X}_t = \boldsymbol{f}(\boldsymbol{X}_t, t)\mathrm{d}t + \boldsymbol{\sigma}\mathrm{d}\mathbf{W}_t$ is governed by the reverse-time SDE
+\begin{equation*}
+    \mathrm{d}\bar{\boldsymbol{X}}_t = \left[ \boldsymbol{f}(\bar{\boldsymbol{X}}_t, t) - \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{X}} \log p_t(\bar{\boldsymbol{X}}_t) \right] \mathrm{d}\bar{t} + \boldsymbol{\sigma} \mathrm{d}\bar{\mathbf{W}}_t,
+\end{equation*}
+where $\{\bar{\mathbf{W}}_t\}_{t\in\T}$ is a Wiener process adapted to the reverse-time filtration $\mathcal{G}_t = \sigma(\boldsymbol{X}_s : t \le s \le T)$. From Proposition \ref{prop:bridge_stats}, the forward drift of the Gaussian random bridge is
+\begin{align}
+\boldsymbol{f}(\boldsymbol{\xi}^{\boldsymbol{x}}_t, t) = \frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t}. \notag
+\end{align}
+Substituting the decomposition from Proposition \ref{prop:bridge_drift} into Anderson's reverse-time drift formula yields,
+    \begin{align*}
+        \boldsymbol{f}(\bar{\boldsymbol{\xi}}^{\boldsymbol{x}}_t, t) - \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t(\bar{\boldsymbol{\xi}}^{\boldsymbol{x}}_t) &= \left( \frac{\bar{\boldsymbol{\xi}}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t} + \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t(\bar{\boldsymbol{\xi}}^{\boldsymbol{x}}_t) \right) - \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t(\bar{\boldsymbol{\xi}}^{\boldsymbol{x}}_t) \\
+        &= \frac{\bar{\boldsymbol{\xi}}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t}.
+    \end{align*}
+This leads us to the following corollary.
+
+\begin{corollary} \label{cor:reverse_sde}
+    The reverse-time stochastic differential equation of $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$, evolving backward in time from $t=T$ towards $t=0$, is given by
+    \begin{equation*}
+        \mathrm{d}\bar{\boldsymbol{\xi}}^{\boldsymbol{x}}_t = \frac{\bar{\boldsymbol{\xi}}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t} \mathrm{d}\bar{t} + \boldsymbol{\sigma} \mathrm{d}\bar{\mathbf{W}}_t,
+    \end{equation*}
+    for $t\in(0,T]$, where $\{\bar{\mathbf{W}}_t\}_{t\in\T}$ is a standard reverse-time Brownian motion.
+\end{corollary}
+\begin{remark}[Nelson's Identity and Osmotic Velocity]
+The algebraic cancellation observed in Corollary \ref{cor:reverse_sde} is a direct manifestation of Nelson's identity from stochastic mechanics \cite[Chapter 13]{nelson_dynamical_1967}. Nelson established that for any sufficiently regular diffusion process, the forward drift $\boldsymbol{v}_+(\boldsymbol{z}, t)$ and the backward drift $\boldsymbol{v}_-(\boldsymbol{z}, t)$ are intrinsically linked via the score function:
+\begin{equation*}
+    \boldsymbol{v}_+(\boldsymbol{z}, t) - \boldsymbol{v}_-(\boldsymbol{z}, t) = \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{z}} \log p_t(\boldsymbol{z}).
+\end{equation*}
+Proposition \ref{prop:bridge_drift} explicitly derives the forward drift as $(\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x})/t + \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t)$. By identifying the backward drift as $(\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x})/t$ in Corollary \ref{cor:reverse_sde}, our framework recovers this kinematic relationship. This reveals that the discrepancy between the target-pulling velocity of the generative process and the source-retracting velocity of the reverse process is exactly Nelson's osmotic velocity. %\cite[Chapter 4]{nelson_dynamical_1967}.
+\end{remark}
+
+The probability flow ODE for a general It\^{o} SDE is derived in Proposition \ref{prop:general_prob_flow}. We now specialise this general result to the Gaussian random bridge. This specialises the equilibrium probability-flow ODE of DSBM \cite{shi2023diffusion} to the Gaussian random bridge.
+
+\begin{proposition}\label{cor:prob_flow_ode}
+    The probability flow ODE of the Gaussian random bridge $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$ is governed by the following:
+    \begin{align} \label{eq:prob_flow_ode}
+        \mathrm{d}\boldsymbol{\xi}^{\boldsymbol{x}}_t &= \left[ t^{-1}(\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x}) + \frac{1}{2} \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t( \boldsymbol{\xi}^{\boldsymbol{x}}_t )\right] \mathrm{d}t \notag \\
+        &= \frac{1}{2} \left[ \left( \frac{\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t} \right) + \left( \frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} \right) \right] \mathrm{d}t.
+    \end{align}
+\end{proposition}
+
+\begin{proof}
+    From Proposition \ref{prop:bridge_stats}, the Gaussian random bridge satisfies
+    \begin{equation*}
+        \mathrm{d}\boldsymbol{\xi}^{\boldsymbol{x}}_t = \frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} \mathrm{d}t + \boldsymbol{\sigma} \mathrm{d}\mathbf{W}_t.
+    \end{equation*}
+    Applying Proposition \ref{eq:prob_flow_ode_corollary} with $\mathbf{D} = \boldsymbol{\sigma}^2$ (where $\boldsymbol{\sigma}$ is constant, so $\nabla \cdot \mathbf{D} = 0$) and utilising the drift expression from Proposition \ref{prop:bridge_drift} gives the first equality. The second equality follows from
+    \begin{align*}
+        \left[ \frac{\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t} + \frac{1}{2} \boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t( \boldsymbol{\xi}^{\boldsymbol{x}}_t ) \right]  &= \left[ \frac{\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t} + \frac{1}{2} \left( \frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} - \frac{\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t} \right) \right],
+    \end{align*}
+		where the substitution follows from Proposition \ref{prop:bridge_drift}.
+\end{proof}
+Crucially, the second term in the brackets has the same functional form to the optimal Rectified Flow velocity field $\boldsymbol{v}^*$ derived in \eqref{eq:rf_target_pull}. While the standard Rectified Flow ODE is driven solely by this target-pulling velocity, the Gaussian random bridge probability flow is equally influenced by its initial momentum. This identifies the canonical score-based ODE as a specific ``half-speed" variant of the Rectified Flow framework, tempered by source-dependent drift.
+
+If we take the zero-volatility limit in  Proposition \ref{prop:bridge_drift}, the stochastic variance collapses, and the score term $\boldsymbol{\sigma}^2 \nabla_{\boldsymbol{\xi}} \log p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t)$ vanishes. Consequently, the source-push velocity equates to the target-pull velocity. Substituting this equivalence back into the probability flow ODE in \eqref{eq:prob_flow_ode} yields the deterministic ODE,
+    \begin{equation}
+        \mathrm{d}\boldsymbol{\xi}^{\boldsymbol{x}}_t = \frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} \mathrm{d}t \, . \label{eq:zero_vol_ode}
+    \end{equation}
+Thus, comparing with \eqref{eq:rf_target_pull}, we see that Rectified Flow can be understood as the zero-volatility limit of the Gaussian random bridge.
+
+\begin{corollary} \label{coro:prob_flow_ode}
+    The probability flow ODE of the Gaussian random bridge $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$ is given by
+    \begin{equation} \label{eq:prob_flow_ode_corollary}
+        \mathrm{d}\boldsymbol{\xi}^{\boldsymbol{x}}_t = \frac{1}{2} \left[ \left( \frac{\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x}}{t} \right) +  \left( \frac{\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_u \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{u-t} \right) \right] \mathrm{d}t,
+    \end{equation}
+	for any $u\in(t,T]$.
+\end{corollary}
+\begin{proof}
+First, (\ref{eq:prob_flow_ode_corollary}) follows from Lemma \ref{refconditional} and Proposition \ref{cor:prob_flow_ode} when $u=T$. Next, for any $u\in(t,T)$, we have the following relation:
+\begin{align}
+\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_u \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] = \frac{u-t}{T-t}\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_T \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] + \frac{T-u}{T-t} \boldsymbol{\xi}^{\boldsymbol{x}}_t, \notag
+\end{align}
+from \cite{hoylehughstonmacrina_2011}, which implies
+\begin{align}
+\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] = \frac{1}{(u-t)}\left((T-t)\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_u \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - (T-u)\boldsymbol{\xi}^{\boldsymbol{x}}_t\right) \label{rearrangedrelation}
+\end{align}
+using Lemma \ref{refconditional}. Thus, from (\ref{rearrangedrelation}), we have
+\begin{align}
+\frac{\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t} &= \frac{\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_u \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t]}{u-t} - \frac{(T-u) \boldsymbol{\xi}^{\boldsymbol{x}}_t + (u-t)\boldsymbol{\xi}^{\boldsymbol{x}}_t}{(T-t)(u-t)} \notag \\
+&= \frac{\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_u \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{u-t}, \notag
+\end{align}
+for any $u\in(t,T]$ and the statement follows using Proposition \ref{cor:prob_flow_ode}.
+\end{proof}
+
+The probability flow ODE of Corollary~\ref{coro:prob_flow_ode} admits a geometric interpretation. It reveals that the flow moves along a vector field that is the \emph{arithmetic mean} of two distinct forces: the \textit{inertial source velocity} $(\boldsymbol{\xi}^{\boldsymbol{x}}_t - \boldsymbol{x})/t$ pushing outward from the source, and the \textit{conditional target velocity} pulling inward toward the destination. The same drift re-anchors to any future horizon for any \levy driver, which we record as the temporal transport consistency of Proposition~\ref{prop:temporal-consistency}.
+
+\section{Poisson Random Bridge as Rectified Flow}\label{sec:poisson}
+
+In this section, we shall detail the connection between Poisson random bridges and Rectified Flows. Herein, the driving process $\{\boldsymbol{Z}_t\}_{t\in\T}$ is a Poisson process with intensity $\boldsymbol{\lambda}$, having mutually-independent coordinates and $\boldsymbol{Z}_0 = \boldsymbol{x}$. First, we have the following lemma.
+\begin{lem}\label{lem:poisson-product-binomial}
+Let $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ be a $\boldsymbol{\Phi}$-initialised Poisson random-bridge to $\boldsymbol{\Psi}$ as in \cite{goria_random-bridges_2025}. Then
+\begin{align}
+\mathbb{P}(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \boldsymbol{z}) = \prod_{i=1}^n {{y^{(i)} - x^{(i)}}\choose{z^{(i)} - x^{(i)}}}  \left(\frac{t}{T}\right)^{z^{(i)} - x^{(i)}}\left(\frac{T-t}{T}\right)^{y^{(i)} - z^{(i)}}, \label{poissonbridgedist}
+\end{align}
+for any $t\in(0,T)$ and lattice points $\boldsymbol{z}, \boldsymbol{y} \in \boldsymbol{x} + \mathbb{N}_0^n$ with $\boldsymbol{z} \leq \boldsymbol{y}$ componentwise.
+\end{lem}
+\begin{proof}
+For what follows, the probability mass function of a Poisson process is $f_t$ for any $t\in\T$. Using Corollary 4.3 in \cite{goria_random-bridges_2025}, we have
+\begin{align}
+\mathbb{P}(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \boldsymbol{z})= \frac{f_{t}(\boldsymbol{z} - \boldsymbol{x})f_{T-t}(\boldsymbol{y} - \boldsymbol{z})}{f_T(\boldsymbol{y} - \boldsymbol{x})}, \label{initialres}
+\end{align}
+for any $t\in(0,T)$, where the probability mass functions are well-defined due to the monotonicity $\boldsymbol{x} \leq \boldsymbol{z} \leq \boldsymbol{y}$ so that we have $f_T(\boldsymbol{y} - \boldsymbol{x}) > 0$. Since each coordinate of $\{\boldsymbol{Z}_t\}_{t\in\T}$ is mutually-independent, we show one of the coordinates, and the product in (\ref{poissonbridgedist}) will follow. Writing
+\begin{align}
+&a^{(i)} = z^{(i)} - x^{(i)} \label{simplifiedterms1} \\
+&b^{(i)} = y^{(i)} - z^{(i)} \label{simplifiedterms2} \\
+&c^{(i)} = y^{(i)} - x^{(i)} \label{simplifiedterms3}
+\end{align}
+and denoting the $i$th coordinate of $\xib^{\boldsymbol{x},\boldsymbol{y}}_t$ as $\xib^{\boldsymbol{x},\boldsymbol{y}}_t[i]$, we have the following:
+\begin{align}
+\mathbb{P}(\xib^{\boldsymbol{x},\boldsymbol{y}}_t[i] = z^{(i)}) &= \frac{e^{-\lambda^{(i)}t}(\lambda^{(i)}t)^{a^{(i)}}}{a^{(i)}!}\frac{e^{-\lambda^{(i)}(T-t)}(\lambda^{(i)}(T-t))^{b^{(i)}}}{b^{(i)}!}\frac{c^{(i)}!}{e^{-\lambda^{(i)}T}(\lambda^{(i)}T)^{c^{(i)}}} \notag \\
+&= (\lambda^{(i)})^{a^{(i)} + b^{(i)} - c^{(i)}} \frac{c^{(i)}!}{a^{(i)}!b^{(i)}!} \frac{t^{a^{(i)}}(T-t)^{b^{(i)}}}{T^{c^{(i)}}} \notag \\
+&= {{c^{(i)}}\choose{a^{(i)}}} \frac{t^{a^{(i)}}(T-t)^{b^{(i)}}}{T^{a^{(i)}}T^{b^{(i)}}} \notag \\
+&= {{c^{(i)}}\choose{a^{(i)}}} \left(\frac{t}{T}\right)^{a^{(i)}} \left(\frac{T-t}{T}\right)^{c^{(i)} - a^{(i)}}, \notag
+\end{align}
+using (\ref{initialres}) and the fact that $c^{(i)} = a^{(i)} + b^{(i)}$.
+\end{proof}
+
+Note that (\ref{poissonbridgedist}) is a \emph{product-binomial} distribution, where the combinatorial terms are defined by the initial and the target points of the multivariate bridge process, adjusted by the requested state. In addition, we can interpret $t \mapsto t/T \in [0,1]$ as a probability mass function defining the binomial distributions for every $t\in\T$, which allows us to write (\ref{poissonbridgedist}) more succinctly as follows:
+\begin{align}
+\mathbb{P}(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \boldsymbol{z}) = \prod_{i=1}^n {{\bar{y}^{(i)}}\choose{\bar{z}^{(i)}}}  \left(\frac{t}{T}\right)^{\bar{z}^{(i)}}\left(1 - \frac{t}{T}\right)^{\bar{y}^{(i)} - \bar{z}^{(i)}}. \notag
+\end{align}
+Therefore, since each coordinate of $\{\xib^{\boldsymbol{x},\boldsymbol{y}}_t \}_{t\in\T}$ satisfies
+\begin{align}
+\xib^{\boldsymbol{x},\boldsymbol{y}}_t[i] \sim x^{(i)} + \text{Binomial}\left(\bar{y}^{(i)} \, , \, \frac{t}{T}\right), \notag
+\end{align}
+for every $i \in \{1,\ldots, n\}$, where $\bar{y}^{(i)} = y^{(i)} - x^{(i)}$, we have the following statistic:
+\begin{align}
+\E\left[ \xib^{\boldsymbol{x},\boldsymbol{y}}_t \right] &= \boldsymbol{x} + (\boldsymbol{y} - \boldsymbol{x})\frac{t}{T}. \notag 
+\end{align}
+Therefore, as explicitly shown for the Brownian case in (\ref{recifiedexpevtedformnew}), we recover the same explicit connection to $\{\boldsymbol{R}^{\boldsymbol{x,y}}_t\}_{t\in\mathbb{T}}$ defined in (\ref{nonanticipativerectifiedconstruct}) also for the Poisson case via the following:   
+\begin{equation}
+        \E\left[\boldsymbol{\xi}^{\boldsymbol{x},\boldsymbol{y}}_t\right] = \frac{t}{T}\boldsymbol{y} + \left(\frac{T-t}{T}\right)\boldsymbol{x} \, = \, \boldsymbol{R}^{\boldsymbol{x,y}}_t \,\,\, \forall t\in\T. \notag
+    \end{equation}
+Next, we show that this distribution is an element of $\textbf{GE}$ as in (\ref{eq:exp_family}).
+\begin{proposition}
+\label{poissonbridgegeneralisedexponential}
+If $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ is a $\boldsymbol{\Phi}$-initialised Poisson random-bridge to $\boldsymbol{\Psi}$, then
+\begin{align}
+\xib^{\boldsymbol{x},\boldsymbol{y}}_t \sim \emph{GE}(h, \phi, F, \psi ; \boldsymbol{y}) \notag
+%\mathbb{P}(\xib^{\boldsymbol{x}}_t \, |_{\boldsymbol{Y} = \boldsymbol{y} \, , \, \boldsymbol{y} \leftarrow \boldsymbol{\Psi}} = \boldsymbol{z}) = h(\boldsymbol{z},\boldsymbol{y}) \exp\left(\phi \cdot F(\boldsymbol{z}) - \psi(\boldsymbol{y}) \right) \notag
+\end{align}
+for any $t\in(0,T)$, where the terms are defined as
+\begin{align}
+h(\boldsymbol{z},\boldsymbol{y}) = \prod_{i=1}^n {{y^{(i)} - x^{(i)}}\choose{z^{(i)} - x^{(i)}}} \exp\left(\log\left(\frac{t}{T-t} \right) \boldsymbol{1}^{\tp}(\boldsymbol{z} - \boldsymbol{x}) - \log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) \right), \notag
+\end{align}
+and
+\begin{align}
+\phi(\boldsymbol{y}) = \log\left(\frac{t}{T-t} \right)\boldsymbol{y}, \,\, F(\boldsymbol{z}) = \boldsymbol{z} - \boldsymbol{x}, \,\, \psi(\boldsymbol{y}) = -\log\left(\frac{T-t}{T}\right) \boldsymbol{1}^{\tp}(\boldsymbol{y} - \boldsymbol{x}) \notag
+\end{align}
+for lattice points $\boldsymbol{z}, \boldsymbol{y} \in \boldsymbol{x} + \mathbb{N}_0^n$ with $\boldsymbol{z} \leq \boldsymbol{y}$ componentwise.
+\end{proposition}
+
+\begin{proof}
+Since every element in the product (\ref{poissonbridgedist}) is binomial, using the notations from (\ref{simplifiedterms1})-(\ref{simplifiedterms3}), we have the following re-arrangement:
+\begin{align}
+\mathbb{P}(\xib^{\boldsymbol{x},\boldsymbol{y}}_t[i] = z^{(i)}) &= {{c^{(i)}}\choose{a^{(i)}}} \exp\left( \log\left(  \left(\frac{t}{T}\right)^{a^{(i)}} \left(\frac{T-t}{T}\right)^{c^{(i)} - a^{(i)}} \right) \right) \notag \\
+&= {{c^{(i)}}\choose{a^{(i)}}} \exp\left( \log\left(  \left(\frac{t}{T-t}\right)^{a^{(i)}} \left(\frac{T-t}{T}\right)^{c^{(i)}} \right) \right) \notag \\
+&= {{c^{(i)}}\choose{a^{(i)}}} \exp\left( a^{(i)}\log\left( \frac{t}{T-t} \right) + c^{(i)}\log\left(\frac{T-t}{T}\right) \right).
+\end{align}
+Therefore, we have the following expression:
+\begin{align}
+\mathbb{P}(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \boldsymbol{z}) &= \prod_{i=1}^n {{y^{(i)} - x^{(i)}}\choose{z^{(i)} - x^{(i)}}} \exp\left( (z^{(i)} - x^{(i)})\log\left( \frac{t}{T-t} \right) + (y^{(i)} - x^{(i)})\log\left(\frac{T-t}{T}\right) \right) \notag \\
+&= g(\boldsymbol{z},\boldsymbol{y}) \exp\left(\log\left( \frac{t}{T-t} \right)\sum_{i=1}^n (z^{(i)} - x^{(i)}) + \sum_{i=1}^n(y^{(i)} - x^{(i)})\log\left(\frac{T-t}{T}\right) \right) \notag \\
+&= g(\boldsymbol{z},\boldsymbol{y}) \exp\left(\log\left(\frac{t}{T-t} \right)\mathbf{1} \cdot (\boldsymbol{z} - \boldsymbol{x}) + \log\left(\frac{T-t}{T}\right)\mathbf{1}\cdot (\boldsymbol{y} - \boldsymbol{x}) \right) \notag \\
+&= g(\boldsymbol{z},\boldsymbol{y})v(\boldsymbol{z},\boldsymbol{y}) \exp\left(\log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) + \log\left(\frac{T-t}{T}\right)\mathbf{1}\cdot (\boldsymbol{y} - \boldsymbol{x}) \right) \notag \\
+&= h(\boldsymbol{z},\boldsymbol{y}) \exp\left(\log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) + \log\left(\frac{T-t}{T}\right) \boldsymbol{1}^{\tp}(\boldsymbol{y} - \boldsymbol{x}) \right) \notag
+\end{align}
+where we defined the exponential form
+\begin{align}
+v(\boldsymbol{z},\boldsymbol{y}) = \exp\left(\log\left(\frac{t}{T-t} \right) \boldsymbol{1}^{\tp}(\boldsymbol{z} - \boldsymbol{x}) - \log\left(\frac{t}{T-t} \right)\boldsymbol{y} \cdot (\boldsymbol{z} - \boldsymbol{x}) \right), \notag
+\end{align}
+and the statement follows from (\ref{eq:exp_family}).
+\end{proof}
+
+We note that at $t = T/2$ the natural parameter $\log(t/(T-t))$ in Proposition~\ref{poissonbridgegeneralisedexponential} vanishes and that parameterisation degenerates; the next result does not rely on it, proceeding through likelihood ratios instead.
+
+\begin{corollary}\label{poissondiscretetweedie}
+Write $p_t$ for the marginal mass function of $\boldsymbol{\xi}^{\boldsymbol{x}}_t$ on $\boldsymbol{x} + \mathbb{N}_0^n$. The drift of $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$ is determined by $p_t$ through the discrete Tweedie formula:
+    \begin{equation}\label{eq:poisson-discrete-drift}
+        \frac{\mathbb{E}[Y^{(i)} \mid \xib^{\boldsymbol{x}}_t ] - \xi^{\boldsymbol{x},(i)}_t}{T-t} = \frac{\xi^{\boldsymbol{x},(i)}_t - x^{(i)} + 1}{t} \cdot \frac{p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t + \boldsymbol{e}_i)}{p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t)},
+    \end{equation}
+    for every $t \in (0,T)$ and $i = 1, \dots, n$, where $\boldsymbol{e}_i$ is the $i$-th coordinate direction.
+\end{corollary}
+\begin{proof}
+    Conditional on $\boldsymbol{Y} = \boldsymbol{y}$, Lemma~\ref{lem:poisson-product-binomial} gives the product-binomial mass function, whose one-step likelihood ratio in direction $\boldsymbol{e}_i$ is
+    \begin{equation*}
+        \frac{\P(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \bfz + \boldsymbol{e}_i)}{\P(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \bfz)}
+        = \frac{y^{(i)} - z^{(i)}}{z^{(i)} - x^{(i)} + 1} \cdot \frac{t}{T-t},
+    \end{equation*}
+    for lattice points with $\P(\xib^{\boldsymbol{x},\boldsymbol{y}}_t = \bfz) > 0$, the ratio vanishing when $z^{(i)} = y^{(i)}$. Proposition~\ref{prop:tweedie_discrete}, applied with $\bfeta = \boldsymbol{Y}$ and the counting reference measure, yields
+    \begin{equation*}
+        \frac{p_t(\bfz + \boldsymbol{e}_i)}{p_t(\bfz)}
+        = \frac{t}{(T-t)\left(z^{(i)} - x^{(i)} + 1\right)} \left(\E[Y^{(i)} \mid \xib^{\boldsymbol{x}}_t = \bfz] - z^{(i)}\right),
+    \end{equation*}
+    and rearranging gives \eqref{eq:poisson-discrete-drift}.
+\end{proof}
+\begin{remark}
+    Combined with Proposition~\ref{poissonrandombridgeintensity} below, \eqref{eq:poisson-discrete-drift} identifies the conditioned jump intensity as a Robbins-type ratio estimator of the marginal mass function,
+    $\lambda^{\boldsymbol{x},(i)}_{tT} = (\xi^{\boldsymbol{x},(i)}_t - x^{(i)} + 1)\, p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t + \boldsymbol{e}_i)\,/\,(t\, p_t(\boldsymbol{\xi}^{\boldsymbol{x}}_t))$.
+    The mass-function ratio is the lattice analogue of the score $\nabla \log p_t$ in the Brownian drift of Proposition~\ref{prop:bridge_drift}: the continuous score drives the diffusive part of the transport, the ratio drives the jump intensity.
+\end{remark}
+The next statement provides an important property for the drift component of $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$.
+\begin{proposition}
+\label{poissonrandombridgeintensity}
+If $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ is a $\boldsymbol{\Phi}$-initialised Poisson random-bridge to $\boldsymbol{\Psi}$, then its intensity process $\{\boldsymbol{\lambda}^{\boldsymbol{x}}_{tT}\}_{t\in\T}$ is given by
+\begin{align}
+\boldsymbol{\lambda}^{\boldsymbol{x}}_{tT} = \frac{\mathbb{E}[\boldsymbol{Y} \mid \xib^{\boldsymbol{x}}_t ] - \boldsymbol{\xi}^{\boldsymbol{x}}_t}{T-t}, \notag
+\end{align}
+for every $t\in[0,T)$.
+\end{proposition}
+\begin{proof}
+The random bridge $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ is a counting process, and therefore,
+\begin{align}
+\boldsymbol{\lambda}^{\boldsymbol{x}}_{tT} = \lim_{h\rightarrow 0}\frac{\E(\xib^{\boldsymbol{x}}_{t+h}  - \xib^{\boldsymbol{x}}_{t} \,|\, \F_t^{\xib})}{h}. \notag 
+\end{align}
+In addition, $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ is a Markov process with respect to $\{\F_t^{\xib}\}_{t\in\T}$, and
+\begin{align}
+\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_u \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] = \frac{u-t}{T-t}\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_T \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] + \frac{T-u}{T-t} \boldsymbol{\xi}^{\boldsymbol{x}}_t, \notag
+\end{align}
+for any $u\in(t,T)$ from \cite{hoylehughstonmacrina_2011}. Therefore,
+\begin{align*}
+\boldsymbol{\lambda}^{\boldsymbol{x}}_{tT} &= \lim_{h\rightarrow 0} \left(\frac{\E[\xib^{\boldsymbol{x}}_{t+h} \,|\, \xib^{\boldsymbol{x}}_t]}{h} -\frac{\xib^{\boldsymbol{x}}_t}{h}\right) \notag \\
+&= \lim_{h\rightarrow 0} \left(\frac{T-t-h}{(T-t)h}\xib^{\boldsymbol{x}}_t + \frac{h\E[\xib^{\boldsymbol{x}}_{T} \,|\, \xib^{\boldsymbol{x}}_t]}{(T-t)h} -\frac{\xib^{\boldsymbol{x}}_t}{h}\right) \notag\\
+&= \frac{\E[\xib^{\boldsymbol{x}}_{T} \,|\, \xib^{\boldsymbol{x}}_t]}{(T-t)} + \xib^{\boldsymbol{x}}_t\lim_{h\rightarrow 0} \left(\frac{T-t-h}{(T-t)h} -\frac{1}{h}\right)  \notag \\
+&= \frac{\E[\xib^{\boldsymbol{x}}_{T} \,|\, \xib^{\boldsymbol{x}}_t]}{T-t} - \xib^{\boldsymbol{x}}_t\lim_{h\rightarrow 0} \left(\frac{h}{(T-t)h}\right),
+\end{align*}
+and the statement follows from applying l'H\^opital's rule, and since $\mathbb{E}[\boldsymbol{\xi}^{\boldsymbol{x}}_T \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t] = \mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t]$ from Lemma \ref{refconditional}.
+\end{proof}
+Proposition \ref{poissonrandombridgeintensity} provides an intriguing insight into Rectified Flows via (\ref{criticalconnection}), since we have the following representation:
+\begin{align}
+\E\left[\dd \xib^{\boldsymbol{x}}_{t} \,|\, \xib^{\boldsymbol{x}}_{t} \right] = \boldsymbol{\lambda}^{\boldsymbol{x}}_{tT}\dd t, \label{criticalconnectionintensity}
+\end{align}
+which shows us that the drift from (\ref{odemodelbaseconnection}) is linked to the intensity of $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$. In addition, similar to the Brownian case, we have the temporal transport consistency property
+\begin{align}
+\xib^{\boldsymbol{x}}_t \overset{d}{=} \xib^{\boldsymbol{x}}_r + \int_r^t \boldsymbol{\lambda}^{\boldsymbol{x}}_{su}\dd s + \int_r^t \dd \mathbf{M}_s, \label{twowayconstructpoisson}
+\end{align}
+for any $0\leq r < t < u \leq T$. The sub-bridge structure on $[r,u]$ is precisely the temporal transport consistency of Proposition~\ref{prop:temporal-consistency}, now realised through the conditioned jump intensity $\boldsymbol{\lambda}^{\boldsymbol{x}}_{su}$.
+
+\section{Jump-Diffusion Random Bridge}\label{sec:jumpdiff}
+
+Having treated the purely continuous (Section~\ref{sec:brownian}) and purely discontinuous
+(Section~\ref{sec:poisson}) canonical cases in isolation, we now combine them. Since the sum of
+mutually independent \levy processes is again a \levy process, the framework of
+Section~\ref{sec:framework}, in particular the universal Rectified Flow correspondence and the
+explicit semimartingale representation, applies verbatim. The continuous and jump channels recombine
+additively in the dynamics while remaining coupled through the bridge conditioning.
+
+Let $\boldsymbol{\sigma}\in\R^{n\times n}$ be diagonal with strictly positive diagonals, let
+$\{\mathbf{W}_t\}$ be a standard Brownian motion with mutually-independent coordinates, and let
+$\{\mathbf{P}_t\}$ be a Poisson process with intensity $\boldsymbol{\lambda}$, mutually-independent
+coordinates and unit jumps. The composite driver
+\begin{align}
+\label{eq:jd-driver}
+\mathbf{Z}^{(*)}_t = \boldsymbol{\sigma}\mathbf{W}_t + \mathbf{P}_t, \qquad t\in\T,
+\end{align}
+with $\boldsymbol{\sigma}\mathbf{W}_0=\boldsymbol{x}$ and $\mathbf{P}_0=\boldsymbol{0}$, so that
+$\mathbf{Z}^{(*)}_0=\boldsymbol{x}$, is a \levy process with triplet
+$(\boldsymbol{\alpha},\boldsymbol{\sigma},\boldsymbol{\eta})$, where
+$\boldsymbol{\eta}=\sum_{i=1}^n\lambda^{(i)}\boldsymbol{\delta}_{\boldsymbol{e}_i}$ charges the unit
+jumps along the coordinate axes. Since $\E|\mathbf{Z}^{(*)}_1|<\infty$, the resulting bridge
+$\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ falls within the scope of Proposition~\ref{stochfiltlevyrandom}.
+Conditioning on the jump count $\mathbf{P}_t=\boldsymbol{k}$ gives the driver density as a Poisson
+mixture of Gaussians,
+\begin{align}
+f_t^{(*)}(\boldsymbol{z})\dd \boldsymbol{z} &= \sum_{\boldsymbol{k}} \mathbb{P}(\mathbf{Z}^{(*)}_t \in \dd \boldsymbol{z} \, | \, \mathbf{P}_t = \boldsymbol{k})\mathbb{P}(\mathbf{P}_t = \boldsymbol{k}) \notag \\
+& = \sum_{\boldsymbol{k}}\left(\prod_{i=1}^n \mathcal{N}\left(x^{(i)} + k^{(i)} \, , \, (\sigma^{(i)})^2t \, ; z^{(i)}\right) \frac{e^{-\lambda^{(i)}t}(\lambda^{(i)}t)^{k^{(i)}}}{k^{(i)}!}\right)\dd \boldsymbol{z}. \label{jumpdiffusiondensity}
+\end{align}
+\begin{proposition}
+\label{prop:jd-universal}
+Let $\{\xib^{\boldsymbol{x}}_t\}_{t\in\T}$ be a $\boldsymbol{\Phi}$-initialised random bridge to
+$\boldsymbol{\Psi}$ under the driver~\eqref{eq:jd-driver}. Then
+\begin{align}
+\E\!\left[\dd\xib^{\boldsymbol{x}}_t\,\middle|\,\xib^{\boldsymbol{x}}_t\right]
+ = \frac{\E[\boldsymbol{Y}\mid\xib^{\boldsymbol{x}}_t]-\xib^{\boldsymbol{x}}_t}{T-t}\dd t,
+\qquad
+\E\!\left[\xib^{\boldsymbol{x},\boldsymbol{y}}_t\right]=\boldsymbol{R}^{\boldsymbol{x,y}}_t, \notag
+\end{align}
+for every $t\in[0,T)$. The jump-diffusion bridge is a Rectified Flow in conditional expectation.
+\end{proposition}
+\begin{proof}
+Both are instances of Remark~\ref{coredynamicconnection} and~\eqref{rectifiedrandomexpectationequality},
+which hold for any \levy driver with $\E|\xib^{\boldsymbol{x}}_t|<\infty$.
+\end{proof}
+
+We work in one dimension, the multivariate statements following coordinatewise. By
+Proposition~\ref{prop:generator} the generator splits into continuous and jump parts,
+\begin{align}
+\label{eq:jd-generator}
+\mathcal{A}f(x)=\underbrace{\tfrac12\sigma^2 f''(x)}_{\mathcal{A}^W f(x)}
+ + \underbrace{\lambda[f(x+1)-f(x)]}_{\mathcal{A}^P f(x)},
+\end{align}
+the jump compensation $-yf'(x)\1_{|y|<1}$ vanishing because $\boldsymbol{\eta}$ charges only $y=1$.
+
+\begin{proposition}[Additive bridge generator]
+\label{prop:jd-generator-split}
+The bridge-modified generator of $\{\xib^{x}_t\}$ under~\eqref{eq:jd-driver}, the Doob $h$-transform of
+\eqref{eq:jd-generator} with harmonic function $h_{tT}$, is the sum of the Brownian-bridge generator of
+Section~\ref{sec:brownian} and the Poisson-bridge generator of Section~\ref{sec:poisson}, sharing the
+common $h_{tT}$,
+\begin{align}
+\label{eq:jd-modified-generator}
+\widetilde{\mathcal{A}}f(x)
+ = \underbrace{\sigma^2\partial_x\!\log h_{tT}(x)\,f'(x)+\tfrac12\sigma^2 f''(x)}_{\widetilde{\mathcal{A}}^W f(x)}
+ + \underbrace{\widetilde{\lambda}(t,x)[f(x+1)-f(x)]}_{\widetilde{\mathcal{A}}^P f(x)},
+\qquad \widetilde{\lambda}(t,x)=\lambda\frac{h_{tT}(x+1)}{h_{tT}(x)}.
+\end{align}
+\end{proposition}
+\begin{proof}
+The Doob $h$-transform $\widetilde{\mathcal{A}}f=h_{tT}^{-1}\mathcal{A}(fh_{tT})-f h_{tT}^{-1}\mathcal{A}h_{tT}$
+is linear in $\mathcal{A}$. Applied to $\mathcal{A}=\mathcal{A}^W+\mathcal{A}^P$ with the single harmonic
+function $h_{tT}$ it gives $\widetilde{\mathcal{A}}=\widetilde{\mathcal{A}}^W+\widetilde{\mathcal{A}}^P$.
+The continuous part is Theorem~\ref{thm:modified-levy-app} with $\boldsymbol{\eta}=0$, giving the score
+drift $\sigma^2\partial_x\log h_{tT}$, the $|y|<1$ drift integral vanishing as $\boldsymbol{\eta}$ is
+supported at $y=1$. The jump part is Theorem~\ref{thm:modified-levy-app} with $\beta=0$, scaling the
+intensity by the harmonic ratio.
+\end{proof}
+
+\begin{corollary}[Explicit representation]
+\label{cor:jd-explicit}
+The jump-diffusion random bridge satisfies
+\begin{align}
+\label{eq:jd-full}
+\xib^{\boldsymbol{x}}_t = \boldsymbol{x}
+ + \int_0^t \frac{\E[\boldsymbol{Y}\mid\xib^{\boldsymbol{x}}_s]-\xib^{\boldsymbol{x}}_s}{T-s}\dd s
+ + \boldsymbol{\sigma}\mathbf{W}_t
+ + \int_0^t\!\!\int_{\R^n\setminus\{0\}}\boldsymbol{y}
+   \Big[N(\dd s,\dd\boldsymbol{y})-\tfrac{h_{sT}(\xib^{\boldsymbol{x}}_s+\boldsymbol{y})}{h_{sT}(\xib^{\boldsymbol{x}}_s)}\boldsymbol{\eta}(\dd\boldsymbol{y})\dd s\Big],
+\end{align}
+for every $t\in[0,T)$, the martingale component carrying a non-degenerate continuous part and a
+non-degenerate compensated-jump part simultaneously.
+\end{corollary}
+\begin{proof}
+Specialise Theorem~\ref{thm:explicit-decomp}, equivalently~\eqref{eq:full-decomp-app}, to
+$\beta=\boldsymbol{\sigma}$ and $\boldsymbol{\eta}=\sum_i\lambda^{(i)}\boldsymbol{\delta}_{\boldsymbol{e}_i}$,
+with the bridge-modified compensator of Proposition~\ref{prop:jd-generator-split}.
+\end{proof}
+
+\begin{remark}[Coupling without factorisation]
+The generator splits additively, but the bridge law does not factor into independent Brownian and
+Poisson bridges. The harmonic function $h_{tT}$ is built from the convolution density $f^{(*)}_t$ of
+\eqref{jumpdiffusiondensity}, so conditioning on the shared $\boldsymbol{\Psi}$ entangles the two
+channels.
+\end{remark}
+
+\begin{remark}[Chemical-Langevin and Kramers-Moyal reading]
+\label{rem:kramers-moyal}
+Equation~\eqref{eq:jd-full} sits on the chemical-kinetics hierarchy that runs from exact jump
+simulation through $\tau$-leaping and the Chemical Langevin equation to the deterministic rate
+equation. The deterministic-drift limit is rectified flow, the Poisson channel is $\tau$-leaping, and
+the Brownian channel is the leading stochastic correction to the jumps, in the sense of the van Kampen
+linear-noise and Kramers-Moyal expansions. In the variance-matching regime $\sigma^2\sim\lambda$ the
+continuous channel becomes precisely that correction, giving a diffusion-corrected jump bridge, while a
+free $\sigma$ gives a general hybrid. This anchors the few-step numerical claim of
+Section~\ref{sec:num-jumpdiff}. We keep the actual integer jumps together with an independent Brownian
+channel, so the object is not literally the Chemical Langevin equation, which replaces the jumps by a
+Gaussian.
+\end{remark}
+
+\begin{remark}[Consistency with the canonical cases]
+As $\boldsymbol{\lambda}\to0$, equation~\eqref{eq:jd-full} reduces to the Gaussian random bridge of
+Section~\ref{sec:brownian}. As $\boldsymbol{\sigma}\to0$, the modified intensity $\widetilde{\lambda}$
+recovers the conditioned intensity
+$\boldsymbol{\lambda}^{\boldsymbol{x}}_{tT}=(\E[\boldsymbol{Y}\mid\xib^{\boldsymbol{x}}_t]-\xib^{\boldsymbol{x}}_t)/(T-t)$
+of Proposition~\ref{poissonrandombridgeintensity}. In both limits the Rectified Flow velocity is
+preserved.
+\end{remark}
+
+\section{\Schrodinger Bridges with a General \levy Reference}\label{sec:schrodinger}
+\label{sec:imf}
+\label{sec:connection-imf}
+
+In the Introduction we argued that a random bridge coupling is already a valid transport, and that entropic optimality is an optional refinement, which we deferred to this section. We now close that loop. The \Schrodinger problem is defined relative to an arbitrary reference path measure, not only Wiener measure, and its solution is Markov whenever the reference is \cite{leonard2014survey}. Taking the reference to be the law of a \levy driver, the associated reciprocal class is built precisely from the \levy random bridges of Section~\ref{sec:framework}, and the relevant conditional drift is the harmonic-function score $\beta^2\partial_x \log h_{tT}$ of Section~\ref{sec:modified-levy}, the engine this paper supplies. This yields a bona-fide \levy-\Schrodinger problem, of which the Brownian reference is the special case that additionally connects to entropic optimal transport, the quadratic Benamou-Brenier reading being specific to the Wiener case. In this section we make the correspondence precise through the Iterative Markovian Fitting (IMF) framework of \cite{shi2023diffusion}. We show that one pass of random bridge training is exactly a single IMF iteration, so that further iterations would refine our transport towards the \Schrodinger bridge, and we treat the Brownian case in full, where every ingredient is explicit.
+
+The IMF literature speaks the language of path measures, so we first fix a dictionary between that language and the objects of this paper. Let $\mathcal{P}(\mathcal{C})$ denote the space of path measures on $\mathcal{C}([0,T], \R^n)$, with generic elements written $\Lambda$, and $\Lambda_{0,T}$, $\Lambda_t$ and $\Lambda_{T|t}$ denoting the joint endpoint law, the time-$t$ marginal and the conditional law of the terminal state given time $t$. The \emph{reference} $\mathbb{Q} \in \mathcal{P}(\mathcal{C})$ is for us the law of the driving process $\{\boldsymbol{Z}_t\}_{t\in\T}$. Its bridge $\mathbb{Q}_{|0,T}(\cdot \mid \boldsymbol{x}_0, \boldsymbol{x}_T)$ is the law of the classical bridge $\{\xib^{\boldsymbol{x},\boldsymbol{y}}_t\}_{t\in\T}$ of Section~\ref{sec:framework}, and for a coupling $\Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi})$ the \emph{mixture of bridges} measure $\Lambda = \Gamma\,\mathbb{Q}_{|0,T}$ is the law of the random bridge $\{\xib_t\}_{t\in\T}$ of Definition~\ref{definitionRandomBridge}. We write $\mathcal{M} \subset \mathcal{P}(\mathcal{C})$ for the subset of Markov path measures associated with SDEs of the form $\dd\boldsymbol{U}_t = \{f(\boldsymbol{U}_t, t) + \boldsymbol{v}(\boldsymbol{U}_t, t)\}\dd t + \boldsymbol{\sigma}(\boldsymbol{U}_t, t)\dd\boldsymbol{B}_t$, where $\boldsymbol{v}, \boldsymbol{\sigma}$ are locally Lipschitz. Throughout this section $\boldsymbol{U}_t$ denotes the state of a generic path measure, since $\boldsymbol{X}$ is reserved for the source variable of this paper.
+
+\begin{defn}[Reciprocal class and reciprocal projection {\cite[Definition~3]{shi2023diffusion}}]
+\label{def:reciprocal}
+A path measure $\Lambda \in \mathcal{P}(\mathcal{C})$ is in the \emph{reciprocal class} $\mathcal{R}(\mathbb{Q})$ of $\mathbb{Q} \in \mathcal{M}$ if $\Lambda = \Lambda_{0,T}\,\mathbb{Q}_{|0,T}$. Given $\Lambda \in \mathcal{P}(\mathcal{C})$, the \emph{reciprocal projection} is defined as
+\begin{equation*}
+    \mathrm{proj}_{\mathcal{R}(\mathbb{Q})}(\Lambda) \;=\; \Lambda_{0,T}\,\mathbb{Q}_{|0,T}, \label{eq:def_reciprocal_proj}
+\end{equation*}
+which retains the endpoint coupling of $\Lambda$ but replaces the intermediate dynamics with the reference bridge $\mathbb{Q}_{|0,T}$.
+\end{defn}
+
+In our language, the reciprocal projection is exactly the construction of Definition~\ref{definitionRandomBridge}: it keeps a coupling and fills in the classical bridge of the driver, so every random bridge of this paper is an element of $\mathcal{R}(\mathbb{Q})$. The reciprocal projection minimises the KL divergence to $\Lambda$ over $\mathcal{R}(\mathbb{Q})$: if $\Lambda^* = \mathrm{proj}_{\mathcal{R}(\mathbb{Q})}(\Lambda)$, then $\Lambda^* = \argmin_{\Lambda' \in \mathcal{R}(\mathbb{Q})} \mathrm{KL}(\Lambda \| \Lambda')$ \cite[Proposition~4]{shi2023diffusion}.
+
+\begin{defn}[Markovian projection {\cite[Definition~1]{shi2023diffusion}}]
+\label{def:markovian}
+Assume that $\mathbb{Q} \in \mathcal{M}$ is associated with
+\begin{equation*}
+    \dd\boldsymbol{U}_t = f(\boldsymbol{U}_t, t)\dd t + \boldsymbol{\sigma}(\boldsymbol{U}_t, t)\dd\boldsymbol{B}_t,
+\end{equation*}
+and that for any $(\boldsymbol{x}_0, \boldsymbol{x}_T) \in \R^n \times \R^n$, the diffusion bridge $\mathbb{Q}_{|0,T}(\cdot \mid \boldsymbol{x}_0, \boldsymbol{x}_T)$ is associated with $(\boldsymbol{U}_t^{0,T})_{t \in [0,T]}$ given by
+\begin{equation*}
+    \dd\boldsymbol{U}_t^{0,T} = \{f(\boldsymbol{U}_t^{0,T}, t) + \boldsymbol{\sigma}(\boldsymbol{U}_t^{0,T}, t)^2 \nabla \log \mathbb{Q}_{T|t}(\boldsymbol{x}_T \mid \boldsymbol{U}_t^{0,T})\}\dd t + \boldsymbol{\sigma}(\boldsymbol{U}_t^{0,T}, t)\dd\boldsymbol{B}_t,
+\end{equation*}
+with $\boldsymbol{\sigma}(\cdot, \cdot) : \R^n \times [0, T] \to \R^{n \times n}$ a positive-definite diagonal matrix. Then, when it is well-defined, we introduce the \emph{Markovian projection} of $\Lambda$, $\mathbb{M}^* = \mathrm{proj}_{\mathcal{M}}(\Lambda) \in \mathcal{M}$, which is associated with the SDE
+\begin{align}
+    \dd\boldsymbol{U}_t^* &= \{f(\boldsymbol{U}_t^*, t) + \boldsymbol{v}^*(\boldsymbol{U}_t^*, t)\}\dd t + \boldsymbol{\sigma}(\boldsymbol{U}_t^*, t)\dd\boldsymbol{B}_t,\nonumber \\
+    \boldsymbol{v}^*(\boldsymbol{u}, t) &= \boldsymbol{\sigma}(\boldsymbol{u}, t)^2\,\E_{\Lambda_{T|t}}\!\left[\nabla \log \mathbb{Q}_{T|t}(\boldsymbol{U}_T \mid \boldsymbol{U}_t) \;\middle|\; \boldsymbol{U}_t = \boldsymbol{u}\right]. \label{eq:def_markovian_proj}
+\end{align}
+\end{defn}
+
+The Markovian projection satisfies $\mathbb{M}^* = \argmin_{\mathbb{M} \in \mathcal{M}} \mathrm{KL}(\Lambda \| \mathbb{M})$ and preserves all time-marginals: $\mathbb{M}^*_t = \Lambda_t$ for every $t \in [0, T]$ \cite[Proposition~2]{shi2023diffusion}. In the Brownian case ($f = 0$, $\boldsymbol{\sigma}(\boldsymbol{u}, t) = \boldsymbol{\sigma}$ constant), the bridge $\mathbb{Q}_{|0,T}(\cdot \mid \boldsymbol{x}, \boldsymbol{y})$ is a Brownian bridge with drift $(\boldsymbol{y} - \xib_t)/(T-t)$, so the Markovian projection drift~\eqref{eq:def_markovian_proj} reduces to
+\begin{equation}
+    \boldsymbol{v}^*(\xib_t, t) = \frac{\E[\boldsymbol{Y} \mid \xib_t] - \xib_t}{T - t}, \label{eq:markov_drift}
+\end{equation}
+recovering the random bridge drift from Proposition~\ref{prop:bridge_drift}.
+
+IMF \cite[Section~3.2]{shi2023diffusion} alternates between these projections, constructing a sequence $(\Pi^n)_{n \in \N}$ via
+\begin{equation}
+    \Pi^{2n+1} = \mathrm{proj}_{\mathcal{M}}(\Pi^{2n}), \qquad \Pi^{2n+2} = \mathrm{proj}_{\mathcal{R}(\mathbb{Q})}(\Pi^{2n+1}), \label{eq:imf_iteration}
+\end{equation}
+with $\Pi^0 \in \mathcal{R}(\mathbb{Q})$ satisfying $\Pi^0_0 = \boldsymbol{\Phi}$ and $\Pi^0_T = \boldsymbol{\Psi}$. Both marginals are preserved at every iteration: $\Pi^n_0 = \boldsymbol{\Phi}$ and $\Pi^n_T = \boldsymbol{\Psi}$ for all $n$ \cite[Theorem~8]{shi2023diffusion}. The sequence converges to the unique \Schrodinger bridge $\Pi^{\mathrm{SB}}$, the path measure closest to the reference $\mathbb{Q}$ in KL divergence subject to the boundary constraints,
+\begin{equation}
+    \Pi^{\mathrm{SB}} = \argmin_{\Lambda \in \mathcal{P}(\mathcal{C})} \left\{ \mathrm{KL}(\Lambda \| \mathbb{Q}) \;:\; \Lambda_0 = \boldsymbol{\Phi},\; \Lambda_T = \boldsymbol{\Psi} \right\}. \label{eq:sb_problem}
+\end{equation}
+The \Schrodinger bridge is equivalently characterised as the unique path measure in $\mathcal{M} \cap \mathcal{R}(\mathbb{Q})$ satisfying the boundary conditions \cite{leonard2014survey, shi2023diffusion}.
+
+\subsection{Random Bridge Training as a Single IMF Iteration}
+
+The training procedure of Section~\ref{sec:numerics} (Algorithm~\ref{alg:gaussian_bridge_training}) can now be decomposed into the two projections above. The training data generation samples $(\boldsymbol{x}, \boldsymbol{y}) \sim \Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi})$ and draws bridge states $\xib_t^{\boldsymbol{x}} \sim \mathcal{N}(\boldsymbol{E}_t, \boldsymbol{V}_t)$ from the Brownian bridge kernel conditioned on the endpoint. This is the reciprocal projection~\eqref{eq:def_reciprocal_proj}: the endpoint coupling $\Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi})$ is filled in with the reference bridge $\mathbb{Q}_{|0,T}$, producing the path measure
+\begin{equation}
+    \Pi^0 = \Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi}) \cdot \mathbb{Q}_{|0,T} \;\in\; \mathcal{R}(\mathbb{Q}), \label{eq:reciprocal_proj}
+\end{equation}
+which preserves both marginals: $\Pi^0_0 = \boldsymbol{\Phi}$ and $\Pi^0_T = \boldsymbol{\Psi}$.
+
+The regression loss~\eqref{eq:goria_loss} then trains a network to approximate $\E[\boldsymbol{Y} \mid \xib_t^{\boldsymbol{x}}]$, yielding the drift~\eqref{eq:markov_drift}. This is the Markovian projection $\mathrm{proj}_{\mathcal{M}}(\Pi^0)$: the unique Markov diffusion matching all time-marginals of $\Pi^0$, obtained by minimising the reverse KL divergence over $\mathcal{M}$.
+
+Together, these constitute one complete iteration of~\eqref{eq:imf_iteration} initialised with $\Pi^0_{0,T} = \boldsymbol{\Phi} \otimes \boldsymbol{\Psi}$. In the terminology of \cite{shi2023diffusion}, this is DSBM-IMF. Under the alternative initialisation $\Pi^0_{0,T} = \mathbb{Q}_{0,T}$ (the reference process coupling), Proposition~10 of \cite{shi2023diffusion} establishes that the IMF iterates recover exactly the Iterative Proportional Fitting (IPF) iterates of \cite{debortoli2021diffusion}. Both schemes share the \Schrodinger bridge as their unique fixed point.
+
+The random bridge training performs only one such iteration rather than alternating to convergence. Further iterations would progressively refine the transport towards the \Schrodinger bridge. The single-iteration regime already produces a valid stochastic transport between $\boldsymbol{\Phi}$ and $\boldsymbol{\Psi}$, with the bridge kernel providing the correct conditional dynamics. This is analogous to the observation that standard score-based generative modelling corresponds to the first IPF iteration \cite{debortoli2021diffusion}, and that rectified flow arises as the limit as $\boldsymbol{\sigma} \to 0$ of DSBM-IMF \cite{shi2023diffusion}.
+
+A practical advantage of this single-iteration random bridge regime is that it avoids the \emph{simulation-inference mismatch} identified by \cite{peluchetti2023diffusion}. In iterative IPF-based methods such as DSB \cite{debortoli2021diffusion}, each iterate $\Pi^{n+1}$ is obtained by simulating trajectories from the \emph{previous} iterate $\Pi^n$ and regressing a new drift against them. Since $\Pi^n$ and $\Pi^{n+1}$ have different initial distributions, training data is drawn from a distribution that does not match the model being learned, leading to error accumulation across iterations. In contrast, the random bridge training samples directly from the known reference bridge $\mathbb{Q}_{|0,T}$ via an explicit reciprocal projection, so no learned drift is used to generate training data. This ensures exact consistency between the training distribution and the model at every stage.
+
+\begin{remark}[The \levy-\Schrodinger conjecture]
+For a general \levy reference, every ingredient above except the convergence theory is in place. The reciprocal class is generated by the \levy random bridges of Section~\ref{sec:framework}, the single IMF iteration is executable through the explicit representation of Theorem~\ref{thm:explicit-decomp}, and the marginals are preserved exactly as in the Brownian case. Full IMF convergence beyond the diffusion reference remains open, and we leave it as a conjecture.
+\end{remark}
+
+\section{Numerical Framework}\label{sec:numerics}
+In this section, we shall put random-bridges into practice by presenting a way to train and simulate these stochastic transport processes.
+
+\subsection{Brownian Bridge Implementation}\label{sec:num-brownian}
+We summarise the training and simulation framework of \cite{goria_random-bridges_2025} for Gaussian random bridges as in Proposition \ref{prop:bridge_stats}. Under the setup of Corollary~2.11, the $\boldsymbol{\Phi}$-initialised Gaussian random bridge $\{\xib_t^{\boldsymbol{x}}\}_{t\in\T}$ satisfies
+\begin{equation}
+    \dd\xib_t^{\boldsymbol{x}} \overset{d}{=} \frac{\bar{\mathbf{M}}_t - \xib_t^{\boldsymbol{x}}}{T - t}\dd t + \boldsymbol{\sigma}\dd\boldsymbol{W}_t, \label{eq:goria_bridge_sde}
+\end{equation}
+for $t \in [0, T)$, where
+\begin{align}
+\bar{\mathbf{M}}_t = \E\left[ \boldsymbol{Y} \, | \, \F_{t}^{\xib^{\boldsymbol{x}}} \right] = \E[\boldsymbol{Y} \mid \xib_t^{\boldsymbol{x}}], \notag
+\end{align}
+defines the conditional expectation process $\{\bar{\mathbf{M}}_t\}_{t\in\T}$ as before. Since $\bar{\mathbf{M}}_t$ is the $\mathcal{L}^2$ best-estimate of $\boldsymbol{Y}$ given $\xib_t^{\boldsymbol{x}}$, \cite{goria_random-bridges_2025} trains a parametric approximation
+\begin{equation}
+    f^*(\xib_t^{\boldsymbol{x}}, t; \Theta^*) \approx \bar{\mathbf{M}}_t, \label{eq:goria_network}
+\end{equation}
+via the loss function
+\begin{equation}
+    \boldsymbol{L}^f(\boldsymbol{x}, \boldsymbol{y}, \xib_t^{\boldsymbol{x}}, t; \Theta) = \E_{\xib_T^{\boldsymbol{x}} |_{\boldsymbol{Y}=\boldsymbol{y}},\, (\boldsymbol{x},\boldsymbol{y})\sim\Gamma(\boldsymbol{\Phi},\boldsymbol{\Psi}),\, t\sim\mathcal{U}[0,T)} \left[\|\boldsymbol{y} - f(\xib_t^{\boldsymbol{x}}, t; \Theta)\|^2\right]. \label{eq:goria_loss}
+\end{equation}
+
+\begin{algorithm}[H]
+\caption{Gaussian Bridge Training \cite{goria_random-bridges_2025}} \label{alg:gaussian_bridge_training}
+\begin{algorithmic}[1]
+\State Sample $(\boldsymbol{x}, \boldsymbol{y}) \leftarrow \Gamma(\boldsymbol{\Phi}, \boldsymbol{\Psi})$ and $t \leftarrow \mathcal{U}[0, T)$
+\State If $t = 0$, then $\xib_0^{\boldsymbol{x}} = \boldsymbol{x}$. If $t \neq 0$, then sample $\xib_t^{\boldsymbol{x}} \leftarrow \mathcal{N}(\boldsymbol{E}_t, \boldsymbol{V}_t)$ from~(8)
+\State Compute $\boldsymbol{L}^f(\boldsymbol{x}, \boldsymbol{y}, \xib_t^{\boldsymbol{x}}, t; \Theta)$
+\State Set $\Theta = \argmin_\Theta \; \boldsymbol{L}^f(\boldsymbol{x}, \boldsymbol{y}, \xib_t^{\boldsymbol{x}}, t; \Theta)$
+\State Repeat Steps 1--4 until convergence
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Gaussian Bridge Simulation \cite{goria_random-bridges_2025}}
+\begin{algorithmic}[1]
+\State Choose a grid $0 = t_0 < t_1 < \dots < t_m = T - \epsilon$ for some $m \in \N_+$ and small $\epsilon > 0$
+\State Sample $\boldsymbol{x} \leftarrow \boldsymbol{\Phi}$ and set $\xib_0^{\boldsymbol{x}} = \boldsymbol{x}$
+\State Sample $\{\boldsymbol{Z}_t\}_{t \in \hat{\T}}$ where $\hat{\T} = \{t_0, \dots, t_m\}$
+\State Let $\delta = (T - \epsilon)/m$. For $r = 0, \dots, m-1$:
+\State \hspace{\algorithmicindent} (a) Set $t = t_r$ and compute $f^*(\xib_t^{\boldsymbol{x}}, t; \Theta^*)$
+\State \hspace{\algorithmicindent} (b) Compute $\dd\boldsymbol{Z}_t = \boldsymbol{Z}_{t_{r+1}} - \boldsymbol{Z}_{t_r}$
+\State \hspace{\algorithmicindent} (c) Generate path
+\[
+    \xib_{t_{r+1}}^{\boldsymbol{x}} = \xib_t^{\boldsymbol{x}} + \frac{f^*(\xib_t^{\boldsymbol{x}}, t; \Theta^*) - \xib_t^{\boldsymbol{x}}}{T - t}\delta + \dd\boldsymbol{Z}_t
+\]
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Poisson Bridge Implementation}\label{sec:num-poisson}
+
+To demonstrate the practical utility of the Poisson random bridge derived in the previous section, we provide the algorithms for training and simulation. This procedure mirrors the continuous random bridge implementations, but substitutes continuous noise with discrete Poisson jumps.
+
+For the training phase, intermediate bridge states $\boldsymbol{\xi}^{\boldsymbol{x}}_t$ are generated according to the product-binomial distribution derived in (\ref{poissonbridgedist}). A neural network function $f_{\boldsymbol{\theta}}(\boldsymbol{\xi}_t, t)$ is then trained to predict the conditional expectation $\mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}^{\boldsymbol{x}}_t]$ utilising a standard mean squared error objective.
+
+\begin{algorithm}[H]
+\caption{Poisson Bridge Training}
+\begin{algorithmic}[1]
+\State \textbf{Require:} Data distribution $\boldsymbol{\Psi}$, prior distribution $\boldsymbol{\Phi}$
+\State \textbf{Ensure:} Trained neural network parameters $\boldsymbol{\theta}$
+\While{not converged}
+    \State Sample data $\boldsymbol{y} \sim \boldsymbol{\Psi}$ and prior $\boldsymbol{x} \sim \boldsymbol{\Phi}$
+    \State Sample time $t \sim \mathcal{U}[0, T)$
+    \For{each coordinate $i = 1, \dots, n$}
+        \State Sample component $\xi_t^{(i)} \sim \text{Binomial}\left(y^{(i)} - x^{(i)}, \frac{t}{T}\right) + x^{(i)}$
+    \EndFor
+    \State Compute target prediction $\hat{\boldsymbol{y}} = f_{\boldsymbol{\theta}}(\boldsymbol{\xi}_t, t)$
+    \State Take gradient descent step on loss $\mathcal{L}(\boldsymbol{\theta}) = \| \boldsymbol{y} - \hat{\boldsymbol{y}} \|^2$
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+For the simulation phase, we traverse the dynamics via the conditioned jump intensity derived from Doob's $h$-transform. Here, the network establishes the conditional target velocity $f_{\boldsymbol{\theta}}(\boldsymbol{\xi}_t, t) \approx \mathbb{E}[\boldsymbol{Y} \mid \boldsymbol{\xi}_t]$. A non-negativity constraint $0 \vee (\cdot)$ is enforced on the modeled jump rate.
+
+\begin{algorithm}[H]
+\caption{Poisson Bridge Simulation}
+\begin{algorithmic}[1]
+\State \textbf{Require:} Trained network $f_{\boldsymbol{\theta}}$, number of steps $N$, terminal time $T$
+\State \textbf{Ensure:} Generated sample $\boldsymbol{\xi}_T$
+\State Initialise step size $\delta = \frac{T}{N}$
+\State Sample initial state $\boldsymbol{\xi}_0 \sim \boldsymbol{\Phi}$
+\For{$k = 1, \dots, N$}
+    \State Set current time $t_{k-1} = \delta(k-1)$
+    \State Predict expected target $\hat{\boldsymbol{y}} = f_{\boldsymbol{\theta}}(\boldsymbol{\xi}_{t_{k-1}}, t_{k-1})$
+    \For{each coordinate $i = 1, \dots, n$}
+        \State Calculate jump intensity $\lambda_i = \max\left(0, \frac{\hat{y}^{(i)} - \xi_{t_{k-1}}^{(i)}}{T - t_{k-1}}\right)$
+        \State Sample increment $\Delta \xi^{(i)} \sim \text{Poisson}(\lambda_i \delta)$
+        \State Update state $\xi_{t_k}^{(i)} = \xi_{t_{k-1}}^{(i)} + \Delta \xi^{(i)}$
+    \EndFor
+\EndFor
+\State \textbf{Return} $\boldsymbol{\xi}_T$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Jump-Diffusion Bridge Implementation}\label{sec:num-jumpdiff}
+\subsubsection*{Setup and what is genuinely new}
+\begin{itemize}
+  \item Drift is universal: $(\E[\boldsymbol{Y}\mid\xib_t]-\xib_t)/(T-t)$, the same network target as Sections~\ref{sec:num-brownian} and~\ref{sec:num-poisson}.
+  \item Diffusion coefficient is known: $\beta=\sigma$ (Theorem~\ref{thm:explicit-decomp}), nothing to learn.
+  \item Only two new objects: the hybrid bridge sampler, and the jump compensator $h_{tT}(\xib+1)/h_{tT}(\xib)$.
+\end{itemize}
+
+\subsubsection*{Bridge sampling via endpoint deconvolution}
+% FLESH OUT
+The pinned density is closed-form (Corollary~\ref{levycorodensity}) with $f=f^{(*)}$ from
+\eqref{jumpdiffusiondensity}. We deconvolve the endpoint by the latent jump count.
+\begin{itemize}
+  \item $w_k \propto \mathcal N(y-x-k;0,\sigma^2 T)\,e^{-\lambda T}(\lambda T)^k/k!$, and $k\sim\mathrm{Categorical}(w)$.
+  \item $J\sim\mathrm{Binomial}(k,t/T)$ and $G\sim\mathcal N\!\big((y-x-k)\tfrac tT,\ \sigma^2\tfrac{t(T-t)}{T}\big)$.
+  \item Return $\xib_t = x + G + J$.
+\end{itemize}
+The Gaussian channel makes $f^{(*)}_T>0$ for all $(x,y)$, so the bridge is valid with no monotonicity
+constraint, whereas pure Poisson requires $x\le y$.
+
+\subsubsection*{Training, one head or optionally two}
+% FLESH OUT
+\begin{itemize}
+  \item Head 1 (all schemes): regress on $\boldsymbol{y}$ under mean squared error, giving $\E[\boldsymbol{Y}\mid\xib_t]$.
+  \item Head 2 (Schemes B and C): regress the compensator $g=f^{(*)}_{T-t}(y-\xib-1)/f^{(*)}_{T-t}(y-\xib)$ in the log domain. The target is heavy-tailed early in the bridge, so use $g(\hat y)$ as a control variate.
+\end{itemize}
+
+\subsubsection*{Simulation, a three-tier hierarchy}
+All three schemes preserve the exact first-moment drift $(\hat y-\xib)/(T-t)$. See
+Remark~\ref{rem:kramers-moyal} for the predictor-corrector reading.
+\begin{itemize}
+  \item Scheme A (mean plug-in): split by variance $a=\sigma^2/(\sigma^2+\lambda)$. The continuous channel adds $\sigma\sqrt\delta\,Z$, the jump channel draws $\Delta\sim\mathrm{Poisson}(\max(0,(1-a)\,\text{pull})\,\delta)$.
+  \item Scheme B (learned compensator): $\Delta\sim\mathrm{Poisson}(\lambda\,c_\theta(\xib,t)\,\delta)$.
+  \item Scheme C (learned $h$): one network $h_\theta(t,x)$ supplies both $\partial_x\log h_\theta$ and the ratio $h_\theta(\xib+1)/h_\theta(\xib)$.
+\end{itemize}
+
+\subsubsection*{Self-consistency objective for Scheme C}
+With the additive generator $\mathcal A f=\tfrac12\sigma^2 f''+\lambda[f(x+1)-f(x)]$ of
+Proposition~\ref{prop:jd-generator-split}, the harmonic function satisfies
+\begin{align}
+\partial_t h+\tfrac12\sigma^2\partial_x^2 h+\lambda[h(t,x+1)-h(t,x)]=0. \notag
+\end{align}
+The jump term is a shift rather than an integral, so the PINN residual is autodiff plus one shifted
+forward pass. We train with
+\begin{align}
+\mathcal L=\mathcal L_{\text{regress}}+\gamma\big\|(\partial_t+\mathcal A)h_\theta\big\|^2+(h_\theta(0,x)-1)^2, \notag
+\end{align}
+the regression anchor removing the trivial solution $h\equiv\text{const}$, for which $\mathcal A\mathbf 1=0$.
+
+\subsubsection*{Experiments}
+% EXPERIMENTS PENDING: designs fixed, runs to follow
+\begin{itemize}
+  \item Headline, few-step fidelity: $W_1(\mathrm{law}(\xib_T^{(N)}),\boldsymbol{\Psi})$ against step count $N$, pure-Poisson versus diffusion-corrected ($\sigma^2\sim\lambda$). Cleanest for continuous or mixed $\boldsymbol{\Psi}$, and it can hurt pure-count targets.
+  \item Per-driver simulator fidelity: $W_1$ and KS of simulated versus exact intermediate marginals (Corollary~\ref{levycorodensity}).
+  \item Unifying-limits demonstration ($\lambda\to0$, $\sigma\to0$, hybrid), Scheme A/B/C ablation for the Jensen gap, an $h_\theta$ martingale check, and an optional MNIST \texttt{jumpdiffusion} run.
+\end{itemize}
+
+\section{Conclusion}\label{sec:conclusion}
+In this paper, we connect the generalised \levy random bridges built from \cite{goria_random-bridges_2025} with Rectified Flows. Formulating stochastic transports as noisy information processes in the spirit of \cite{BrodyHughstonMacrina_2008, BrodyHughston_2005, hoylehmacrinamenguturk_2020, Menguturk_2016}, we show that the conditional drift of a generalised \levy random bridge has the same functional form as the Rectified Flow velocity field for every admissible driver, so that these bridges are stochastic extensions of Rectified Flows. Our central technical device is a non-anticipative semimartingale representation with an explicit martingale component (Theorem~\ref{thm:main-rep}), obtained through the bridge-modified \levy measure of the Doob $h$-transform. Along the way, we generalise Tweedie's formula to a class of exponential families, interpret the bridge drift as a generalised Tweedie estimator, and establish a temporal transport consistency property under which every sub-bridge is again a transport between the induced intermediate laws. We treat the Brownian and Poisson bridges as canonical continuous and discontinuous cases, and combine them in a jump-diffusion bridge. In the Brownian case, the bridge decomposes as a Rectified Flow plus an independent Brownian bridge, its probability flow ODE averages a source-push and a target-pull velocity, and one pass of random bridge training coincides with a single Iterative Markovian Fitting step, placing the construction alongside \Schrodinger bridge methods. We conclude with training and simulation algorithms for the Brownian, Poisson and jump-diffusion bridges.
+
+As future research, we are interested in whether Rectified Flows themselves satisfy the temporal transport consistency property that generalised \levy random bridges host, which we leave as a conjecture. Building on \cite{menguturkmenguturk_2020}, we aim to construct stochastic transports over multiple time segments, producing transport paths over a sequence of target distributions, and in turn multi-segment Rectified Flows. We are also intrigued to augment the state space of our framework from Euclidean spaces to Riemannian manifolds in order to apply random bridges to geometric data. A further direction is a general continuous-time Markov chain or \levy-on-graph bridge, which would lift the birth-only Poisson construct to arbitrary discrete state spaces and open discrete-diffusion and mixed continuous-discrete generation, together with a convergence theory for the \levy-\Schrodinger problem of Section~\ref{sec:schrodinger}. Finally, we are keen to pursue numerical studies on complex applications that harness generalised \levy random bridges beyond the algorithms presented here.
+
+\appendix
+\section{Properties of Random Bridges under \levy Drivers}\label{app:resultsongeneralisedlevy}
+Let $\boldsymbol{\alpha}\in\R^n$, $\boldsymbol{\beta} \in \R^{n\times n}$, and $\boldsymbol{\eta}$ be the \levy measure; a $\sigma$-finite measure on $\R^{n}$ that satisfies
+\begin{align}
+\boldsymbol{\eta}(\boldsymbol{0}) = 0 \hspace{0.15in} \text{and} \hspace{0.15in} \int_{\R^n} \min\left(1, ||\boldsymbol{y}||^2 \right)\boldsymbol{\eta}(\dd \boldsymbol{y} ) < \infty. \notag
+\end{align}
+Having $\text{i} = \sqrt{-1}$, we recall that the law of any \levy process $\{\boldsymbol{Z}_t\}_{t\in\T}$ is characterised by the L\'evy-Khintchine representation:
+\begin{align}
+\E[e^{\text{i} \langle\boldsymbol{\lambda} , \boldsymbol{Z}_t\rangle}] = \exp\left( t \gamma(\boldsymbol{\lambda}) \right), \notag
+\end{align}
+for $\boldsymbol{\lambda}\in\R^n$, where
+\begin{align}
+\label{levykhinctine}
+\gamma(\boldsymbol{\lambda}) &= \exp\left(\text{i}\langle\boldsymbol{\alpha} , \boldsymbol{\lambda}\rangle -\frac{1}{2}\langle \boldsymbol{\lambda} , \boldsymbol{\beta} \boldsymbol{\beta}^{\tp} \boldsymbol{\lambda} \rangle + \int_{\R^n}\left(\exp(\text{i} \langle \boldsymbol{\lambda} , \boldsymbol{y} \rangle)- 1 - \text{i}\langle \boldsymbol{\lambda} , \boldsymbol{y} \rangle\1(||\boldsymbol{y}|| \leq 1)\right)\boldsymbol{\eta}(\dd \boldsymbol{y})\right).
+\end{align}
+Here, $(\boldsymbol{\alpha}, \boldsymbol{\beta}, \boldsymbol{\eta})$ is called the L\'evy-Khintchine triplet. For what follows, let $f_t$ be a density function or a probability mass function for $t\in(0,T]$. Accordingly, we have $\P(\mathbf{Z}_t \in \dd \boldsymbol{z}) = f_t(\boldsymbol{z})\dd \boldsymbol{z}$ if $\mathbf{Z}_t$ admits a density and $\P(\mathbf{Z}_t = \boldsymbol{z}) = f_t(\boldsymbol{z})$ if $\mathbf{Z}_t$ admits a probability mass function. We shall only present $\{\mathbf{Z}_t\}_{t\in\T}$ with densities in order to avoid repetitious statements for $\{\mathbf{Z}_t\}_{t\in\T}$ with probability mass functions, for which $\dd \boldsymbol{z}$ terms should be dropped and integrals be replaced by summations. The transition probabilities of $\{\mathbf{Z}_t\}_{t\in\T}$ can be understood via Chapman-Kolmogorov convolutions given by
+\begin{align}
+f_{t}(\boldsymbol{z})=(f_s \circledast f_{t-s})(\boldsymbol{z}) = \int_{\mathbb{R}^n}f_{s}(\boldsymbol{r})f_{t-s}(\boldsymbol{z}-\boldsymbol{r})\dd \boldsymbol{r}, \notag
+\end{align}
+for $0<s<t\leq T$, $\boldsymbol{z}\in\R^n$, and the finite-dimensional distribution of $\{\mathbf{Z}_t\}_{t\in\T}$ is
+\begin{align}
+\label{levyfinitedimensionaldist}
+\mathbb{P}(\mathbf{Z}_{t_{1}}\in \dd \boldsymbol{z}_{1},\ldots, \mathbf{Z}_{t_{m}}\in \dd \boldsymbol{z}_{m}) =\prod^{m}_{i=1}f_{t_{i}-t_{i-1}}(\boldsymbol{z}_{i}-\boldsymbol{z}_{i-1})\dd \boldsymbol{z}_{i},
+\end{align}
+for $m\in\mathbb{N}_{+}$, $0<t_{1}<\ldots <t_{m} < T$ and $(\boldsymbol{z}_{1},\ldots,\boldsymbol{z}_m)\in\mathbb{R}^{n\times m}$, where $t_0 = 0$ and $\boldsymbol{z}_{0} = \boldsymbol{x}$.
+\begin{proposition}
+\label{generaldensityexpression}
+If $\{\xib_t\}_{t\in\T}$ is a $(\boldsymbol{\Phi}, \boldsymbol{\Psi})$-bridge under action of $\{\boldsymbol{Z}_t\}_{t\in\T}$, then
+\begin{align}
+\mathbb{P}(\xib_t \in \dd \boldsymbol{z}) = \left(\int_{\R^n}\int_{\R^n}\frac{f_{t}(\boldsymbol{z} - \boldsymbol{x})f_{T-t}(\boldsymbol{y} - \boldsymbol{z})}{f_T(\boldsymbol{y} - \boldsymbol{x})}\boldsymbol{\Gamma}(\dd \boldsymbol{x},\dd \boldsymbol{y})\right)\dd \boldsymbol{z}, \label{levyrandombridgedistribution}
+\end{align}
+for any $t\in(0,T)$, given that $0 < f_T(\boldsymbol{y}-\boldsymbol{x}) < \infty$ for $\boldsymbol{\Gamma}$-almost-everywhere $\boldsymbol{x},\boldsymbol{y}\in\R^n$.
+\end{proposition}
+\begin{proof}
+From \cite{hoylehughstonmacrina_2011}, and using Definition \ref{definitionRandomBridge} and (\ref{levyfinitedimensionaldist}), we have
+\begin{align}
+\mathbb{P}(\xib_0 \in \dd \boldsymbol{x}, \, \xib_{t_{1}}\in \dd \boldsymbol{z}_{1},\ldots, \xib_{t_{m}}\in \dd \boldsymbol{z}_{m}, \, \xib_T \in \dd \boldsymbol{y}) = f_{t_1}(\boldsymbol{z}_{1} - \boldsymbol{x})\phi(\boldsymbol{z};\dd\boldsymbol{z})\frac{f_{T-t_m}(\boldsymbol{y} - \boldsymbol{z}_{m})}{f_T(\boldsymbol{y} - \boldsymbol{x})}\boldsymbol{\Gamma}(\dd \boldsymbol{x}, \dd \boldsymbol{y}), \notag
+\end{align}
+given that $0 < f_T(\boldsymbol{y}-\boldsymbol{x}) < \infty$ for $\boldsymbol{\Gamma}$-almost-everywhere $\boldsymbol{x},\boldsymbol{y}\in\R^n$, where we defined 
+\begin{align}
+\phi(\boldsymbol{z};\dd\boldsymbol{z}) = \left(\prod^{m}_{i=2}f_{t_{i}-t_{i-1}}(\boldsymbol{z}_{i}-\boldsymbol{z}_{i-1})\dd \boldsymbol{z}_{i}\right). \notag
+\end{align}
+The statement follows by integration through the law of total probability.
+\end{proof}
+\begin{corollary}
+\label{levycorodensity}
+If $\{\xib^{\boldsymbol{x},\boldsymbol{y}}_t\}_{t\in\T}$ is a $(\boldsymbol{\delta}_{\boldsymbol{x}},\boldsymbol{\delta}_{\boldsymbol{y}})$-bridge under action of $\{\boldsymbol{Z}_t\}_{t\in\T}$ as in (\ref{purebridgeconstruct}), then
+\begin{align}
+\mathbb{P}(\xib^{\boldsymbol{x},\boldsymbol{y}}_t \in \dd \boldsymbol{z})= \frac{f_{t}(\boldsymbol{z} - \boldsymbol{x})f_{T-t}(\boldsymbol{y} - \boldsymbol{z})}{f_T(\boldsymbol{y} - \boldsymbol{x})}\dd \boldsymbol{z}, \label{levycorodensityimplicit}
+\end{align}
+for any $t\in(0,T)$, given that $0 < f_T(\boldsymbol{y}-\boldsymbol{x}) < \infty$ for $\boldsymbol{\Gamma}$-almost-everywhere $\boldsymbol{x},\boldsymbol{y}\in\R^n$.
+\end{corollary}
+\begin{proof}
+The statement follows since $\boldsymbol{\Gamma}(\dd \boldsymbol{x}, \dd \boldsymbol{y}) = \boldsymbol{\delta}_{\boldsymbol{x}}\boldsymbol{\delta}_{\boldsymbol{y}}$ and the integrals collapse.
+\end{proof}
+Following similar steps, it is straightforward to extend Corollary \ref{levycorodensity} into the relevant transition probabilities as follows:
+\begin{align}
+\mathbb{P}( \xib^{\boldsymbol{x},\boldsymbol{y}}_t \in \dd \boldsymbol{z} \,|\, \xib^{\boldsymbol{x},\boldsymbol{y}}_s = \boldsymbol{r}) = f_{t-s}(\boldsymbol{z}-\boldsymbol{r})\frac{h_{tT}(\boldsymbol{z};\boldsymbol{y})}{h_{sT}(\boldsymbol{r};\boldsymbol{y})}\dd \boldsymbol{z} \label{eq:ratio}
+\end{align}
+for $0\leq s <t <T$, where $h_{tT}(\boldsymbol{z};\boldsymbol{y})=f_{T-t}(\boldsymbol{y}-\boldsymbol{z})$ for all $t\in[0,T)$. 
+\begin{remark}
+Since $ 0 < h_{tT} < \infty$ for all $0 \leq t < T$, the process $\{h_{tT}\}_{0 \leq t<T}$ is a well-defined harmonic with respect to $\{\mathbf{Z}_{t}\}_{t\in\T}$. It follows that (\ref{eq:ratio}) defines a Doob $h$-transform.
+\end{remark}
+\begin{proposition}
+\label{stochfiltclassicbridge}
+Let each coordinate of $\{\mathbf{Z}_t\}_{t\in\T}$ be a mutually independent \levy process. If $\{\xib_t\}_{t\in\T}$ is a $(\boldsymbol{\Phi}, \boldsymbol{\Psi})$-bridge under action of $\{\boldsymbol{Z}_t\}_{t\in\T}$, where $\E[|\xib_t|] < \infty$, then
+\begin{align}
+\label{classicalbridgenonanticipative}
+\xib^{\boldsymbol{x},\boldsymbol{y}}_t \overset{d}{=} -\left(\boldsymbol{y}\log\left(\frac{T-t}{T}\right) + \int_0^t \frac{\xib^{\boldsymbol{x},\boldsymbol{y}}_s }{T-s}\dd s\right) + \mathbf{M}_t,
+\end{align}
+for every $t\in[0,T)$, where $\{\mathbf{M}_t\}_{t\in\T}$ is a $(\P,\{\mathcal{F}_{t}^{\xib}\}_{t\in\T})$-martingale where $\mathbf{M}_{0} = \boldsymbol{x}$.
+\end{proposition}
+\begin{proof}
+Using Proposition \ref{stochfiltlevyrandom} and Corollary \ref{levycorodensity}, we have the following non-anticipative representation:
+\begin{align}
+\label{nonanticipativeclassicbridge}
+\xib^{\boldsymbol{x},\boldsymbol{y}}_t \overset{d}{=} \int_0^t \frac{  \boldsymbol{y} - \xib^{\boldsymbol{x}}_s }{T-s}\dd s + \mathbf{M}_t,
+\end{align}
+for every $t\in[0,T)$, where $\{\mathbf{M}_t\}_{t\in\T}$ is a $(\P,\{\mathcal{F}_{t}^{\xib}\}_{t\in\T})$-martingale where $\mathbf{M}_{0} = \boldsymbol{x}$. The statement follows from integration.
+\end{proof}
+In the spirit of Proposition~\ref{stochfiltlevyrandom}, we also have the following:
+\begin{align}
+\label{expectednonanticiativeranbridge}
+\E\left[\xib^{\boldsymbol{x}}_t\right] = \boldsymbol{x} -\left(\E\left[\boldsymbol{Y}\right]\log\left(\frac{T-t}{T}\right) + \int_0^t \frac{\E\left[\xib^{\boldsymbol{x}}_s\right] }{T-s}\dd s\right),
+\end{align}
+for every $t\in[0,T)$, which follows from the tower rule of expectations. For example, when $\{\boldsymbol{\xi}^{\boldsymbol{x}}_t\}_{t \in \mathbb{T}}$ is a $\boldsymbol{\Phi}$-initialised Gaussian random-bridge to $\boldsymbol{\Psi}$ as in Proposition \ref{prop:bridge_stats}, inserting (\ref{recifiedexpevtedform}) into (\ref{expectednonanticiativeranbridge}) provides us the following verification:
+\begin{align}
+\label{expectedbrowniancase}
+\E\left[\xib^{\boldsymbol{x}}_t\right] &= \boldsymbol{x} - \left(\E\left[\boldsymbol{Y}\right]\log\left(\frac{T-t}{T}\right) + \E\left[\boldsymbol{Y}\right]\int_0^t \frac{s }{T(T-s)}\dd s + \boldsymbol{x}\int_0^t \frac{1}{T}\dd s \right) \notag \\
+&= \boldsymbol{x} - \E\left[\boldsymbol{Y}\right]\left(\log\left(\frac{T-t}{T}\right) - \frac{t}{T} - \log\left(\frac{T-t}{T}\right) \right) - \boldsymbol{x}\frac{t}{T} \notag \\
+&= \frac{t}{T}\E\left[\boldsymbol{Y}\right] + \left(\frac{T-t}{T}\right)\boldsymbol{x} \,\,\, \forall t\in\T,\notag
+\end{align}
+
+\subsection{\levy Process Preliminaries}\label{app:levy-preliminaries}
+
+The notion of a \levy process, the \levy measure, and the \levy--Khintchine representation in their multidimensional form (with triplet $(\boldsymbol{\alpha}, \boldsymbol{\beta}, \boldsymbol{\eta})$ as in equation~\eqref{levykhinctine}), together with the density convolution identity, are introduced in Appendix~\ref{app:resultsongeneralisedlevy}. The present subsection complements that material by recording the additional objects needed for the explicit form of $M_t$: the abstract Poisson random measure, the jump measure of $\{Z_t\}$, the compensated Poisson random measure, the \levy--It\^{o} decomposition, and the infinitesimal generator. The scalar triplet $(\alpha, \beta, \eta)$ used here is the single-coordinate restriction of the triplet of Appendix~\ref{app:resultsongeneralisedlevy}; throughout we work on the filtered probability space $(\Omega, \F, \{\F_t\}_{t \in \T}, \P)$ from the main text.
+
+\begin{defn}[{\cite[Definition~2.18]{ContTankov2004}}]
+\label{def:poisson-rm}
+Let $(E, \mathcal{E})$ be a measurable space and $\mu$ a $\sigma$-finite Radon
+measure on it. A \emph{Poisson random measure} on $E$ with intensity measure
+$\mu$ is a map $M : \Omega \times \mathcal{E} \to \N$ such that
+\begin{enumerate}
+  \item for almost every $\omega$, $M(\omega, \cdot)$ is an integer-valued
+    Radon measure on $E$;
+  \item for each measurable $A \subset E$ with $\mu(A) < \infty$, the variable
+    $M(\cdot, A)$ has a Poisson distribution with parameter $\mu(A)$;
+  \item for pairwise disjoint measurable sets $A_1, \dots, A_n \subset E$, the
+    variables $M(A_1), \dots, M(A_n)$ are independent.
+\end{enumerate}
+\end{defn}
+
+\begin{defn}[{\cite[Section~2.6.2]{ContTankov2004}}]
+\label{def:compensated-prm}
+Let $M$ be a Poisson random measure on $(E, \mathcal{E})$ with intensity $\mu$ (Definition~\ref{def:poisson-rm}). The associated \emph{compensated Poisson random measure} is the signed random measure
+\[
+  \widetilde{M}(A) = M(A) - \mu(A), \qquad A \in \mathcal{E},\; \mu(A) < \infty.
+\]
+\end{defn}
+
+\begin{prop}[{\cite[Proposition~2.16]{ContTankov2004}}]
+\label{prop:compensated-prm-martingale}
+With $M, \mu, \widetilde{M}$ as in Definition~\ref{def:compensated-prm}, suppose $E = [0, \infty) \times E_0$ and $\mu = \d t \otimes \mu_0$ for some Borel space $E_0$ and $\sigma$-finite measure $\mu_0$. Then the process $t \mapsto \widetilde{M}([0, t] \times B)$ is a martingale for every $B$ with $\mu_0(B) < \infty$.
+\end{prop}
+
+
+
+\begin{defn}[{\cite[Section~2.6.1]{ContTankov2004}}]
+\label{def:jump-measure}
+The \emph{jump measure} of $\{Z_t\}$ is the integer-valued random measure on $[0,\infty) \times (\R \setminus \{0\})$ defined by
+\[
+  N([0,t] \times B) = \#\{s \in [0,t] : \Delta Z_s \in B\},
+  \qquad B \in \mathcal{B}(\R \setminus \{0\}).
+\]
+\end{defn}
+
+\begin{thm}[\levy--It\^{o} decomposition {\cite[Proposition~3.7]{ContTankov2004}}]
+\label{thm:levy-ito}
+The jump measure $N$ of $\{Z_t\}$ (Definition~\ref{def:jump-measure}) is a Poisson random measure on $[0,\infty) \times (\R \setminus \{0\})$ in the sense of Definition~\ref{def:poisson-rm}, with intensity $\d s \otimes \eta(\d y)$; in particular $\E[N([0,t] \times B)] = t\,\eta(B)$ for every $B$ with $\eta(B) < \infty$. Writing
+\[
+  \widetilde{N}(\d s, \d y) = N(\d s, \d y) - \eta(\d y)\,\d s
+\]
+for the corresponding compensated Poisson random measure (Definition~\ref{def:compensated-prm} applied to $M = N$, $\mu = \d s \otimes \eta$), every \levy process with triplet $(\alpha, \beta, \eta)$ admits the decomposition
+\begin{equation}\label{eq:levy-ito}
+  Z_t = \alpha t + \beta W_t
+    + \int_0^t\!\int_{|y|\geq 1} y\,N(\d s, \d y)
+    + \lim_{\varepsilon \downarrow 0}
+      \int_0^t\!\int_{\varepsilon \leq |y| < 1} y\,\widetilde{N}(\d s, \d y),
+\end{equation}
+where $W_t$ is a standard Brownian motion independent of $N$, and the three non-deterministic components are mutually independent.
+\end{thm}
+
+For notational convenience, we merge the two jump integrals
+in~\eqref{eq:levy-ito} into a single integral against $\tilde{N}$. This requires
+compensating the large jumps:
+\[
+  \int_0^t\!\int_{|y|\geq 1} y\,N(\d s, \d y)
+  = \int_0^t\!\int_{|y|\geq 1} y\,\tilde{N}(\d s, \d y)
+    + t\int_{|y|\geq 1} y\,\eta(\d y),
+\]
+so that the extra term is absorbed into a modified drift
+$\widetilde{\alpha} = \alpha + \int_{|y|\geq 1} y\,\eta(\d y)$.
+This is finite whenever $\E[|Z_1|] < \infty$
+(\cite[Proposition~3.13]{ContTankov2004}), which we impose throughout. We therefore
+write
+\begin{equation}\label{eq:levy-ito-short}
+  Z_t = \widetilde{\alpha}\, t + \beta W_t
+    + \int_0^t\!\int_{\R\setminus\{0\}} y\,\tilde{N}(\d s, \d y),
+\end{equation}
+where $\widetilde{\alpha} = \alpha + \int_{|y|\geq 1} y\,\eta(\d y)$ and the
+single integral now runs over all jump sizes. We drop the tilde on $\alpha$
+henceforth.
+
+\begin{rem}
+Equation~\eqref{eq:levy-ito-short} is the canonical Doob--Meyer decomposition of $\{Z_t\}$ as a special semimartingale: the deterministic drift $\widetilde{\alpha}\,t$ is the predictable finite-variation part, and the sum $\beta W_t + \int_0^t\!\int_{\R\setminus\{0\}} y\,\widetilde{N}(\d s, \d y)$ is the local-martingale part (continuous + purely discontinuous). For a \levy process, the characteristics $(B, C, \nu) = (\widetilde{\alpha}\,t,\, \beta^2 t,\, \d s \otimes \eta(\d y))$ are deterministic, see \cite[Corollary~II.4.19]{JacodShiryaev2003}.
+\end{rem}
+
+\begin{prop}[{\cite[Proposition~3.16]{ContTankov2004}}]
+\label{prop:generator}
+The infinitesimal generator of $\{Z_t\}$ acts on $f \in C^2_0(\R)$ as
+\begin{equation}\label{eq:generator}
+  \mathcal{A}f(x) = \alpha f'(x) + \half\beta^2 f''(x)
+    + \int_{\R\setminus\{0\}}\bigl[f(x+y) - f(x) - yf'(x)\1_{|y|<1}\bigr]\,\eta(\d y).
+\end{equation}
+\end{prop}
+
+\section{Probability Flow ODE for General It\^{o} SDEs (Standard Result)}\label{app:general_prob_flow}
+The following is a standard result, included for completeness and specialised in Section~
+ef{sec:brownian}.
+\begin{proposition} \label{prop:general_prob_flow}
+    Suppose that $\boldsymbol{X}_t \in \mathbb{R}^d$ is a stochastic process governed by the following It\^{o} SDE
+    \begin{equation}
+        \mathrm{d}\boldsymbol{X}_t = \mathbf{v}(\boldsymbol{X}_t, t) \, \mathrm{d}t + \boldsymbol{\sigma}(\boldsymbol{X}_t, t) \, \mathrm{d}\mathbf{W}_t,
+        \label{eq:sde_general}
+    \end{equation}
+    where $\mathbf{W}_t$ is an $m$-dimensional Brownian motion, and $\mathbf{v}(\boldsymbol{x}, t) \in \mathbb{R}^d$ and $\boldsymbol{\sigma}(\boldsymbol{x}, t) \in \mathbb{R}^{d \times m}$ are sufficiently regular. Let $\mathbf{D}(\boldsymbol{x}, t) = \boldsymbol{\sigma}(\boldsymbol{x}, t) \boldsymbol{\sigma}(\boldsymbol{x}, t)^\top$ be the diffusion tensor and $p_t(\boldsymbol{x})$ denote the probability density function of $\boldsymbol{X}_t$. Then the ODE given by
+    \begin{equation}
+        \mathrm{d}\boldsymbol{X}_t = \left[ \mathbf{v}(\boldsymbol{X}_t, t) - \frac{1}{2}(\nabla \cdot \mathbf{D})(\boldsymbol{X}_t, t) - \frac{1}{2} \mathbf{D}(\boldsymbol{X}_t, t) \nabla \log p_t(\boldsymbol{X}_t) \right] \, \mathrm{d}t
+        \label{eq:general_prob_flow_ode}
+    \end{equation}
+    has the same marginal probability densities $p_t$ as the SDE \eqref{eq:sde_general}. This is known as the \textit{probability flow ODE} associated with the SDE \eqref{eq:sde_general}.
+\end{proposition}
+
+\begin{proof}
+    The time evolution of $p_t$ is governed by the Kolmogorov Forward Equation \cite[Chapter VII]{revuz_continuous_1999}:
+    \begin{equation}
+        \frac{\partial p_t}{\partial t} = -\sum_{i=1}^d \frac{\partial}{\partial x_i} \left( v_i(\boldsymbol{x}, t) p_t \right) + \frac{1}{2} \sum_{i,j=1}^d \frac{\partial^2}{\partial x_i \partial x_j} \left( D_{ij}(\boldsymbol{x}, t) p_t \right).
+        \label{eq:kolmogorov_forward}
+    \end{equation}
+    We can rewrite the diffusion term using the identity $\nabla \cdot (f \boldsymbol{A}) = f (\nabla \cdot \boldsymbol{A}) + \boldsymbol{A} \cdot \nabla f$. Specifically, for the inner derivative:
+    \begin{equation*}
+        \frac{\partial}{\partial x_j} (D_{ij} p_t) = p_t \frac{\partial D_{ij}}{\partial x_j} + D_{ij} \frac{\partial p_t}{\partial x_j} = p_t \left( \frac{\partial D_{ij}}{\partial x_j} + D_{ij} \frac{\partial \log p_t}{\partial x_j} \right).
+    \end{equation*}
+    Substituting this back into \eqref{eq:kolmogorov_forward}, we obtain
+    \begin{align*}
+        \frac{1}{2} \sum_{i,j=1}^d \frac{\partial^2}{\partial x_i \partial x_j} (D_{ij} p_t) &= \frac{1}{2} \sum_{i=1}^d \frac{\partial}{\partial x_i} \left[ p_t \sum_{j=1}^d \left( \frac{\partial D_{ij}}{\partial x_j} + D_{ij} \frac{\partial \log p_t}{\partial x_j} \right) \right] \nonumber \\
+        &= \nabla \cdot \left[ p_t \left( \frac{1}{2}(\nabla \cdot \mathbf{D}) + \frac{1}{2}\mathbf{D} \nabla \log p_t \right) \right].
+    \end{align*}
+    Thus, the Kolmogorov Forward Equation becomes a Liouville equation,
+    \begin{equation*}
+        \frac{\partial p_t}{\partial t} + \nabla \cdot \left[ p_t \left( \mathbf{v}(\boldsymbol{x}, t) - \frac{1}{2}(\nabla \cdot \mathbf{D})(\boldsymbol{x}, t) - \frac{1}{2} \mathbf{D}(\boldsymbol{x}, t) \nabla \log p_t \right) \right] = 0.
+    \end{equation*}
+    This describes the advection of density $p_t$ by the vector field in \eqref{eq:general_prob_flow_ode}.
+\end{proof}
+
+\section{Proofs for the Generalised Tweedie Formula}\label{app:tweedie-proofs}
+\begin{proof}[Proof of Proposition~\ref{prop:tweedie_gen}]
+    Via Bayes' rule we have 
+\begin{align}
+g(\bfeta \mid \bfz) = f(\bfz \mid \bfeta)g(\bfeta)f(\bfz)^{-1}. \notag 
+\end{align}
+		It follows from \eqref{eq:exp_family} that
+    \begin{align}
+        g(\bfeta \mid \bfz) = \left(g(\bfeta)e^{-\psi(\bfeta)}\right)\exp\left( \phi(\bfeta) \cdot F(\bfz) - \lambda(\bfz,\bfeta)\right) = h^*(\bfeta)\exp\left( F(\bfz) \cdot \phi(\bfeta) - \lambda(\bfz, \bfeta)\right) \label{eq:new_exp_family}
+    \end{align}
+    where we defined $\lambda$ as follows:
+    \begin{equation*}
+        \lambda(\bfz,\bfeta) = \log\left(\frac{f(\bfz)}{h(\bfz,\bfeta)}\right).
+    \end{equation*}
+    Since $g(\bfeta \mid \bfz)$ is a density function, we must have
+		\begin{align}
+		u(\bfz) = \int g(\bfeta \mid \bfz) \dd \bfeta = 1 \,\,\, \Rightarrow \nabla_{\bfz}u(\bfz) = 0. \notag
+		\end{align}
+		Moving the differential-operator inside the integral, which is justified by the Leibniz integral rule under the envelope hypothesis of the statement, and inserting (\ref{eq:new_exp_family}), we get
+	 \begin{align}
+		\int \nabla_{\bfz} g(\bfeta \mid \bfz) \dd \bfeta &= \int \nabla_{\bfz} \left[h^*(\bfeta)\exp\left( F(\bfz) \cdot \phi(\bfeta) - \lambda(\bfz, \bfeta)\right)\right] \dd \bfeta \notag \\
+		&= \int \left[J_F^{\tp}\phi(\bfeta) - \nabla_{\bfz}\lambda(\bfz, \bfeta)\right] \left[h^*(\bfeta)\exp\left(F(\bfz)  \cdot \phi(\bfeta) - \lambda(\bfz, \bfeta)\right)\right] \dd \bfeta \notag \\
+		&=J_F^{\tp}\,\E[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] - \E[\nabla_{\bfz}\lambda(\bfz, \bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] \notag \\
+		&= 0. \label{integralnablaidentity}
+	\end{align}	
+Using (\ref{integralnablaidentity}), we have the following:
+\begin{align}
+J_F^{\tp}\,\E[\phi(\bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] &=  \E[\nabla_{\bfz}\lambda(\bfz, \bfeta) \mid \boldsymbol{Z} = \boldsymbol{z} ] \notag \\
+&= \E[\nabla_{\bfz}\log(f(\bfz)) \mid \boldsymbol{Z} = \boldsymbol{z} ] - \E[\nabla_{\bfz}\log(h(\bfz,\bfeta)) \mid \boldsymbol{Z} = \boldsymbol{z} ] \notag \\
+& = \nabla_{\bfz}\log(f(\bfz)) - \E[\nabla_{\bfz}\log(h(\bfz,\bfeta)) \mid \boldsymbol{Z} = \boldsymbol{z} ], \notag
+\end{align}
+and the statement follows by multiplying through by $(J_F^{\tp})^{-1}$, which exists since $J_F$ is constant and invertible.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{prop:tweedie_gen_coro}]
+    Since $\boldsymbol{Z} \mid \bfeta \sim \text{Exp}(h, \phi, F, \psi ; \bfeta)$, we have $h(\bfz, \bfeta) = h(\bfz)$ for any $\bfz$ and $\bfeta$. It follows from \eqref{eq:new_exp_family} that
+    \begin{align}
+        g(\bfeta \mid \bfz) = \left(g(\bfeta)e^{-\psi(\bfeta)}\right)\exp\left( \phi(\bfeta) \cdot F(\bfz) - \lambda(\bfz)\right) = h^*(\bfeta)\exp\left( F(\bfz) \cdot \phi(\bfeta) - \lambda(\bfz)\right) \label{eq:new_exp_family_coro}
+    \end{align}
+    where  $\lambda(\bfz) = \log(f(\bfz)) - \log(h(\bfz))$. Note that \eqref{eq:new_exp_family_coro} is in the form of an exponential family with parameter $\bfz$, sufficient statistic $\phi$, cumulant function $\lambda$, and base measure $h^*$. Accordingly,
+		\begin{align}
+		\bfeta \mid \bfz \sim \text{Exp}(h^*, F, \phi, \lambda ; \bfz). \notag
+		\end{align}
+		Letting
+    \begin{equation*}
+        l(\bfz) = \log(f(\bfz)) \quad \text{and} \quad l_0(\bfz) = \log(h(\bfz))
+    \end{equation*}
+    we can express the posterior mean and variance of $\bfeta$ given $\bfz$ as
+    \begin{equation*}
+        \mathbb{E}[\phi(\bfeta) \mid \bfz] = \nabla_{\bfz} l(\bfz) - \nabla_{\bfz} l_0(\bfz) \quad \text{and} \quad \mathbb{V}[\phi(\bfeta) \mid \bfz] = \nabla_{\bfz}^2 l(\bfz) - \nabla_{\bfz}^2 l_0(\bfz),
+    \end{equation*}
+		which follows by differentiating the cumulant function $\lambda$ of the posterior family, given that $F(\bfz) = \bfz$ so that $J_F$ is the identity, the second differentiation being justified by the envelope hypothesis of Corollary~\ref{prop:tweedie_gen_coro}.
+\end{proof}
+
+\bibliographystyle{plain}
+\bibliography{random_bridge}
+\end{document}

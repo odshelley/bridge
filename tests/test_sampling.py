@@ -8,6 +8,13 @@ from bridge_diffusion.models import BridgeDiffusion, DiffusersUNetWrapper
 from bridge_diffusion.sampling import Sampler
 
 
+class _IdentityNet(torch.nn.Module):
+    """Predicts E[Y|xi] = xi, so the SDE drift is zero."""
+
+    def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
+        return x
+
+
 class TestSampler:
     """Tests for the Sampler class."""
 
@@ -154,3 +161,28 @@ class TestSamplerDifferentSteps:
 
         samples = sampler.sample(2, (1, 8, 8))
         assert samples.shape == (2, 1, 8, 8)
+
+
+class TestSampleBatchX0:
+    def test_x0_is_chunked_and_used(self) -> None:
+        sampler = Sampler(
+            model=_IdentityNet(),
+            bridge_config=BridgeConfig(),
+            sampling_config=SamplingConfig(num_steps=1, show_progress=False),
+            device=torch.device("cpu"),
+        )
+        # With num_steps=1 and zero drift, output == clamp(x0)
+        x0 = torch.full((5, 1, 8, 8), 0.5)
+        out = sampler.sample_batch(total_samples=5, shape=(1, 8, 8), batch_size=2, x0=x0)
+        assert out.shape == (5, 1, 8, 8)
+        assert torch.allclose(out, x0)
+
+    def test_x0_none_still_works(self) -> None:
+        sampler = Sampler(
+            model=_IdentityNet(),
+            bridge_config=BridgeConfig(),
+            sampling_config=SamplingConfig(num_steps=1, show_progress=False),
+            device=torch.device("cpu"),
+        )
+        out = sampler.sample_batch(total_samples=3, shape=(1, 8, 8), batch_size=2)
+        assert out.shape == (3, 1, 8, 8)

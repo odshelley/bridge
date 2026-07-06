@@ -107,14 +107,27 @@ class SamplingConfig:
 
 @dataclass
 class DataConfig:
-    """Configuration for data loading."""
+    """Configuration for data loading.
 
-    dataset: Literal["mnist", "cifar10"] = "mnist"
+    When ``source_dataset`` is set, training runs in transport mode: the bridge
+    prior x is drawn from the source dataset instead of Gaussian noise, and the
+    dataloader yields (x_source, y_target) pairs (independent coupling).
+    """
+
+    dataset: Literal["mnist", "cifar10", "afhq"] = "mnist"
     data_dir: Path = field(default_factory=lambda: Path("./data"))
     image_size: int = 32  # Resize images to this size
     num_workers: int = 4
     pin_memory: bool = True
     raw_pixels: bool = False  # If True, return integer pixel values [0, 255] (for Poisson bridge)
+    classes: list[str] | None = None  # Filter target dataset to these class names
+    source_dataset: Literal["mnist", "cifar10", "afhq"] | None = None
+    source_classes: list[str] | None = None  # Filter source dataset to these class names
+
+    def __post_init__(self) -> None:
+        """Validate transport-mode field combinations."""
+        if self.source_classes is not None and self.source_dataset is None:
+            raise ValueError("source_classes requires source_dataset to be set")
 
 
 @dataclass
@@ -143,6 +156,13 @@ class ExperimentConfig:
         # Default mlflow tracking to output_dir if not specified
         if self.mlflow_tracking_uri is None:
             self.mlflow_tracking_uri = f"sqlite:///{self.output_dir}/mlflow.db"
+        # Transport mode (source_dataset) is only mathematically valid for the
+        # Gaussian bridge: ddpm would silently train on the wrong distribution,
+        # and poisson_bridge would feed [-1, 1] floats where it expects counts.
+        if self.data.source_dataset is not None and self.method != "bridge":
+            raise ValueError(
+                f"Transport mode (source_dataset) requires method='bridge', got method='{self.method}'"
+            )
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "ExperimentConfig":
