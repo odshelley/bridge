@@ -5,7 +5,7 @@ import torch
 
 from bridge_diffusion.config import BridgeConfig, ModelConfig, SamplingConfig
 from bridge_diffusion.models import BridgeDiffusion, DiffusersUNetWrapper
-from bridge_diffusion.sampling import Sampler
+from bridge_diffusion.sampling import ODESolver, Sampler
 
 
 class _IdentityNet(torch.nn.Module):
@@ -186,3 +186,52 @@ class TestSampleBatchX0:
         )
         out = sampler.sample_batch(total_samples=3, shape=(1, 8, 8), batch_size=2)
         assert out.shape == (3, 1, 8, 8)
+
+
+class TestSampleODE:
+    """Characterization tests for the probability-flow ODE sampler."""
+
+    @pytest.fixture
+    def sampler(self) -> Sampler:
+        return Sampler(
+            model=_IdentityNet(),
+            bridge_config=BridgeConfig(),
+            sampling_config=SamplingConfig(num_steps=8, show_progress=False),
+            device=torch.device("cpu"),
+        )
+
+    @pytest.mark.parametrize("solver", [ODESolver.EULER, ODESolver.HEUN, ODESolver.RK4])
+    def test_identity_net_is_fixed_point(self, sampler: Sampler, solver: ODESolver) -> None:
+        """With y_pred == xi and xi == x0, the ODE drift is identically zero."""
+        x0 = torch.full((3, 1, 8, 8), 0.5)
+        out = sampler.sample_ode(3, (1, 8, 8), x0=x0, solver=solver)
+        assert out.shape == (3, 1, 8, 8)
+        assert torch.allclose(out, x0)
+
+    @pytest.mark.parametrize("solver", [ODESolver.EULER, ODESolver.HEUN, ODESolver.RK4])
+    def test_determinism_with_seed(self, sampler: Sampler, solver: ODESolver) -> None:
+        torch.manual_seed(7)
+        out1 = sampler.sample_ode(2, (1, 8, 8), solver=solver)
+        torch.manual_seed(7)
+        out2 = sampler.sample_ode(2, (1, 8, 8), solver=solver)
+        assert torch.allclose(out1, out2)
+
+    def test_trajectory_length(self, sampler: Sampler) -> None:
+        _, trajectory = sampler.sample_ode(
+            2, (1, 8, 8), num_steps=5, return_trajectory=True
+        )
+        assert len(trajectory) == 6
+        for entry in trajectory:
+            assert entry.shape == (2, 1, 8, 8)
+
+    def test_batch_ode_fixed_step(self, sampler: Sampler) -> None:
+        out = sampler.sample_batch_ode(
+            total_samples=5, shape=(1, 8, 8), batch_size=2, solver=ODESolver.HEUN
+        )
+        assert out.shape == (5, 1, 8, 8)
+
+    def test_batch_ode_torchdiffeq_routing(self, sampler: Sampler) -> None:
+        out = sampler.sample_batch_ode(
+            total_samples=2, shape=(1, 8, 8), batch_size=2, solver=ODESolver.DOPRI5
+        )
+        assert out.shape == (2, 1, 8, 8)
