@@ -135,6 +135,30 @@ def get_afhq_transforms(image_size: int = 64, train: bool = True) -> transforms.
     return transforms.Compose(ops)
 
 
+def get_afhq_int_transforms(image_size: int = 64, train: bool = True) -> transforms.Compose:
+    """Get raw integer pixel transforms for AFHQ (512x512 source images).
+
+    Returns pixel values as float32 in the range [0, 255] (integers preserved),
+    required by the Poisson Bridge which operates on non-negative count data.
+    Geometric ops run on the PIL side so values stay integral.
+
+    Args:
+        image_size: Target image size.
+        train: Whether to include training augmentation (horizontal flip).
+
+    Returns:
+        Composed transforms.
+    """
+    ops: list = [transforms.Resize(image_size), transforms.CenterCrop(image_size)]
+    if train:
+        ops.append(transforms.RandomHorizontalFlip())
+    ops += [
+        transforms.PILToTensor(),  # uint8 tensor in [0, 255]
+        _ToFloat(),                # cast to float32, keep range — picklable
+    ]
+    return transforms.Compose(ops)
+
+
 def _make_base_dataset(name: str, config: DataConfig, train: bool) -> torch.utils.data.Dataset:
     """Construct an unfiltered dataset by name.
 
@@ -182,10 +206,12 @@ def _make_base_dataset(name: str, config: DataConfig, train: bool) -> torch.util
             raise FileNotFoundError(
                 f"AFHQ not found at {root}. Download it first: bash scripts/download_afhq.sh"
             )
-        return datasets.ImageFolder(
-            root=str(root),
-            transform=get_afhq_transforms(config.image_size, train=train),
+        transform = (
+            get_afhq_int_transforms(config.image_size, train=train)
+            if config.raw_pixels
+            else get_afhq_transforms(config.image_size, train=train)
         )
+        return datasets.ImageFolder(root=str(root), transform=transform)
     else:
         raise ValueError(f"Unknown dataset: {name}")
 
