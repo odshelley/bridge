@@ -8,8 +8,6 @@ import torch
 import torch.nn as nn
 from diffusers import DDPMScheduler
 
-from bridge_diffusion.config import BridgeConfig
-
 
 class DDPMDiffusion(nn.Module):
     """Standard DDPM diffusion model using diffusers scheduler.
@@ -21,7 +19,6 @@ class DDPMDiffusion(nn.Module):
     def __init__(
         self,
         network: nn.Module,
-        config: BridgeConfig,
         num_train_timesteps: int = 1000,
         beta_schedule: str = "linear",
     ):
@@ -29,7 +26,6 @@ class DDPMDiffusion(nn.Module):
 
         Args:
             network: Neural network that predicts noise.
-            config: Bridge config (used for compatibility, T not used).
             num_train_timesteps: Number of diffusion steps.
             beta_schedule: Type of beta schedule ("linear", "cosine", "squaredcos_cap_v2").
         """

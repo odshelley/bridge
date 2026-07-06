@@ -16,7 +16,6 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from bridge_diffusion.config import ExperimentConfig
-from bridge_diffusion.models import BridgeDiffusion
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +43,7 @@ class Trainer:
 
     def __init__(
         self,
-        model: BridgeDiffusion,
+        model: nn.Module,
         train_loader: DataLoader,
         config: ExperimentConfig,
         device: torch.device,
@@ -53,7 +52,7 @@ class Trainer:
         """Initialise Trainer.
 
         Args:
-            model: Bridge diffusion model to train.
+            model: Diffusion model exposing compute_training_loss (bridge, Poisson bridge, or DDPM).
             train_loader: DataLoader for training data.
             config: Experiment configuration.
             device: Device to train on.
@@ -261,7 +260,7 @@ class Trainer:
 
                 if self.global_step % log_interval == 0:
                     avg_loss = running_loss / log_interval
-                    current_lr = self.config.training.learning_rate  # constant LR
+                    current_lr = self.optimiser.param_groups[0]["lr"]
 
                     mlflow.log_metrics(
                         {
