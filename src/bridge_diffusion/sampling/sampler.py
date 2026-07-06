@@ -201,6 +201,21 @@ class Sampler:
             return xi + (k1 + 2 * k2 + 2 * k3 + k4) * dt / 6
         raise ValueError(f"Not a fixed-step solver: {solver}")
 
+    def _batched(
+        self,
+        sample_fn,
+        total_samples: int,
+        batch_size: int,
+    ) -> torch.Tensor:
+        """Generate total_samples in chunks of batch_size via sample_fn(start, n)."""
+        all_samples = []
+        start = 0
+        while start < total_samples:
+            n = min(batch_size, total_samples - start)
+            all_samples.append(sample_fn(start, n).cpu())
+            start += n
+        return torch.cat(all_samples, dim=0)
+
     @torch.no_grad()
     def sample_ode(
         self,
@@ -366,28 +381,16 @@ class Sampler:
         Returns:
             Generated samples of shape (total_samples, *shape).
         """
-        # Check if using torchdiffeq solver
         torchdiffeq_solvers = {ODESolver.DOPRI5, ODESolver.DOPRI8, ODESolver.ADAPTIVE_HEUN}
-        use_torchdiffeq = solver in torchdiffeq_solvers
 
-        all_samples = []
-        remaining = total_samples
-
-        while remaining > 0:
-            current_batch = min(batch_size, remaining)
-            if use_torchdiffeq:
-                samples = self.sample_ode_torchdiffeq(
-                    current_batch, shape, num_steps=num_steps, 
-                    solver=solver.value, rtol=rtol, atol=atol
+        def sample_fn(start: int, n: int) -> torch.Tensor:
+            if solver in torchdiffeq_solvers:
+                return self.sample_ode_torchdiffeq(
+                    n, shape, num_steps=num_steps, solver=solver.value, rtol=rtol, atol=atol
                 )
-            else:
-                samples = self.sample_ode(
-                    current_batch, shape, num_steps=num_steps, solver=solver
-                )
-            all_samples.append(samples.cpu())
-            remaining -= current_batch
+            return self.sample_ode(n, shape, num_steps=num_steps, solver=solver)
 
-        return torch.cat(all_samples, dim=0)
+        return self._batched(sample_fn, total_samples, batch_size)
 
     @torch.no_grad()
     def sample_batch(
@@ -414,17 +417,11 @@ class Sampler:
         if x0 is not None and x0.shape[0] < total_samples:
             raise ValueError(f"x0 has {x0.shape[0]} samples but total_samples={total_samples}")
 
-        all_samples = []
-        start = 0
+        def sample_fn(start: int, n: int) -> torch.Tensor:
+            x0_batch = x0[start : start + n] if x0 is not None else None
+            return self.sample(n, shape, x0=x0_batch, num_steps=num_steps)
 
-        while start < total_samples:
-            current_batch = min(batch_size, total_samples - start)
-            x0_batch = x0[start : start + current_batch] if x0 is not None else None
-            samples = self.sample(current_batch, shape, x0=x0_batch, num_steps=num_steps)
-            all_samples.append(samples.cpu())
-            start += current_batch
-
-        return torch.cat(all_samples, dim=0)
+        return self._batched(sample_fn, total_samples, batch_size)
 
     def save_samples(
         self,
