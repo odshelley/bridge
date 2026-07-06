@@ -9,7 +9,7 @@ import torch
 from bridge_diffusion.config import BridgeConfig, ExperimentConfig, SamplingConfig
 from bridge_diffusion.data import get_data_info, get_dataloader
 from bridge_diffusion.models import BridgeDiffusion, DDPMDiffusion, DiffusersUNetWrapper, PoissonBridgeDiffusion
-from bridge_diffusion.sampling import Sampler
+from bridge_diffusion.sampling import Sampler, save_grid, save_samples
 from bridge_diffusion.training import Trainer
 from bridge_diffusion.utils import get_device, set_seed
 
@@ -248,8 +248,8 @@ def sample_main(args: argparse.Namespace) -> None:
             for stem, sample in zip(source_stems, samples):
                 save_image((sample.clamp(-1, 1) + 1) / 2, output_dir / f"{stem}_translated.png")
         else:
-            sampler.save_samples(samples, output_dir)
-        sampler.save_grid(samples[:64], output_dir.parent / f"{output_dir.name}_grid.png")
+            save_samples(samples, output_dir)
+        save_grid(samples[:64], output_dir.parent / f"{output_dir.name}_grid.png")
 
     logger.info(f"Saved samples to {output_dir}")
 
