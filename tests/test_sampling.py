@@ -187,6 +187,20 @@ class TestSampleBatchX0:
         out = sampler.sample_batch(total_samples=3, shape=(1, 8, 8), batch_size=2)
         assert out.shape == (3, 1, 8, 8)
 
+    @pytest.mark.parametrize("bad_batch_size", [0, -2])
+    def test_nonpositive_batch_size_raises(self, bad_batch_size: int) -> None:
+        """batch_size <= 0 would loop forever; it must fail fast instead."""
+        sampler = Sampler(
+            model=_IdentityNet(),
+            bridge_config=BridgeConfig(),
+            sampling_config=SamplingConfig(num_steps=1, show_progress=False),
+            device=torch.device("cpu"),
+        )
+        with pytest.raises(ValueError, match="batch_size must be positive"):
+            sampler.sample_batch(total_samples=3, shape=(1, 8, 8), batch_size=bad_batch_size)
+        with pytest.raises(ValueError, match="batch_size must be positive"):
+            sampler.sample_batch_ode(total_samples=3, shape=(1, 8, 8), batch_size=bad_batch_size)
+
 
 class TestSampleODE:
     """Characterization tests for the probability-flow ODE sampler."""
