@@ -77,6 +77,27 @@ def _load_source_images(
     return images, [p.stem for p in paths]
 
 
+def _generate_ddpm_samples(
+    model: DDPMDiffusion,
+    num_samples: int,
+    shape: tuple[int, ...],
+    batch_size: int,
+    num_inference_steps: int,
+    device: torch.device,
+) -> torch.Tensor:
+    """Generate samples with the DDPM reverse process, in batches."""
+    model = model.to(device)
+    model.eval()
+    all_samples = []
+    for start in range(0, num_samples, batch_size):
+        n = min(batch_size, num_samples - start)
+        samples = model.sample(
+            n, shape, device=device, num_inference_steps=num_inference_steps
+        )
+        all_samples.append(samples.cpu())
+    return torch.cat(all_samples, dim=0)
+
+
 def train_main(args: argparse.Namespace) -> None:
     """Main training function."""
     config = ExperimentConfig.from_yaml(args.config)
@@ -230,6 +251,24 @@ def sample_main(args: argparse.Namespace) -> None:
 
         grid = make_grid(samples[:64], nrow=8, padding=2, normalize=False)
         save_image(grid, output_dir.parent / f"{output_dir.name}_grid.png")
+    elif config.method == "ddpm":
+        if x0 is not None:
+            logger.warning("ddpm does not support source images; ignoring source priors.")
+        logger.info(
+            f"Generating {args.num_samples} samples with DDPM reverse process "
+            f"({args.num_steps} steps)..."
+        )
+        samples = _generate_ddpm_samples(
+            model,
+            num_samples=args.num_samples,
+            shape=shape,
+            batch_size=args.batch_size,
+            num_inference_steps=args.num_steps,
+            device=device,
+        )
+        output_dir = Path(args.output_dir)
+        save_samples(samples, output_dir)
+        save_grid(samples[:64], output_dir.parent / f"{output_dir.name}_grid.png")
     else:
         logger.info(f"Generating {num_to_sample} samples with {args.num_steps} steps...")
         samples = sampler.sample_batch(
