@@ -167,6 +167,40 @@ class Sampler:
         # Combined ODE drift (factor of 1/2 on each term)
         return 0.5 * term1 + 0.5 * term2
 
+    def _solver_step(
+        self,
+        drift_fn,
+        xi: torch.Tensor,
+        t: float,
+        dt: float,
+        solver: ODESolver,
+    ) -> torch.Tensor:
+        """Advance xi by one fixed-step ODE update.
+
+        Args:
+            drift_fn: Callable (state, time) -> drift tensor.
+            xi: Current state of shape (batch, ...).
+            t: Current time (scalar).
+            dt: Step size.
+            solver: Fixed-step solver (EULER, HEUN, or RK4).
+
+        Returns:
+            Updated state of shape (batch, ...).
+        """
+        if solver == ODESolver.EULER:
+            return xi + drift_fn(xi, t) * dt
+        if solver == ODESolver.HEUN:
+            k1 = drift_fn(xi, t)
+            k2 = drift_fn(xi + k1 * dt, t + dt)
+            return xi + 0.5 * (k1 + k2) * dt
+        if solver == ODESolver.RK4:
+            k1 = drift_fn(xi, t)
+            k2 = drift_fn(xi + 0.5 * k1 * dt, t + 0.5 * dt)
+            k3 = drift_fn(xi + 0.5 * k2 * dt, t + 0.5 * dt)
+            k4 = drift_fn(xi + k3 * dt, t + dt)
+            return xi + (k1 + 2 * k2 + 2 * k3 + k4) * dt / 6
+        raise ValueError(f"Not a fixed-step solver: {solver}")
+
     @torch.no_grad()
     def sample_ode(
         self,
@@ -213,52 +247,17 @@ class Sampler:
 
         trajectory = [xi.clone()] if return_trajectory else []
 
+        def drift_fn(state: torch.Tensor, time: float) -> torch.Tensor:
+            time_tensor = torch.full((num_samples,), time, device=self.device)
+            return self._ode_drift(state, x0, time, time_tensor)
+
         for step in tqdm(
             range(num_steps),
             desc=f"Sampling (ODE {solver.value})",
             disable=not self.sampling_config.show_progress,
         ):
             t = eps + step * dt
-            t_tensor = torch.full((num_samples,), t, device=self.device)
-
-            if solver == ODESolver.EULER:
-                # Simple Euler: xi_{n+1} = xi_n + f(xi_n, t_n) * dt
-                drift = self._ode_drift(xi, x0, t, t_tensor)
-                xi = xi + drift * dt
-
-            elif solver == ODESolver.HEUN:
-                # Heun's method (improved Euler / RK2):
-                # k1 = f(xi_n, t_n)
-                # k2 = f(xi_n + k1*dt, t_{n+1})
-                # xi_{n+1} = xi_n + 0.5*(k1 + k2)*dt
-                k1 = self._ode_drift(xi, x0, t, t_tensor)
-
-                t_next = t + dt
-                t_next_tensor = torch.full((num_samples,), t_next, device=self.device)
-                xi_euler = xi + k1 * dt
-                k2 = self._ode_drift(xi_euler, x0, t_next, t_next_tensor)
-
-                xi = xi + 0.5 * (k1 + k2) * dt
-
-            elif solver == ODESolver.RK4:
-                # Classic 4th-order Runge-Kutta
-                # k1 = f(xi_n, t_n)
-                # k2 = f(xi_n + k1*dt/2, t_n + dt/2)
-                # k3 = f(xi_n + k2*dt/2, t_n + dt/2)
-                # k4 = f(xi_n + k3*dt, t_n + dt)
-                # xi_{n+1} = xi_n + (k1 + 2*k2 + 2*k3 + k4)*dt/6
-                k1 = self._ode_drift(xi, x0, t, t_tensor)
-
-                t_mid = t + 0.5 * dt
-                t_mid_tensor = torch.full((num_samples,), t_mid, device=self.device)
-                k2 = self._ode_drift(xi + 0.5 * k1 * dt, x0, t_mid, t_mid_tensor)
-                k3 = self._ode_drift(xi + 0.5 * k2 * dt, x0, t_mid, t_mid_tensor)
-
-                t_next = t + dt
-                t_next_tensor = torch.full((num_samples,), t_next, device=self.device)
-                k4 = self._ode_drift(xi + k3 * dt, x0, t_next, t_next_tensor)
-
-                xi = xi + (k1 + 2 * k2 + 2 * k3 + k4) * dt / 6
+            xi = self._solver_step(drift_fn, xi, t, dt, solver)
 
             if return_trajectory:
                 trajectory.append(xi.clone())
