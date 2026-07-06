@@ -203,3 +203,25 @@ class TestTransportYamlConfigs:
         assert config.data.source_dataset is not None
         assert config.data.classes == ["dog"]
         assert config.data.source_classes == ["cat"]
+
+
+class TestNewDatasetConfigs:
+    """The generation configs added for CIFAR-10/AFHQ ship loadable."""
+
+    CONFIGS_DIR = Path(__file__).parent.parent / "configs"
+
+    @pytest.mark.parametrize(
+        "name,method,dataset,raw",
+        [
+            ("afhq_64", "bridge", "afhq", False),
+            ("afhq_poisson_64", "poisson_bridge", "afhq", True),
+            ("cifar10_poisson", "poisson_bridge", "cifar10", True),
+            ("cifar10_poisson_smoke", "poisson_bridge", "cifar10", True),
+        ],
+    )
+    def test_config_loads(self, name: str, method: str, dataset: str, raw: bool) -> None:
+        config = ExperimentConfig.from_yaml(self.CONFIGS_DIR / f"{name}.yaml")
+        assert config.method == method
+        assert config.data.dataset == dataset
+        assert config.data.raw_pixels is raw
+        assert config.data.source_dataset is None  # generation, not transport
