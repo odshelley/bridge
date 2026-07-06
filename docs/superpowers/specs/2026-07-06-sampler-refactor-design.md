@@ -86,7 +86,7 @@ Free functions `save_samples(samples, output_dir, prefix)` and
   logger) if `(y < x).any()` — documents the `y ≥ x` model assumption without
   changing behavior; docstring notes that `prior="poisson"` is only valid when
   data dominates the prior. Update paper references.
-- `ddpm.py`: make the unused `config` parameter optional.
+- `ddpm.py`: remove the unused `config` parameter (callers updated).
 
 ### training/trainer.py
 
