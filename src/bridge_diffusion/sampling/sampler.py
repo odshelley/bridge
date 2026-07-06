@@ -1,7 +1,8 @@
 """Sampling module for Bridge Diffusion.
 
-Implements Algorithm 2.2.2 (Simulation) using Euler-Maruyama discretisation,
-and the probability flow ODE variant with higher-order solvers.
+Implements Algorithm 2, Gaussian Bridge Simulation (paper_v2 §8) using
+Euler-Maruyama discretisation, and the probability flow ODE variant with
+higher-order solvers.
 """
 
 import logging
@@ -32,8 +33,9 @@ class ODESolver(Enum):
 class Sampler:
     """Sampler for Bridge Diffusion models.
 
-    Implements the reverse-time simulation (Algorithm 2.2.2) using
-    Euler-Maruyama discretisation to generate samples from the data distribution.
+    Implements the reverse-time simulation (Algorithm 2, Gaussian Bridge
+    Simulation, paper_v2 §8) using Euler-Maruyama discretisation to generate
+    samples from the data distribution.
     """
 
     def __init__(
@@ -69,7 +71,7 @@ class Sampler:
     ) -> torch.Tensor | tuple[torch.Tensor, list[torch.Tensor]]:
         """Generate samples using Euler-Maruyama discretisation of the SDE.
 
-        Algorithm 2.2.2 (Simulation):
+        Algorithm 2, Gaussian Bridge Simulation (paper_v2 §8):
         xi_{t+dt} = xi_t + (E[Y|xi_t] - xi_t) / (T - t) * dt + dZ_t
 
         where dZ_t ~ N(0, dt * I) is the Brownian increment.
@@ -137,7 +139,7 @@ class Sampler:
     ) -> torch.Tensor:
         """Compute the probability flow ODE drift.
 
-        From the paper, the ODE is:
+        From Prop. cor:prob_flow_ode (paper_v2 §4), the ODE is:
         d xi_t = [1/2 * (xi_t - x)/t + 1/2 * (E[Y|xi_t] - xi_t)/(T-t)] dt
 
         Where the network predicts E[Y|xi_t] (the expected data given xi_t).
