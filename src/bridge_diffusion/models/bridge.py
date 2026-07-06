@@ -108,35 +108,6 @@ class BridgeDiffusion(nn.Module):
         noise = torch.randn_like(x)
         return E_t + torch.sqrt(V_t) * noise
 
-    def compute_training_target(
-        self,
-        x: torch.Tensor,
-        y: torch.Tensor,
-        xi_t: torch.Tensor,
-        t: torch.Tensor,
-    ) -> torch.Tensor:
-        """Compute the training target for the network.
-
-        The target is the drift towards data:
-        b(xi_t, t) = (y - xi_t) / (T - t)
-
-        Args:
-            x: Prior samples (unused but kept for interface consistency).
-            y: Data samples of shape (batch, channels, height, width).
-            xi_t: Bridge samples of shape (batch, channels, height, width).
-            t: Time values of shape (batch,).
-
-        Returns:
-            Target of shape (batch, channels, height, width).
-        """
-        # Reshape t for broadcasting
-        t_shape = [t.shape[0]] + [1] * (xi_t.ndim - 1)
-        t = t.view(*t_shape)
-
-        # Clamp to avoid division by zero near T
-        denominator = torch.clamp(self.T - t, min=self.eps)
-        return (y - xi_t) / denominator
-
     def compute_training_loss(
         self,
         x: torch.Tensor,

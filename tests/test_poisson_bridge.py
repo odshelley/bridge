@@ -454,3 +454,26 @@ class TestNumLevels:
 
         loss = model.compute_training_loss(x, y)
         assert torch.isfinite(loss)
+
+
+# ---------------------------------------------------------------------------
+# y >= x assumption tests
+# ---------------------------------------------------------------------------
+
+
+class TestYGreaterEqualXAssumption:
+    """Tests for the y >= x coordinatewise assumption warning."""
+
+    def test_warns_when_prior_exceeds_data(
+        self, poisson_model: PoissonBridgeDiffusion, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """The paper requires y >= x coordinatewise; violating it should warn."""
+        import logging
+
+        x = torch.full((2, 1, 16, 16), 5.0)
+        y = torch.zeros(2, 1, 16, 16)
+        with caplog.at_level(
+            logging.WARNING, logger="bridge_diffusion.models.poisson_bridge"
+        ):
+            poisson_model.compute_training_loss(x, y)
+        assert any("y >= x" in r.message for r in caplog.records)

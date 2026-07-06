@@ -8,10 +8,14 @@ The bridge connects a prior distribution (zeros or Poisson noise) to the data
 distribution using Binomial interpolation and Poisson jump dynamics.
 """
 
+import logging
+
 import torch
 import torch.nn as nn
 
 from bridge_diffusion.config import PoissonBridgeConfig
+
+logger = logging.getLogger(__name__)
 
 
 class PoissonBridgeDiffusion(nn.Module):
@@ -35,6 +39,14 @@ class PoissonBridgeDiffusion(nn.Module):
             b. lambda_i = max(0, (y_hat^(i) - xi_t^(i)) / (T - t))
             c. Delta_xi^(i) ~ Poisson(lambda_i * delta)
             d. xi_{t+delta}^(i) = xi_t^(i) + Delta_xi^(i)
+
+    Note:
+        The bridge is only well-defined for targets y in x + N_0^n, i.e. y must
+        dominate the prior x coordinatewise (paper_v2 §5) — the driver only
+        jumps upward. This means `prior="poisson"` is only valid when the data
+        dominates the sampled prior coordinatewise; otherwise
+        `compute_training_loss` emits a warning and clamps the negative
+        Binomial count to 0, which generation cannot undo.
 
     Args:
         network: Neural network that predicts the target data.
@@ -141,6 +153,14 @@ class PoissonBridgeDiffusion(nn.Module):
         """
         batch_size = y.shape[0]
         device = y.device
+
+        if (y < x).any():
+            logger.warning(
+                "Poisson bridge assumes y >= x coordinatewise (paper_v2 §5, "
+                "y in x + N_0^n); %d coordinates violate this and will be "
+                "clamped, so generation cannot reach them from above.",
+                int((y < x).sum()),
+            )
 
         # Sample time uniformly in [0, T)
         t = torch.rand(batch_size, device=device) * (self.T - self.eps)
