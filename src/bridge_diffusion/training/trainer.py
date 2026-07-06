@@ -52,7 +52,10 @@ class Trainer:
         """Initialise Trainer.
 
         Args:
-            model: Diffusion model exposing compute_training_loss (bridge, Poisson bridge, or DDPM).
+            model: Diffusion model exposing compute_training_loss, called as
+                compute_training_loss(x=prior, y=data) (bridge and Poisson
+                bridge; DDPM training is not currently wired correctly — see
+                evaluate/sample for DDPM inference).
             train_loader: DataLoader for training data.
             config: Experiment configuration.
             device: Device to train on.
@@ -169,7 +172,7 @@ class Trainer:
         """Run the training loop.
 
         Implements Algorithm 1, Gaussian Bridge Training (paper_v2 §8):
-        1. Sample (x, y) pairs where x is data, y is noise
+        1. Sample (x, y) pairs where x is the prior (noise), y is data
         2. Sample t uniformly
         3. Compute bridge samples and targets
         4. Minimise MSE loss

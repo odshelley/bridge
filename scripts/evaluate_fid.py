@@ -124,6 +124,15 @@ def generate_samples(
             all_samples.append(batch)
         return torch.cat(all_samples, dim=0)
 
+    if config.method == "ddpm":
+        # DDPM uses its own reverse-process sample(), not the bridge Sampler
+        all_samples = []
+        for start in range(0, num_samples, batch_size):
+            n = min(batch_size, num_samples - start)
+            batch = model.sample(n, shape, device=device, num_inference_steps=num_steps)
+            all_samples.append(batch.cpu())
+        return torch.cat(all_samples, dim=0)
+
     if use_ode:
         solver = ODESolver(ode_solver)
         samples = sampler.sample_batch_ode(
