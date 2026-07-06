@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design: Data-to-data transport datasets</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1d23; --muted: #5c6470; --accent: #0b6e4f;
+    --accent-soft: #e6f2ee; --border: #e2e5ea; --code-bg: #f5f6f8;
+    --warn-bg: #fff7e6; --warn-border: #e8c46a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a; --fg: #e6e8eb; --muted: #9aa3af; --accent: #4fbf95;
+      --accent-soft: #1c2b26; --border: #2a2e35; --code-bg: #1e2126;
+      --warn-bg: #2b2415; --warn-border: #8a6d2b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+  h1 { font-size: 1.8rem; line-height: 1.25; margin: 0 0 .3rem; }
+  .meta { color: var(--muted); font-size: .9rem; margin-bottom: 2.2rem; }
+  .meta .status { display: inline-block; background: var(--accent-soft); color: var(--accent);
+    border-radius: 999px; padding: .1rem .7rem; font-weight: 600; margin-left: .5rem; }
+  h2 { font-size: 1.25rem; margin: 2.4rem 0 .7rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  h3 { font-size: 1.05rem; margin: 1.6rem 0 .5rem; color: var(--accent); }
+  p, li { max-width: 72ch; }
+  code { background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px;
+    padding: .08rem .35rem; font: .85em ui-monospace, "SF Mono", Menlo, monospace; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: .9rem 1.1rem; overflow-x: auto; }
+  pre code { background: none; border: none; padding: 0; font-size: .82rem; line-height: 1.55; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; margin: 1rem 0; }
+  th, td { text-align: left; padding: .45rem .7rem; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+  td code { white-space: nowrap; }
+  .callout { background: var(--accent-soft); border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0; padding: .8rem 1.1rem; margin: 1.2rem 0; }
+  .warn { background: var(--warn-bg); border-left: 3px solid var(--warn-border);
+    border-radius: 0 8px 8px 0; padding: .8rem 1.1rem; margin: 1.2rem 0; }
+  ol.steps > li { margin-bottom: 1rem; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Data-to-data transport datasets<br><span class="muted" style="font-size:1.1rem">CIFAR cat→dog &amp; AFHQ cat→dog</span></h1>
+<div class="meta">2026-07-05 · diffusion-bridge <span class="status">draft — awaiting review</span></div>
+
+<h2>Goal</h2>
+<p>Extend the bridge-diffusion library so the Gaussian bridge can be trained as a
+<strong>data-to-data transport</strong> between two image distributions, and add two concrete experiments:</p>
+<ol>
+  <li><strong>CIFAR-10 cat→dog</strong> at 32×32 — cheap stepping stone, runs locally.</li>
+  <li><strong>AFHQ cat→dog</strong> at 64×64 — headline transport experiment, matching the benchmark used by Rectified Flow / DSBM / DDBM.</li>
+</ol>
+<p>Deliverable includes runnable configs and a step-by-step training guide.</p>
+
+<h2>Non-goals</h2>
+<ul>
+  <li>Poisson-bridge transport (the integer bridge stays noise→data on MNIST).</li>
+  <li>CelebA or ImageNet support.</li>
+  <li>Non-independent couplings (OT minibatch coupling, reflow). The paired loader samples source and target independently — the standard first-pass coupling in the literature. The design leaves room to add couplings later.</li>
+</ul>
+
+<h2>Background: what the code already supports</h2>
+<div class="callout">
+<p style="margin:.2rem 0"><strong>The maths is already general.</strong>
+<code>BridgeDiffusion.compute_training_loss(x,&nbsp;y)</code> never assumes a Gaussian prior, and the sampler
+already accepts arbitrary start points <code>x0</code>. The <em>only</em> place noise is hardcoded is the trainer:
+<code>y = batch[0]</code>, <code>x = randn_like(y)</code> (<code>training/trainer.py:24-39, 210-214</code>).</p>
+</div>
+<p>So the work is: dataset entries, a paired loader, one trainer branch, configs, and sampling/evaluation plumbing for source-conditioned generation.</p>
+
+<h2>Design</h2>
+
+<h3>1 · Config (config/config.py)</h3>
+<p>Extend <code>DataConfig</code> with flat, backwards-compatible fields:</p>
+<pre><code>@dataclass
+class DataConfig:
+    dataset: Literal["mnist", "cifar10", "afhq"] = "mnist"   # target distribution
+    classes: list[str] | None = None          # filter target to these classes
+    source_dataset: Literal["mnist", "cifar10", "afhq"] | None = None
+    source_classes: list[str] | None = None   # filter source to these classes
+    # ... existing fields unchanged (data_dir, image_size, num_workers, ...)</code></pre>
+<p>Transport mode is active iff <code>source_dataset is not None</code>. All existing configs remain
+valid with unchanged behaviour; <code>from_yaml</code> needs no structural change.
+Validation: <code>source_classes</code> without <code>source_dataset</code> is an error; class names are
+validated at load time (fail fast, listing valid names).</p>
+
+<h3>2 · Data loading (data/datasets.py)</h3>
+<p><strong>AFHQ entry.</strong> torchvision <code>ImageFolder</code> rooted at <code>{data_dir}/afhq/train</code> and
+<code>…/val</code> (subfolders <code>cat/ dog/ wild/</code>). Missing directory → error pointing at
+<code>scripts/download_afhq.sh</code>. Transforms: Resize → CenterCrop → RandomHorizontalFlip (train only)
+→ ToTensor → Normalize to [-1, 1]. AFHQ sources are 512×512, so the resize path also covers 32×32 smoke runs.</p>
+<p><strong>Class filtering.</strong> <code>filter_classes(dataset, class_names) → Subset</code>, working for both
+<code>CIFAR10</code> (<code>classes</code>/<code>targets</code>) and <code>ImageFolder</code> (<code>class_to_idx</code>/<code>samples</code>).
+Unknown names raise <code>ValueError</code> listing valid options.</p>
+<p><strong>Paired dataset.</strong></p>
+<pre><code>class PairedDataset(Dataset):
+    """Independent coupling of a source and a target dataset.
+
+    __len__ = len(target). __getitem__(i) returns (x_source, y_target) where
+    y_target is item i and x_source is drawn uniformly at random (torch.randint,
+    so per-worker seeding behaves under num_workers &gt; 0). Labels are dropped.
+    """</code></pre>
+<p><code>get_dataloader</code> builds the target dataset as today; with a source configured it builds the
+(filtered) source dataset too and wraps both in <code>PairedDataset</code>. <code>get_data_info</code> gains an
+AFHQ branch (3 channels; train: cat 5153 / dog 4739 / wild 4738; val ≈ 500 per class) and reports
+filtered sizes when <code>classes</code> is set.</p>
+
+<h3>3 · Trainer (training/trainer.py)</h3>
+<p>One branch keyed off config, not tensor-shape guessing:</p>
+<pre><code>if self.transport:            # config.data.source_dataset is not None
+    x, y = batch[0].to(device), batch[1].to(device)
+else:
+    y = batch[0].to(device)
+    x = _sample_prior(self.model, y)
+loss = self.model.compute_training_loss(x, y)</code></pre>
+<p>In transport mode <code>_log_samples</code> starts the sampler from a fixed batch of held-out source
+(val) images, so MLflow sample grids show actual cat→dog translations during training.</p>
+
+<h3>4 · Sampling and evaluation</h3>
+<ul>
+  <li><code>cli.py sample</code> gains <code>--source-dir PATH</code> (folder of images used as <code>x0</code>,
+  eval transform). Omitted in transport mode → falls back to the val split of the configured source
+  dataset. Noise fallback remains for non-transport checkpoints. Generated images keep their source
+  filenames so translations are inspectable pairwise.</li>
+  <li>FID mechanically unchanged. A helper <code>scripts/export_val_images.py</code> dumps a
+  dataset/class val split to PNGs (needed once to build the real-dog reference folder).</li>
+</ul>
+
+<h3>5 · AFHQ download (scripts/download_afhq.sh)</h3>
+<p>Fetches the official AFHQ release used by stargan-v2 (Dropbox zip, ~500&nbsp;MB), unzips to
+<code>data/afhq/{train,val}/{cat,dog,wild}</code>, prints counts. URL pinned in the script with fallback
+notes (Kaggle mirror / HuggingFace <code>huggan/AFHQ</code>).</p>
+<div class="warn">Verify the Dropbox link at implementation time — it occasionally moves.</div>
+
+<h3>6 · Configs (configs/)</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>File</th><th>Dataset</th><th>Size</th><th>Batch</th><th>Steps</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>cifar_cat2dog.yaml</code></td><td>cifar10 cat→dog</td><td>32</td><td>128</td><td>50k</td><td>UNet as in <code>cifar10.yaml</code></td></tr>
+    <tr><td><code>cifar_cat2dog_smoke.yaml</code></td><td>cifar10 cat→dog</td><td>32</td><td>16</td><td>200</td><td>minutes on MPS</td></tr>
+    <tr><td><code>afhq_cat2dog_64.yaml</code></td><td>afhq cat→dog</td><td>64</td><td>64</td><td>150k</td><td>GPU-sized, see below</td></tr>
+    <tr><td><code>afhq_cat2dog_smoke.yaml</code></td><td>afhq cat→dog</td><td>32</td><td>16</td><td>200</td><td>minutes on MPS</td></tr>
+  </tbody>
+</table>
+</div>
+<p>AFHQ 64×64 UNet: <code>block_out_channels (128, 256, 384, 512)</code>, 2 layers per block, attention in
+the two lowest-resolution blocks, EMA 0.9999, lr 1e-4. Bridge params (<code>T</code>, <code>eps</code>) start
+from CIFAR values; tuning <code>T</code> for transport is an open experimental question, not fixed here.</p>
+
+<h3>7 · Testing</h3>
+<ul>
+  <li><code>tests/test_data.py</code>: <code>filter_classes</code> on CIFAR-10 and a tmpdir ImageFolder;
+  <code>PairedDataset</code> length/shapes/value range/label dropping; config round-trip with new fields;
+  validation errors (unknown class, <code>source_classes</code> without <code>source_dataset</code>).</li>
+  <li>Trainer transport branch smoke test: tiny synthetic ImageFolder pair, a few steps, loss finite.</li>
+  <li>Smoke configs double as end-to-end tests: train → sample → evaluate on ~200 steps.</li>
+</ul>
+
+<h3>8 · Error handling</h3>
+<ul>
+  <li>Missing AFHQ data dir → actionable error naming the download script.</li>
+  <li>Unknown dataset/class names → <code>ValueError</code> listing valid options.</li>
+  <li><code>sample --source-dir</code> on a non-transport checkpoint → warning, proceeds
+  (mathematically fine; the model just wasn't trained for it).</li>
+</ul>
+
+<h2>What you need to do to train</h2>
+<ol class="steps">
+  <li><strong>Smoke test locally (MPS, minutes):</strong>
+<pre><code>uv run bridge-diffusion train --config configs/cifar_cat2dog_smoke.yaml
+uv run bridge-diffusion train --config configs/afhq_cat2dog_smoke.yaml  # needs AFHQ downloaded</code></pre></li>
+  <li><strong>CIFAR cat→dog for real</strong> (local; overnight on MPS or ~2–3 h on one GPU):
+<pre><code>uv run bridge-diffusion train --config configs/cifar_cat2dog.yaml</code></pre></li>
+  <li><strong>AFHQ</strong> (needs a CUDA GPU; roughly 1–2 days on a single A100/4090 at 150k steps):
+<pre><code>bash scripts/download_afhq.sh
+uv run bridge-diffusion train --config configs/afhq_cat2dog_64.yaml</code></pre></li>
+  <li><strong>Sample translations and evaluate:</strong>
+<pre><code>uv run bridge-diffusion sample --checkpoint outputs/.../model.pt --num-steps 100 --use-ema
+uv run python scripts/export_val_images.py --dataset afhq --classes dog --out data/fid_ref/afhq_dog
+uv run bridge-diffusion evaluate --real-dir data/fid_ref/afhq_dog --generated-dir outputs/samples</code></pre></li>
+  <li>Monitor via MLflow as today — sample grids will show cat→dog translations.</li>
+</ol>
+
+<h2>Open questions deferred to experiment time</h2>
+<ul>
+  <li>Best bridge terminal time <code>T</code> for transport (start with CIFAR value, sweep).</li>
+  <li>Whether AFHQ FID is reported against val dogs only (standard) or train+val — follow DDBM's protocol when writing the paper section.</li>
+</ul>
+
+<p class="muted" style="margin-top:3rem">Markdown source of record:
+<code>docs/superpowers/specs/2026-07-05-dataset-transport-design.md</code></p>
+</main>
+</body>
+</html>

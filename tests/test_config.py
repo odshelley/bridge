@@ -131,3 +131,75 @@ class TestExperimentConfig:
 
             # Note: YAML may convert tuple to list, so check values
             assert list(loaded.model.block_out_channels) == [64, 128, 256, 512]
+
+
+class TestTransportConfig:
+    """Tests for transport-mode data configuration."""
+
+    def test_transport_fields_default_to_none(self) -> None:
+        config = DataConfig()
+        assert config.classes is None
+        assert config.source_dataset is None
+        assert config.source_classes is None
+
+    def test_transport_fields_set(self) -> None:
+        config = DataConfig(
+            dataset="afhq",
+            classes=["dog"],
+            source_dataset="afhq",
+            source_classes=["cat"],
+        )
+        assert config.classes == ["dog"]
+        assert config.source_dataset == "afhq"
+        assert config.source_classes == ["cat"]
+
+    def test_source_classes_without_source_dataset_raises(self) -> None:
+        with pytest.raises(ValueError, match="source_classes requires source_dataset"):
+            DataConfig(source_classes=["cat"])
+
+    def test_ddpm_with_source_dataset_raises(self) -> None:
+        with pytest.raises(ValueError, match="requires method='bridge'"):
+            ExperimentConfig(method="ddpm", data=DataConfig(source_dataset="mnist"))
+
+    def test_poisson_bridge_with_source_dataset_raises(self) -> None:
+        with pytest.raises(ValueError, match="requires method='bridge'"):
+            ExperimentConfig(method="poisson_bridge", data=DataConfig(source_dataset="mnist"))
+
+    def test_yaml_round_trip_with_transport_fields(self, tmp_path) -> None:
+        config = ExperimentConfig(
+            data=DataConfig(
+                dataset="afhq",
+                classes=["dog"],
+                source_dataset="afhq",
+                source_classes=["cat"],
+            )
+        )
+        path = tmp_path / "config.yaml"
+        config.to_yaml(path)
+        loaded = ExperimentConfig.from_yaml(path)
+        assert loaded.data.classes == ["dog"]
+        assert loaded.data.source_dataset == "afhq"
+        assert loaded.data.source_classes == ["cat"]
+
+
+class TestTransportYamlConfigs:
+    """The shipped transport configs must load and be transport-mode."""
+
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "cifar_cat2dog.yaml",
+            "cifar_cat2dog_smoke.yaml",
+            "afhq_cat2dog_64.yaml",
+            "afhq_cat2dog_smoke.yaml",
+        ],
+    )
+    def test_config_loads_and_is_transport(self, name) -> None:
+        from pathlib import Path as _Path
+
+        path = _Path(__file__).parent.parent / "configs" / name
+        config = ExperimentConfig.from_yaml(path)
+        assert config.method == "bridge"
+        assert config.data.source_dataset is not None
+        assert config.data.classes == ["dog"]
+        assert config.data.source_classes == ["cat"]
