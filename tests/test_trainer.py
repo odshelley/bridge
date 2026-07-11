@@ -12,6 +12,7 @@ from bridge_diffusion.config import (
 from bridge_diffusion.data import get_dataloader
 from bridge_diffusion.models import BridgeDiffusion, DiffusersUNetWrapper
 from bridge_diffusion.training import Trainer
+from bridge_diffusion.training.trainer import _normalise_samples
 
 
 def _tiny_model(image_size: int = 16) -> BridgeDiffusion:
@@ -99,3 +100,62 @@ class TestTrainerTransport:
         assert trainer._sample_sources is not None
         assert trainer._sample_sources.shape[1:] == (3, 16, 16)
         assert trainer._sample_sources.shape[0] <= 16
+
+
+class _StubPoissonModel:
+    """Minimal stand-in exposing num_levels, for _normalise_samples tests."""
+
+    num_levels = 256
+
+
+class TestNormaliseSamples:
+    def test_poisson_model_maps_to_unit_interval(self) -> None:
+        model = _StubPoissonModel()
+        samples = torch.tensor([0.0, 128.0, 255.0])
+        normalised = _normalise_samples(samples, model)
+        assert torch.allclose(normalised, torch.tensor([0.0, 128.0 / 255.0, 1.0]))
+
+    def test_poisson_model_clamps_out_of_range(self) -> None:
+        model = _StubPoissonModel()
+        samples = torch.tensor([-10.0, 300.0])
+        normalised = _normalise_samples(samples, model)
+        assert torch.allclose(normalised, torch.tensor([0.0, 1.0]))
+
+    def test_plain_model_maps_from_signed_unit_interval(self) -> None:
+        model = _tiny_model()
+        samples = torch.tensor([-1.0, 0.0, 1.0])
+        normalised = _normalise_samples(samples, model)
+        assert torch.allclose(normalised, torch.tensor([0.0, 0.5, 1.0]))
+
+    def test_plain_model_clamps_out_of_range(self) -> None:
+        model = _tiny_model()
+        samples = torch.tensor([-5.0, 5.0])
+        normalised = _normalise_samples(samples, model)
+        assert torch.allclose(normalised, torch.tensor([0.0, 1.0]))
+
+
+class TestCheckpointRngState:
+    def test_load_checkpoint_restores_rng_state(self, afhq_dir, tmp_path) -> None:
+        config = _transport_experiment(afhq_dir, tmp_path)
+        loader = get_dataloader(config.data, batch_size=2, train=True, num_workers=0)
+        trainer = Trainer(
+            model=_tiny_model(),
+            train_loader=loader,
+            config=config,
+            device=torch.device("cpu"),
+            checkpoint_dir=tmp_path / "ckpt",
+        )
+
+        torch.manual_seed(0)
+        checkpoint_path = trainer.checkpoint_dir / "checkpoint_step_0.pt"
+        trainer.save_checkpoint()
+        expected = torch.randn(3)
+
+        # Perturb the RNG state so a naive resume would replay different draws.
+        torch.manual_seed(999)
+        torch.randn(50)
+
+        trainer.load_checkpoint(checkpoint_path)
+        actual = torch.randn(3)
+
+        assert torch.equal(actual, expected)

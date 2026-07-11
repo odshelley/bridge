@@ -5,10 +5,12 @@ Implements the training loop following Algorithm 1, Gaussian Bridge Training
 """
 
 import logging
+import random
 from pathlib import Path
 from typing import Optional
 
 import mlflow
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.optim import AdamW
@@ -18,6 +20,24 @@ from tqdm import tqdm
 from bridge_diffusion.config import ExperimentConfig
 
 logger = logging.getLogger(__name__)
+
+
+def _normalise_samples(samples: torch.Tensor, model: nn.Module) -> torch.Tensor:
+    """Map generated samples to [0, 1] for image logging.
+
+    Poisson models (exposing num_levels) output integer counts in
+    [0, num_levels - 1]; others output [-1, 1] floats.
+
+    Args:
+        samples: Generated samples from the model.
+        model: The model that produced the samples (checked for num_levels).
+
+    Returns:
+        Samples mapped to [0, 1], suitable for make_grid/save_image.
+    """
+    if hasattr(model, "num_levels"):
+        return (samples / (model.num_levels - 1)).clamp(0, 1)
+    return (samples.clamp(-1, 1) + 1) / 2
 
 
 def _sample_prior(model: nn.Module, y: torch.Tensor) -> torch.Tensor:
@@ -152,10 +172,9 @@ class Trainer:
             # Sample using the model's generate method (Euler-Maruyama simulation)
             samples = model_to_sample.generate(x, num_steps=100)
             
-            # Clamp to valid range
-            samples = samples.clamp(-1, 1)
-            samples = (samples + 1) / 2  # Convert from [-1, 1] to [0, 1]
-            
+            # Map to [0, 1] for image logging (Poisson-aware)
+            samples = _normalise_samples(samples, model_to_sample)
+
             # Create grid
             grid = make_grid(samples, nrow=4, padding=2, normalize=False)
             
@@ -297,7 +316,15 @@ class Trainer:
             "model_state_dict": self.model.state_dict(),
             "optimiser_state_dict": self.optimiser.state_dict(),
             "config": self.config,
+            "rng_state": {
+                "torch": torch.get_rng_state(),
+                "numpy": np.random.get_state(),
+                "python": random.getstate(),
+            },
         }
+
+        if torch.cuda.is_available():
+            checkpoint["rng_state"]["cuda"] = torch.cuda.get_rng_state_all()
 
         if self.ema_model is not None:
             checkpoint["ema_model_state_dict"] = self.ema_model.state_dict()
@@ -319,5 +346,13 @@ class Trainer:
 
         if self.ema_model is not None and "ema_model_state_dict" in checkpoint:
             self.ema_model.load_state_dict(checkpoint["ema_model_state_dict"])
+
+        rng_state = checkpoint.get("rng_state")
+        if rng_state is not None:
+            torch.set_rng_state(rng_state["torch"])
+            np.random.set_state(rng_state["numpy"])
+            random.setstate(rng_state["python"])
+            if torch.cuda.is_available() and "cuda" in rng_state:
+                torch.cuda.set_rng_state_all(rng_state["cuda"])
 
         logger.info(f"Loaded checkpoint from {checkpoint_path} at step {self.global_step}")
