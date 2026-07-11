@@ -163,12 +163,39 @@ class ExperimentConfig:
             raise ValueError(
                 f"Transport mode (source_dataset) requires method='bridge', got method='{self.method}'"
             )
+        # raw_pixels (integer pixel counts) is only meaningful for the Poisson
+        # bridge; every other method expects floats normalised to [-1, 1].
+        if self.method == "poisson_bridge" and not self.data.raw_pixels:
+            raise ValueError(
+                "method='poisson_bridge' requires data.raw_pixels=true (integer pixel counts)"
+            )
+        if self.method != "poisson_bridge" and self.data.raw_pixels:
+            raise ValueError(
+                f"data.raw_pixels=true requires method='poisson_bridge', got method='{self.method}'"
+            )
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "ExperimentConfig":
         """Load configuration from a YAML file."""
         with open(path) as f:
             data = yaml.safe_load(f)
+
+        known = {
+            "name",
+            "output_dir",
+            "method",
+            "mlflow_tracking_uri",
+            "model",
+            "training",
+            "bridge",
+            "poisson_bridge",
+            "ddpm",
+            "sampling",
+            "data",
+        }
+        unknown = set(data) - known
+        if unknown:
+            raise ValueError(f"Unknown top-level config keys in {path}: {sorted(unknown)}")
 
         # Parse nested configs, converting lists to tuples for model config
         model_data = data.get("model", {})

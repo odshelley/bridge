@@ -225,3 +225,53 @@ class TestNewDatasetConfigs:
         assert config.data.dataset == dataset
         assert config.data.raw_pixels is raw
         assert config.data.source_dataset is None  # generation, not transport
+
+
+class TestRawPixelsValidation:
+    """poisson_bridge and raw_pixels must always agree."""
+
+    def test_poisson_bridge_without_raw_pixels_raises(self) -> None:
+        with pytest.raises(
+            ValueError, match="method='poisson_bridge' requires data.raw_pixels=true"
+        ):
+            ExperimentConfig(method="poisson_bridge", data=DataConfig(raw_pixels=False))
+
+    def test_raw_pixels_with_non_poisson_method_raises(self) -> None:
+        with pytest.raises(
+            ValueError, match="data.raw_pixels=true requires method='poisson_bridge'"
+        ):
+            ExperimentConfig(method="bridge", data=DataConfig(raw_pixels=True))
+
+    def test_poisson_bridge_with_raw_pixels_is_valid(self) -> None:
+        config = ExperimentConfig(method="poisson_bridge", data=DataConfig(raw_pixels=True))
+        assert config.method == "poisson_bridge"
+        assert config.data.raw_pixels is True
+
+
+class TestUnknownTopLevelKeys:
+    """from_yaml should reject configs with unrecognised top-level keys."""
+
+    def test_unknown_key_raises(self, tmp_path: Path) -> None:
+        path = tmp_path / "config.yaml"
+        path.write_text("name: test\nmethod: bridge\nbogus_key: 123\n")
+        with pytest.raises(ValueError, match=r"Unknown top-level config keys.*bogus_key"):
+            ExperimentConfig.from_yaml(path)
+
+    def test_known_keys_do_not_raise(self, tmp_path: Path) -> None:
+        path = tmp_path / "config.yaml"
+        path.write_text("name: test\nmethod: bridge\n")
+        ExperimentConfig.from_yaml(path)  # should not raise
+
+
+class TestAllShippedConfigsLoad:
+    """Every YAML config shipped in configs/ must load without error."""
+
+    CONFIGS_DIR = Path(__file__).parent.parent / "configs"
+
+    @pytest.mark.parametrize(
+        "path",
+        sorted(CONFIGS_DIR.glob("*.yaml")),
+        ids=lambda p: p.name,
+    )
+    def test_config_loads(self, path: Path) -> None:
+        ExperimentConfig.from_yaml(path)
