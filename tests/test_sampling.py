@@ -15,6 +15,22 @@ class _IdentityNet(torch.nn.Module):
         return x
 
 
+class _OffsetNet(torch.nn.Module):
+    """Predicts E[Y|xi] = xi + k, a huge fixed offset from the current state.
+
+    Used to exercise the t -> T edge case: dividing this large, constant
+    (y_pred - xi) difference by the 1e-6 denominator floor overflows to inf,
+    while dividing by a denominator bounded below by eps (1e-4) stays finite.
+    """
+
+    def __init__(self, k: float) -> None:
+        super().__init__()
+        self.k = k
+
+    def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
+        return x + self.k
+
+
 class TestSampler:
     """Tests for the Sampler class."""
 
@@ -249,3 +265,34 @@ class TestSampleODE:
             total_samples=2, shape=(1, 8, 8), batch_size=2, solver=ODESolver.DOPRI5
         )
         assert out.shape == (2, 1, 8, 8)
+
+
+class TestSampleODETimeClamp:
+    """The last stage of HEUN/RK4 (and the torchdiffeq endpoint) evaluates the
+    drift at t == T, where denom = max(T - t, 1e-6) hits its floor and the
+    (y_pred - xi) / denom term explodes. The fix clamps the evaluation time
+    away from T so the denominator is bounded below by eps (1e-4) instead.
+    """
+
+    @pytest.fixture
+    def sampler(self) -> Sampler:
+        # A large, constant (y_pred - xi) offset makes the t -> T blow-up
+        # concrete: it overflows to inf when divided by the 1e-6 floor, but
+        # stays finite when divided by the eps-bounded denominator.
+        return Sampler(
+            model=_OffsetNet(k=1e33),
+            bridge_config=BridgeConfig(),  # T=0.1
+            sampling_config=SamplingConfig(num_steps=1, show_progress=False, clip_samples=False),
+            device=torch.device("cpu"),
+        )
+
+    @pytest.mark.parametrize("solver", [ODESolver.HEUN, ODESolver.RK4])
+    def test_sample_ode_stays_finite_near_t(self, sampler: Sampler, solver: ODESolver) -> None:
+        x0 = torch.zeros(2, 1, 8, 8)
+        out = sampler.sample_ode(2, (1, 8, 8), x0=x0, solver=solver, num_steps=1)
+        assert torch.isfinite(out).all()
+
+    def test_sample_ode_torchdiffeq_stays_finite_near_t(self, sampler: Sampler) -> None:
+        x0 = torch.zeros(2, 1, 8, 8)
+        out = sampler.sample_ode_torchdiffeq(2, (1, 8, 8), x0=x0, solver="rk4", num_steps=1)
+        assert torch.isfinite(out).all()

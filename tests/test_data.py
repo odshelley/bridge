@@ -248,6 +248,32 @@ class TestAFHQ:
         assert info["train_size"] == 5153 + 4739
 
 
+class TestGetDataloaderZeroBatchGuard:
+    """get_dataloader(..., train=True) uses drop_last=True; if the dataset is
+    smaller than batch_size, drop_last silently yields zero batches. The
+    guard should fail fast instead.
+    """
+
+    def test_train_raises_when_dataset_smaller_than_batch_size(self, afhq_dir) -> None:
+        # afhq_dir has 12 train images (3 classes x 4); batch_size=64 would
+        # drop every batch and silently produce an empty training loop.
+        config = DataConfig(dataset="afhq", data_dir=afhq_dir, image_size=16)
+        with pytest.raises(ValueError, match="drop_last=True would yield zero batches"):
+            get_dataloader(config, batch_size=64, train=True, num_workers=0)
+
+    def test_eval_does_not_raise_for_small_dataset(self, afhq_dir) -> None:
+        # train=False uses drop_last=False, so a small dataset is fine.
+        config = DataConfig(dataset="afhq", data_dir=afhq_dir, image_size=16)
+        loader = get_dataloader(config, batch_size=64, train=False, num_workers=0)
+        assert len(loader.dataset) == 12
+
+    def test_train_still_works_when_dataset_is_large_enough(self, afhq_dir) -> None:
+        config = DataConfig(dataset="afhq", data_dir=afhq_dir, image_size=16)
+        loader = get_dataloader(config, batch_size=4, train=True, num_workers=0)
+        batch = next(iter(loader))
+        assert batch[0].shape == (4, 3, 16, 16)
+
+
 class TestPairedDataset:
     """Tests for the transport-mode paired dataset."""
 

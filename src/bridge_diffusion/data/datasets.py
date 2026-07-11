@@ -324,6 +324,12 @@ def get_dataloader(
     """
     dataset = get_dataset(config, train=train)
 
+    if train and len(dataset) < batch_size:
+        raise ValueError(
+            f"Training dataset has {len(dataset)} samples but batch_size={batch_size} "
+            "with drop_last=True would yield zero batches"
+        )
+
     if num_workers is None:
         num_workers = config.num_workers
 
