@@ -42,29 +42,29 @@ class DDPMDiffusion(nn.Module):
 
     def compute_training_loss(
         self,
-        x: torch.Tensor,
-        y: torch.Tensor,  # unused, for interface compatibility with Bridge
+        x: torch.Tensor,  # unused, kept for interface compatibility (prior)
+        y: torch.Tensor,
     ) -> torch.Tensor:
         """Compute DDPM training loss.
 
         Args:
-            x: Data samples of shape (batch, channels, height, width).
-            y: Unused (kept for interface compatibility with Bridge).
+            x: Unused (kept for interface compatibility with Bridge; prior).
+            y: Data samples of shape (batch, channels, height, width).
 
         Returns:
             Scalar loss value.
         """
-        batch_size = x.shape[0]
-        device = x.device
+        batch_size = y.shape[0]
+        device = y.device
 
         # Sample random timesteps
         t = torch.randint(0, self.num_train_timesteps, (batch_size,), device=device)
 
         # Sample noise
-        noise = torch.randn_like(x)
+        noise = torch.randn_like(y)
 
         # Add noise to images using scheduler
-        noisy_images = self.scheduler.add_noise(x, noise, t)
+        noisy_images = self.scheduler.add_noise(y, noise, t)
 
         # Predict noise
         noise_pred = self.network(noisy_images, t)
@@ -123,3 +123,22 @@ class DDPMDiffusion(nn.Module):
             sample = self.scheduler.step(noise_pred, t, sample).prev_sample
 
         return sample
+
+    @torch.no_grad()
+    def generate(self, x: torch.Tensor, num_steps: int | None = None) -> torch.Tensor:
+        """Generate samples from noise, matching the bridge models' interface.
+
+        Args:
+            x: Prior noise of shape (batch, channels, height, width); only its
+                shape and device are used (DDPM sampling draws its own noise).
+            num_steps: Number of inference steps (None = all training steps).
+
+        Returns:
+            Generated samples with the same shape as x.
+        """
+        return self.sample(
+            num_samples=x.shape[0],
+            shape=tuple(x.shape[1:]),
+            device=x.device,
+            num_inference_steps=num_steps,
+        )

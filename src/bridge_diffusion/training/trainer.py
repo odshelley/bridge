@@ -53,9 +53,8 @@ class Trainer:
 
         Args:
             model: Diffusion model exposing compute_training_loss, called as
-                compute_training_loss(x=prior, y=data) (bridge and Poisson
-                bridge; DDPM training is not currently wired correctly — see
-                evaluate/sample for DDPM inference).
+                compute_training_loss(x=prior, y=data). This convention holds
+                for all three methods (bridge, Poisson bridge, and DDPM).
             train_loader: DataLoader for training data.
             config: Experiment configuration.
             device: Device to train on.
