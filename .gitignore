@@ -64,3 +64,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# never commit paper drafts
+paper_v2/
+paper/
+bridege_new/
