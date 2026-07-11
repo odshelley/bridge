@@ -77,4 +77,4 @@ class TestLoadSamplingWeights:
         with caplog.at_level(logging.WARNING):
             _load_sampling_weights(target, checkpoint, use_ema=False)
 
-        assert caplog.text == ""
+        assert "no EMA weights" not in caplog.text

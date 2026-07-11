@@ -180,6 +180,9 @@ class ExperimentConfig:
         with open(path) as f:
             data = yaml.safe_load(f)
 
+        if not isinstance(data, dict):
+            raise ValueError(f"Config file {path} must be a YAML mapping")
+
         known = {
             "name",
             "output_dir",

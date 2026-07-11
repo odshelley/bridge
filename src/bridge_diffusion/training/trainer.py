@@ -305,6 +305,11 @@ class Trainer:
     def save_checkpoint(self, final: bool = False) -> None:
         """Save model checkpoint.
 
+        Note: only torch (CPU), numpy, and python RNG state is captured, plus
+        CUDA generator state when available. MPS has no equivalent
+        get_rng_state API, so device-local RNG state is not captured and
+        resume determinism is partial when training on MPS.
+
         Args:
             final: Whether this is the final checkpoint.
         """
@@ -349,10 +354,14 @@ class Trainer:
 
         rng_state = checkpoint.get("rng_state")
         if rng_state is not None:
-            torch.set_rng_state(rng_state["torch"])
+            # torch.load(map_location=self.device) moves every tensor in the
+            # checkpoint onto that device, including these RNG ByteTensors.
+            # torch.set_rng_state/torch.cuda.set_rng_state_all both require
+            # CPU ByteTensors, so they must be moved back before restoring.
+            torch.set_rng_state(rng_state["torch"].cpu())
             np.random.set_state(rng_state["numpy"])
             random.setstate(rng_state["python"])
             if torch.cuda.is_available() and "cuda" in rng_state:
-                torch.cuda.set_rng_state_all(rng_state["cuda"])
+                torch.cuda.set_rng_state_all([s.cpu() for s in rng_state["cuda"]])
 
         logger.info(f"Loaded checkpoint from {checkpoint_path} at step {self.global_step}")

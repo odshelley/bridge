@@ -262,6 +262,13 @@ class TestUnknownTopLevelKeys:
         path.write_text("name: test\nmethod: bridge\n")
         ExperimentConfig.from_yaml(path)  # should not raise
 
+    def test_empty_file_raises_value_error(self, tmp_path: Path) -> None:
+        """An empty YAML file parses to None; from_yaml must reject it clearly."""
+        path = tmp_path / "config.yaml"
+        path.write_text("")
+        with pytest.raises(ValueError, match="must be a YAML mapping"):
+            ExperimentConfig.from_yaml(path)
+
 
 class TestAllShippedConfigsLoad:
     """Every YAML config shipped in configs/ must load without error."""

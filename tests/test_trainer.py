@@ -1,5 +1,6 @@
 """Tests for the training loop's transport mode."""
 
+import pytest
 import torch
 
 from bridge_diffusion.config import (
@@ -156,6 +157,45 @@ class TestCheckpointRngState:
         torch.randn(50)
 
         trainer.load_checkpoint(checkpoint_path)
+        actual = torch.randn(3)
+
+        assert torch.equal(actual, expected)
+
+
+class TestCheckpointRngStateOnDeviceResume:
+    """Regression test: resuming on a non-CPU device must not crash.
+
+    torch.load(..., map_location=self.device) moves the saved RNG ByteTensor
+    onto that device, but torch.set_rng_state requires a CPU ByteTensor. This
+    test builds and resumes the trainer on MPS (available on this machine) so
+    it structurally cannot pass without restoring the RNG tensors to CPU
+    before calling torch.set_rng_state / torch.cuda.set_rng_state_all.
+    """
+
+    @pytest.mark.skipif(not torch.backends.mps.is_available(), reason="requires MPS device")
+    def test_load_checkpoint_on_mps_does_not_raise_and_restores_rng(
+        self, afhq_dir, tmp_path
+    ) -> None:
+        config = _transport_experiment(afhq_dir, tmp_path)
+        loader = get_dataloader(config.data, batch_size=2, train=True, num_workers=0)
+        trainer = Trainer(
+            model=_tiny_model(),
+            train_loader=loader,
+            config=config,
+            device=torch.device("mps"),
+            checkpoint_dir=tmp_path / "ckpt",
+        )
+
+        torch.manual_seed(0)
+        checkpoint_path = trainer.checkpoint_dir / "checkpoint_step_0.pt"
+        trainer.save_checkpoint()
+        expected = torch.randn(3)
+
+        # Perturb the RNG state so a naive resume would replay different draws.
+        torch.manual_seed(999)
+        torch.randn(50)
+
+        trainer.load_checkpoint(checkpoint_path)  # must not raise TypeError
         actual = torch.randn(3)
 
         assert torch.equal(actual, expected)
