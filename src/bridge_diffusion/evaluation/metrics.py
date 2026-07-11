@@ -24,10 +24,21 @@ def _require_torch_fidelity():
     return torch_fidelity
 
 
-def _to_uint8(images: torch.Tensor) -> torch.Tensor:
-    """Convert [-1, 1] or [0, 1] float images to [0, 255] uint8 (NCHW)."""
-    if images.min() < 0:
-        images = (images + 1) / 2
+def _to_uint8(images: torch.Tensor, input_range: tuple[float, float]) -> torch.Tensor:
+    """Convert float images in an explicit range to [0, 255] uint8 (NCHW).
+
+    Args:
+        images: Float image tensor.
+        input_range: (lo, hi) bounds of `images`' value range, e.g. (-1.0, 1.0)
+            or (0.0, 1.0). The caller must supply this explicitly rather than
+            having it inferred from the tensor's values, so that real and
+            generated batches are always normalised identically.
+
+    Returns:
+        uint8 tensor with values in [0, 255].
+    """
+    lo, hi = input_range
+    images = (images - lo) / (hi - lo)
     return (images * 255).clamp(0, 255).to(torch.uint8)
 
 
@@ -36,14 +47,18 @@ def compute_fid(
     generated_images: torch.Tensor,
     batch_size: int = 64,
     device: Optional[torch.device] = None,
+    input_range: tuple[float, float] = (-1.0, 1.0),
 ) -> float:
     """Compute FID between real and generated images using torch-fidelity.
 
     Args:
-        real_images: Real images of shape (N, C, H, W) in range [-1, 1] or [0, 1].
-        generated_images: Generated images of same shape.
+        real_images: Real images of shape (N, C, H, W) in range `input_range`.
+        generated_images: Generated images of same shape and range.
         batch_size: Batch size for feature extraction.
         device: Device for computation.
+        input_range: (lo, hi) value range shared by both `real_images` and
+            `generated_images`. Both tensors are normalised using this same
+            range so FID is not biased by per-tensor range guessing.
 
     Returns:
         FID score (lower is better).
@@ -51,8 +66,8 @@ def compute_fid(
     torch_fidelity = _require_torch_fidelity()
 
     # Ensure images are in [0, 255] uint8 format as expected by torch-fidelity
-    real_images = _to_uint8(real_images)
-    generated_images = _to_uint8(generated_images)
+    real_images = _to_uint8(real_images, input_range)
+    generated_images = _to_uint8(generated_images, input_range)
 
     # torch-fidelity expects images in NCHW format with uint8 values
     metrics = torch_fidelity.calculate_metrics(
@@ -103,14 +118,18 @@ def compute_fid_against_dataset(
     dataset_name: str,
     batch_size: int = 64,
     device: Optional[torch.device] = None,
+    input_range: tuple[float, float] = (-1.0, 1.0),
 ) -> float:
     """Compute FID against a standard dataset (CIFAR-10, etc.).
 
     Args:
-        generated_images: Generated images of shape (N, C, H, W).
-        dataset_name: Name of reference dataset ("cifar10", etc.).
+        generated_images: Generated images of shape (N, C, H, W) in range `input_range`.
+        dataset_name: Name of reference dataset ("cifar10", etc.). torch-fidelity
+            fetches and normalises this dataset itself, so `input_range` only
+            applies to `generated_images`.
         batch_size: Batch size for feature extraction.
         device: Device for computation.
+        input_range: (lo, hi) value range of `generated_images`.
 
     Returns:
         FID score.
@@ -118,7 +137,7 @@ def compute_fid_against_dataset(
     torch_fidelity = _require_torch_fidelity()
 
     # Prepare generated images
-    generated_images = _to_uint8(generated_images)
+    generated_images = _to_uint8(generated_images, input_range)
 
     metrics = torch_fidelity.calculate_metrics(
         input1=TensorDataset(generated_images),
