@@ -266,6 +266,11 @@ class Sampler:
         trajectory = [xi.clone()] if return_trajectory else []
 
         def drift_fn(state: torch.Tensor, time: float) -> torch.Tensor:
+            # Fixed-step solvers (HEUN, RK4) probe intermediate stages at
+            # t + dt, which for the final step lands exactly on T. There,
+            # denom = max(T - t, 1e-6) hits its floor and the drift explodes.
+            # Clamp the evaluation time so it never reaches T.
+            time = min(time, self.T - eps)
             time_tensor = torch.full((num_samples,), time, device=self.device)
             return self._ode_drift(state, x0, time, time_tensor)
 
@@ -324,9 +329,12 @@ class Sampler:
         else:
             x0 = x0.to(self.device)
 
-        # Time points: from eps to T
+        # Time points: from eps to T - eps. The last point feeds directly
+        # into the ODE function (and, for stage-based methods, into
+        # intermediate stages), so ending exactly at T would hit the
+        # denom = max(T - t, 1e-6) floor and the drift would explode.
         eps = 1e-4
-        t_span = torch.linspace(eps, self.T, num_steps + 1, device=self.device)
+        t_span = torch.linspace(eps, self.T - eps, num_steps + 1, device=self.device)
 
         # Store x0 for the drift function (needs to be accessible in closure)
         x0_stored = x0.clone()

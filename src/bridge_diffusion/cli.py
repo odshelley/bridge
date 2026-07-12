@@ -36,6 +36,27 @@ def create_model(config: ExperimentConfig, network: DiffusersUNetWrapper):
         raise ValueError(f"Unknown method: {config.method}")
 
 
+def _load_sampling_weights(model: torch.nn.Module, checkpoint: dict, use_ema: bool) -> None:
+    """Load model weights for sampling, honoring --use-ema when available.
+
+    Args:
+        model: Model to load weights into (mutated in place).
+        checkpoint: Checkpoint dict, expected to contain "model_state_dict"
+            and optionally "ema_model_state_dict".
+        use_ema: Whether EMA weights were requested via --use-ema.
+    """
+    if use_ema and "ema_model_state_dict" in checkpoint:
+        model.load_state_dict(checkpoint["ema_model_state_dict"])
+        logger.info("Loaded EMA weights")
+    else:
+        if use_ema:
+            logger.warning(
+                "--use-ema requested but checkpoint has no EMA weights; using raw model weights"
+            )
+        model.load_state_dict(checkpoint["model_state_dict"])
+        logger.info("Loaded model weights")
+
+
 def _apply_data_info(config: ExperimentConfig, data_info: dict) -> None:
     """Override model config with the dataset's actual shape."""
     config.model.in_channels = data_info["num_channels"]
@@ -173,12 +194,7 @@ def sample_main(args: argparse.Namespace) -> None:
     network = DiffusersUNetWrapper(config.model)
     model = create_model(config, network)
 
-    if args.use_ema and "ema_model_state_dict" in checkpoint:
-        model.load_state_dict(checkpoint["ema_model_state_dict"])
-        logger.info("Loaded EMA weights")
-    else:
-        model.load_state_dict(checkpoint["model_state_dict"])
-        logger.info("Loaded model weights")
+    _load_sampling_weights(model, checkpoint, args.use_ema)
 
     sampling_config = SamplingConfig(
         num_steps=args.num_steps,
