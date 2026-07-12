@@ -1,5 +1,7 @@
 """Tests for the training loop's transport mode."""
 
+import logging
+
 import pytest
 import torch
 
@@ -199,3 +201,45 @@ class TestCheckpointRngStateOnDeviceResume:
         actual = torch.randn(3)
 
         assert torch.equal(actual, expected)
+
+
+class TestCheckpointCudaDeviceCountMismatch:
+    """A checkpoint saved with N CUDA devices' RNG state may later be resumed
+    on a machine with a different device count. torch.cuda.set_rng_state_all
+    must not receive more states than there are current devices; restore
+    what's usable, warn about the mismatch, and don't crash.
+    """
+
+    def test_resume_with_fewer_devices_clamps_and_warns(
+        self, afhq_dir, tmp_path, monkeypatch, caplog
+    ) -> None:
+        fake_states_saved = [torch.ByteTensor([i]) for i in range(3)]  # saved with 3 "GPUs"
+        monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+        monkeypatch.setattr(torch.cuda, "get_rng_state_all", lambda: fake_states_saved)
+
+        config = _transport_experiment(afhq_dir, tmp_path)
+        loader = get_dataloader(config.data, batch_size=2, train=True, num_workers=0)
+        trainer = Trainer(
+            model=_tiny_model(),
+            train_loader=loader,
+            config=config,
+            device=torch.device("cpu"),
+            checkpoint_dir=tmp_path / "ckpt",
+        )
+        checkpoint_path = trainer.checkpoint_dir / "checkpoint_step_0.pt"
+        trainer.save_checkpoint()
+
+        # Resume on a machine with only 1 CUDA device available.
+        monkeypatch.setattr(torch.cuda, "device_count", lambda: 1)
+        restore_calls = []
+        monkeypatch.setattr(
+            torch.cuda, "set_rng_state_all", lambda states: restore_calls.append(states)
+        )
+
+        caplog.set_level(logging.WARNING)
+        trainer.load_checkpoint(checkpoint_path)  # must not raise
+
+        assert len(restore_calls) == 1
+        assert len(restore_calls[0]) == 1
+        assert "3 device(s)" in caplog.text
+        assert "1" in caplog.text

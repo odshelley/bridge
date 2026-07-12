@@ -342,7 +342,12 @@ class Sampler:
         # Define the ODE function for torchdiffeq
         def ode_func(t: torch.Tensor, xi: torch.Tensor) -> torch.Tensor:
             """ODE drift function: d xi/dt = f(xi, t)."""
-            t_scalar = t.item()
+            # Adaptive solvers (dopri5/dopri8) probe trial evaluations beyond
+            # the requested t_span while controlling step size, so t here can
+            # exceed T (verified: as far as ~1.6*T with a stiff drift) even
+            # though t_span itself is clamped to [eps, T - eps]. Clamp here
+            # too so denom = max(T - t, 1e-6) never sees a negative T - t.
+            t_scalar = min(max(t.item(), eps), self.T - eps)
             batch_size = xi.shape[0]
             t_tensor = torch.full((batch_size,), t_scalar, device=self.device)
             return self._ode_drift(xi, x0_stored, t_scalar, t_tensor)

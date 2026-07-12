@@ -362,6 +362,16 @@ class Trainer:
             np.random.set_state(rng_state["numpy"])
             random.setstate(rng_state["python"])
             if torch.cuda.is_available() and "cuda" in rng_state:
-                torch.cuda.set_rng_state_all([s.cpu() for s in rng_state["cuda"]])
+                saved_states = rng_state["cuda"]
+                current_count = torch.cuda.device_count()
+                if len(saved_states) != current_count:
+                    logger.warning(
+                        f"Checkpoint saved CUDA RNG state for {len(saved_states)} device(s) "
+                        f"but {current_count} are available now; restoring only the first "
+                        f"{min(len(saved_states), current_count)}. CUDA RNG replay on resume "
+                        "will not be exact."
+                    )
+                usable = saved_states[:current_count]
+                torch.cuda.set_rng_state_all([s.cpu() for s in usable])
 
         logger.info(f"Loaded checkpoint from {checkpoint_path} at step {self.global_step}")
