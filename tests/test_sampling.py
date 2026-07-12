@@ -296,3 +296,35 @@ class TestSampleODETimeClamp:
         x0 = torch.zeros(2, 1, 8, 8)
         out = sampler.sample_ode_torchdiffeq(2, (1, 8, 8), x0=x0, solver="rk4", num_steps=1)
         assert torch.isfinite(out).all()
+
+    def test_sample_ode_torchdiffeq_dopri5_clamps_trial_evaluations(self, monkeypatch) -> None:
+        """dopri5 is adaptive: it probes trial evaluation points beyond the
+        requested t_span while controlling step size. Verified empirically
+        (spying on ode_func) that with only the t_span endpoints clamped,
+        trial evaluations reach t ~= 1.6 * T for a stiff drift, well past
+        T - eps. ode_func must clamp its own t before calling _ode_drift so
+        those trial evaluations never see a negative (T - t).
+        """
+        sampler = Sampler(
+            model=_OffsetNet(k=1e6),
+            bridge_config=BridgeConfig(),  # T=0.1
+            sampling_config=SamplingConfig(num_steps=1, show_progress=False, clip_samples=False),
+            device=torch.device("cpu"),
+        )
+        seen_times: list[float] = []
+        original_drift = Sampler._ode_drift
+
+        def spy(
+            self: Sampler, xi: torch.Tensor, x0: torch.Tensor, t: float, t_tensor: torch.Tensor
+        ):
+            seen_times.append(t)
+            return original_drift(self, xi, x0, t, t_tensor)
+
+        monkeypatch.setattr(Sampler, "_ode_drift", spy)
+
+        x0 = torch.zeros(2, 1, 8, 8)
+        sampler.sample_ode_torchdiffeq(2, (1, 8, 8), x0=x0, solver="dopri5", num_steps=1)
+
+        eps = 1e-4
+        assert seen_times, "expected _ode_drift to be called at least once"
+        assert all(eps <= t <= sampler.T - eps for t in seen_times)
