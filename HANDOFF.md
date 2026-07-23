@@ -23,11 +23,12 @@ Datasets:
 Device selection is automatic (cuda > mps > cpu); there is no multi-GPU
 support, so on a shared node set `CUDA_VISIBLE_DEVICES=<id>` per run.
 
-## IMPORTANT: always pass an explicit checkpoint dir
+## Checkpoint locations
 
-`--checkpoint-dir` defaults to a single shared `./checkpoints/` and files are
-named only by step number, so **back-to-back experiments silently overwrite
-each other's checkpoints**. Always namespace it, as in the commands below.
+Checkpoints default to `<output_dir>/checkpoints` (per-experiment, e.g.
+`outputs/cifar10/checkpoints/`), so experiments never overwrite each other.
+`--checkpoint-dir` overrides this if you need checkpoints on a different
+filesystem.
 
 ## The five experiments
 
@@ -35,27 +36,22 @@ Run from the repo root. Runtimes are rough single-GPU estimates.
 
 ```bash
 # 1. MNIST generation (~0.5-1h). Sanity anchor; digits should be clean.
-uv run bridge-diffusion train --config configs/mnist.yaml \
-    --checkpoint-dir checkpoints/mnist
+uv run bridge-diffusion train --config configs/mnist.yaml
 
 # 2. CIFAR-10 generation, Ho et al. recipe, 800k steps (~1.5-4 days).
 #    The headline confirmatory FID number.
-uv run bridge-diffusion train --config configs/cifar10.yaml \
-    --checkpoint-dir checkpoints/cifar10
+uv run bridge-diffusion train --config configs/cifar10.yaml
 
 # 3. AFHQ all-classes generation at 64px, 150k steps (~1-2 days).
 #    ~22GB of checkpoints at the default cadence; ensure disk.
-uv run bridge-diffusion train --config configs/afhq_64.yaml \
-    --checkpoint-dir checkpoints/afhq_64
+uv run bridge-diffusion train --config configs/afhq_64.yaml
 
 # 4. CIFAR cat->dog transport, 50k steps (~0.5-1 day).
-uv run bridge-diffusion train --config configs/cifar_cat2dog.yaml \
-    --checkpoint-dir checkpoints/cifar_cat2dog
+uv run bridge-diffusion train --config configs/cifar_cat2dog.yaml
 
 # 5. AFHQ cat->dog transport at 64px, 150k steps (~1-2 days).
 #    The headline transport experiment.
-uv run bridge-diffusion train --config configs/afhq_cat2dog_64.yaml \
-    --checkpoint-dir checkpoints/afhq_cat2dog_64
+uv run bridge-diffusion train --config configs/afhq_cat2dog_64.yaml
 ```
 
 Resume after an interruption (restores model, EMA, optimizer, step, and RNG
@@ -63,7 +59,7 @@ state exactly):
 
 ```bash
 uv run bridge-diffusion train --config <same config> \
-    --checkpoint-dir <same dir> --resume <dir>/checkpoint_step_<N>.pt
+    --resume <output_dir>/checkpoints/checkpoint_step_<N>.pt
 ```
 
 Note: a resumed run appears as a *new* MLflow run (same name); the metric
@@ -101,7 +97,7 @@ never approach zero.
 Generation runs (1-3): sample, export a reference set, compute FID --
 
 ```bash
-uv run bridge-diffusion sample --checkpoint checkpoints/cifar10/checkpoint_final.pt \
+uv run bridge-diffusion sample --checkpoint outputs/cifar10/checkpoints/checkpoint_final.pt \
     --use-ema --num-samples 50000 --num-steps 100 --batch-size 256 \
     --output-dir outputs/cifar10_samples
 uv run python scripts/export_val_images.py --dataset cifar10 \
@@ -115,7 +111,7 @@ cats automatically for a transport checkpoint, or pass `--source-dir`), then
 FID against the target class:
 
 ```bash
-uv run bridge-diffusion sample --checkpoint checkpoints/afhq_cat2dog_64/checkpoint_final.pt \
+uv run bridge-diffusion sample --checkpoint outputs/afhq_cat2dog_64/checkpoints/checkpoint_final.pt \
     --use-ema --num-samples 500 --num-steps 100 --output-dir outputs/afhq_translations
 uv run python scripts/export_val_images.py --dataset afhq --classes dog \
     --image-size 64 --out data/fid_ref/afhq_dog
@@ -123,11 +119,14 @@ uv run bridge-diffusion evaluate --real-dir data/fid_ref/afhq_dog \
     --generated-dir outputs/afhq_translations
 ```
 
-**Known limitation:** `scripts/evaluate_fid.py` (the FID-vs-step-count sweep
-script) is generation-only. It does not feed source images through the
-sampler, so pointed at a *transport* checkpoint it silently produces
-meaningless numbers. Use the `bridge-diffusion evaluate` path above for
-transport FID until the script is fixed.
+`scripts/evaluate_fid.py` (the FID-vs-step-count sweep for the paper's
+tables) handles both run types: for a transport checkpoint it automatically
+translates source val images (tiling them when more samples than sources are
+requested). Two caveats: transport + `--ode` is unsupported (the ODE batch
+path has no source-image support and the script raises), and its FID
+implementation (torchmetrics Inception + scipy) is not numerically identical
+to `bridge-diffusion evaluate` (torch-fidelity) -- do not mix the two within
+one comparison table.
 
 ## Performance notes
 

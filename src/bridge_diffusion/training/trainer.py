@@ -78,13 +78,16 @@ class Trainer:
             train_loader: DataLoader for training data.
             config: Experiment configuration.
             device: Device to train on.
-            checkpoint_dir: Directory for saving checkpoints.
+            checkpoint_dir: Directory for saving checkpoints. Defaults to
+                <config.output_dir>/checkpoints so concurrent or sequential
+                experiments never overwrite each other's checkpoints (the
+                files are named only by step number).
         """
         self.model = model.to(device)
         self.train_loader = train_loader
         self.config = config
         self.device = device
-        self.checkpoint_dir = checkpoint_dir or Path("checkpoints")
+        self.checkpoint_dir = checkpoint_dir or Path(config.output_dir) / "checkpoints"
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
         self.optimiser = AdamW(

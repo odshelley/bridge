@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**diffusion-bridge** is a Python library implementing diffusion bridge generative models -- stochastic and deterministic transport methods that move samples between two arbitrary probability distributions. See [THEORY.md](THEORY.md) for the full mathematical background.
+**diffusion-bridge** is a Python library implementing diffusion bridge generative models -- stochastic and deterministic transport methods that move samples between two arbitrary probability distributions. The core mathematics is summarised in the "Core Bridge Diffusion Model" section below; the full background lives in the accompanying paper.
 
 ## Development Commands
 

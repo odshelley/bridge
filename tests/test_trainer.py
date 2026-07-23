@@ -137,6 +137,23 @@ class TestNormaliseSamples:
         assert torch.allclose(normalised, torch.tensor([0.0, 1.0]))
 
 
+class TestCheckpointDirDefault:
+    def test_defaults_to_output_dir_checkpoints(self, afhq_dir, tmp_path) -> None:
+        """Omitting checkpoint_dir must namespace checkpoints under the
+        experiment's own output_dir, not a shared cwd-relative 'checkpoints/'
+        that back-to-back experiments would silently overwrite."""
+        config = _transport_experiment(afhq_dir, tmp_path)
+        loader = get_dataloader(config.data, batch_size=2, train=True, num_workers=0)
+        trainer = Trainer(
+            model=_tiny_model(),
+            train_loader=loader,
+            config=config,
+            device=torch.device("cpu"),
+        )
+        assert trainer.checkpoint_dir == tmp_path / "outputs" / "checkpoints"
+        assert trainer.checkpoint_dir.is_dir()
+
+
 class TestCheckpointRngState:
     def test_load_checkpoint_restores_rng_state(self, afhq_dir, tmp_path) -> None:
         config = _transport_experiment(afhq_dir, tmp_path)
