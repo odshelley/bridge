@@ -343,8 +343,8 @@ def main() -> None:
     train_parser.add_argument(
         "--checkpoint-dir",
         type=str,
-        default="checkpoints",
-        help="Directory for saving checkpoints",
+        default=None,
+        help="Directory for saving checkpoints (default: <output_dir>/checkpoints)",
     )
     train_parser.add_argument(
         "--resume",

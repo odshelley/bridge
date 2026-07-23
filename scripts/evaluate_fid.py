@@ -20,7 +20,7 @@ from torchvision import transforms
 from tqdm import tqdm
 
 from bridge_diffusion.config import ExperimentConfig, SamplingConfig
-from bridge_diffusion.data import get_dataloader
+from bridge_diffusion.data import get_dataloader, load_source_val_images
 from bridge_diffusion.models import BridgeDiffusion, DDPMDiffusion, DiffusersUNetWrapper
 from bridge_diffusion.models.poisson_bridge import PoissonBridgeDiffusion
 from bridge_diffusion.sampling import ODESolver, Sampler
@@ -133,6 +133,32 @@ def generate_samples(
             all_samples.append(batch.cpu())
         return torch.cat(all_samples, dim=0)
 
+    # Transport checkpoints (source_dataset set) must start from real source
+    # images, not Gaussian noise -- sampling a transport-trained model from
+    # noise produces meaningless outputs and silently wrong FID numbers.
+    x0 = None
+    if config.data.source_dataset is not None:
+        if use_ode:
+            raise ValueError(
+                "Transport checkpoints are not supported with --ode: "
+                "sample_batch_ode has no source-image (x0) support. "
+                "Drop --ode to use the stochastic sampler."
+            )
+        sources = load_source_val_images(config.data, num_samples, spread=True)
+        if len(sources) < num_samples:
+            repeats = -(-num_samples // len(sources))  # ceil division
+            logger.warning(
+                f"Only {len(sources)} source val images available for "
+                f"{num_samples} requested samples; tiling sources {repeats}x "
+                "(stochastic sampling still yields distinct translations)."
+            )
+            sources = sources.repeat(repeats, 1, 1, 1)[:num_samples]
+        x0 = sources
+        logger.info(
+            f"Transport mode: translating {num_samples} source images "
+            f"({config.data.source_dataset}/{config.data.source_classes})"
+        )
+
     if use_ode:
         solver = ODESolver(ode_solver)
         samples = sampler.sample_batch_ode(
@@ -148,8 +174,9 @@ def generate_samples(
             shape=shape,
             batch_size=batch_size,
             num_steps=num_steps,
+            x0=x0,
         )
-    
+
     return samples
 
 
