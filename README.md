@@ -19,14 +19,18 @@ uv run bridge-diffusion train --config configs/mnist.yaml
 ### Sampling
 
 ```bash
-uv run bridge-diffusion sample --checkpoint outputs/checkpoints/model.pt --n-samples 1000 --steps 10
+uv run bridge-diffusion sample --checkpoint checkpoints/checkpoint_final.pt \
+    --num-samples 1000 --num-steps 100 --batch-size 64 --use-ema --output-dir outputs/samples
 ```
 
 ### Evaluation
 
 ```bash
-uv run bridge-diffusion evaluate --samples-dir outputs/samples --dataset mnist
+uv run bridge-diffusion evaluate --real-dir data/fid_ref/mnist --generated-dir outputs/samples
 ```
+
+See [HANDOFF.md](HANDOFF.md) for a complete per-experiment run guide (GPU
+sizing, checkpoint hygiene, metrics, and evaluation commands).
 
 ### Transport experiments (data -> data)
 
